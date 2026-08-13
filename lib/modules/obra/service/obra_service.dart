@@ -8,12 +8,16 @@ class ObraService {
   Future<ObraModel> crearObra({
     required String nombre,
     String? direccion,
+    double? latitud,
+    double? longitud,
   }) async {
     final respuesta = await _supabase
         .from('obras')
         .insert({
           'nombre': nombre,
           'direccion': direccion,
+          'latitud': latitud,
+          'longitud': longitud,
           'estado': true,
         })
         .select()
@@ -49,5 +53,14 @@ class ObraService {
         .single();
 
     return ObraModel.fromMap(respuesta);
+  }
+
+  Future<bool> existeObraConNombre(String nombre) async {
+    final respuesta = await _supabase
+        .from('obras')
+        .select('id_obra')
+        .ilike('nombre', nombre.trim());
+
+    return (respuesta as List).isNotEmpty;
   }
 }

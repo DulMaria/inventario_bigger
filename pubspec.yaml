@@ -36,6 +36,10 @@ dependencies:
   cupertino_icons: ^1.0.8
   supabase_flutter: ^2.17.1
   provider: ^6.1.5+1
+
+  flutter_map: ^8.2.2
+  latlong2: ^0.9.1
+  geocoding: ^4.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

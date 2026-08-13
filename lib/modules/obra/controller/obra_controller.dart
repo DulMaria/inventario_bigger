@@ -6,11 +6,15 @@ class ObraController {
 
   Future<ObraModel> crearObra({
     required String nombre,
-    required String direccion,
-  }) {
-    return _obraService.crearObra(
+    String? direccion,
+    double? latitud,
+    double? longitud,
+  }) async {
+    return await _obraService.crearObra(
       nombre: nombre,
       direccion: direccion,
+      latitud: latitud,
+      longitud: longitud,
     );
   }
 
@@ -28,5 +32,9 @@ class ObraController {
       nombre: nombre,
       direccion: direccion,
     );
+  }
+
+  Future<bool> existeObraConNombre(String nombre) async {
+    return await _obraService.existeObraConNombre(nombre);
   }
 }

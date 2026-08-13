@@ -3,6 +3,8 @@ import '../controller/auth_controller.dart';
 
 // Pantalla obrero
 import '../../usuario/view/obrero_home_view.dart';
+// Pantalla gerente
+import '../../obra/view/gerente_home_view.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -45,6 +47,14 @@ class _LoginViewState extends State<LoginView> {
           context,
           MaterialPageRoute(
             builder: (context) => const ObreroHomeView(),
+          ),
+        );
+      } else if (rol == 3) {
+        // Gerente
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const GerenteHomeView(),
           ),
         );
       } else {

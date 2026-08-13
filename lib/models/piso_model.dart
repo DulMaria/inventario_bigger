@@ -18,7 +18,7 @@ class PisoModel {
       idPiso: map['id_piso'],
       obra: ObraModel.fromMap(map['obras']),
       nombre: map['nombre'],
-      estadoObra: map['estado_obra'],
+      estadoObra: map['estado_obra'] ?? 'NO INICIADO',
     );
   }
 

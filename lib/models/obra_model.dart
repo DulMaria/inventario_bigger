@@ -2,7 +2,7 @@ class ObraModel {
   final int idObra;
   final String nombre;
   final String? direccion;
-  final String estado;
+  final bool estado;
 
   ObraModel({
     required this.idObra,
@@ -16,7 +16,7 @@ class ObraModel {
       idObra: map['id_obra'],
       nombre: map['nombre'],
       direccion: map['direccion'],
-      estado: map['estado'] ?? 'ACTIVA',
+      estado: map['estado'] ?? true,
     );
   }
 

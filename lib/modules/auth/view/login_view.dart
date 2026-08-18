@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import '../controller/auth_controller.dart';
 import '../../../models/usuario_obra_model.dart';
+import 'registro_view.dart';
 
 // Pantalla obrero
 import '../../usuario/view/obrero_home_view.dart';
@@ -17,8 +18,8 @@ class _ByggerColors {
   static const Color fondoClaro = Color(0xFFF4FAFE);
   static const Color textoOscuro = Color(0xFF1E2A32);
   static const Color textoGris = Color(0xFF7C8A93);
-  static const Color fondoOscuro = Color(0xFF121212);
-  static const Color cardOscuro = Color(0xFF1E1E1E);
+  //static const Color fondoOscuro = Color(0xFF121212);
+  //static const Color cardOscuro = Color(0xFF1E1E1E);
 }
 
 class LoginView extends StatefulWidget {
@@ -239,8 +240,8 @@ class _LoginViewState extends State<LoginView>
         boxShadow: [
           BoxShadow(
             color: _isDarkMode
-                ? Colors.black.withOpacity(0.3)
-                : _ByggerColors.azulOscuro.withOpacity(0.3),
+                ? Colors.black.withValues(alpha: 0.3)
+                : _ByggerColors.azulOscuro.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -302,8 +303,8 @@ class _LoginViewState extends State<LoginView>
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(
             color: _isDarkMode
-                ? _ByggerColors.azulMedio.withOpacity(0.3)
-                : _ByggerColors.azulClaro.withOpacity(0.5),
+                ? _ByggerColors.azulMedio.withValues(alpha: 0.3)
+                : _ByggerColors.azulClaro.withValues(alpha: 0.5),
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -371,8 +372,8 @@ class _LoginViewState extends State<LoginView>
               child: _burbuja(
                 180,
                 _isDarkMode
-                    ? Colors.blueGrey.withOpacity(0.05)
-                    : Colors.white.withOpacity(0.12),
+                    ? Colors.blueGrey.withValues(alpha: 0.05)
+                    : Colors.white.withValues(alpha: 0.12),
               ),
             ),
             Positioned(
@@ -381,8 +382,8 @@ class _LoginViewState extends State<LoginView>
               child: _burbuja(
                 140,
                 _isDarkMode
-                    ? Colors.blueGrey.withOpacity(0.04)
-                    : Colors.white.withOpacity(0.10),
+                    ? Colors.blueGrey.withValues(alpha: 0.04)
+                    : Colors.white.withValues(alpha: 0.10),
               ),
             ),
             Positioned(
@@ -391,8 +392,8 @@ class _LoginViewState extends State<LoginView>
               child: _burbuja(
                 120,
                 _isDarkMode
-                    ? Colors.blueGrey.withOpacity(0.03)
-                    : Colors.white.withOpacity(0.08),
+                    ? Colors.blueGrey.withValues(alpha: 0.03)
+                    : Colors.white.withValues(alpha: 0.08),
               ),
             ),
 
@@ -439,7 +440,7 @@ class _LoginViewState extends State<LoginView>
                                           (_isDarkMode
                                                   ? Colors.black
                                                   : _ByggerColors.azulOscuro)
-                                              .withOpacity(0.25),
+                                              .withValues(alpha: 0.25),
                                       blurRadius: 24,
                                       offset: const Offset(0, 12),
                                     ),
@@ -485,7 +486,7 @@ class _LoginViewState extends State<LoginView>
                                   style: TextStyle(
                                     color: _isDarkMode
                                         ? Colors.grey[300]
-                                        : Colors.white.withOpacity(0.9),
+                                        : Colors.white.withValues(alpha: 0.9),
                                     fontSize: 14,
                                   ),
                                 ),
@@ -514,7 +515,7 @@ class _LoginViewState extends State<LoginView>
                                         (_isDarkMode
                                                 ? Colors.black
                                                 : _ByggerColors.azulOscuro)
-                                            .withOpacity(0.18),
+                                            .withValues(alpha: 0.18),
                                     blurRadius: 30,
                                     offset: const Offset(0, 16),
                                   ),
@@ -598,6 +599,29 @@ class _LoginViewState extends State<LoginView>
                                         ),
                                       ),
                                     ),
+                                    TextButton(
+                                      onPressed: _cargando
+                                          ? null
+                                          : () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const RegistroView(),
+                                                ),
+                                              );
+                                            },
+                                      child: Text(
+                                        '¿No tienes una cuenta? Regístrate',
+                                        style: TextStyle(
+                                          color: _isDarkMode
+                                              ? _ByggerColors.azulClaro
+                                              : _ByggerColors.azulMedio,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -659,7 +683,7 @@ class _ThemeToggleButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -745,7 +769,7 @@ class _BotonAnimadoState extends State<_BotonAnimado> {
                 ? []
                 : [
                     BoxShadow(
-                      color: _ByggerColors.azulOscuro.withOpacity(0.35),
+                      color: _ByggerColors.azulOscuro.withValues(alpha: 0.35),
                       blurRadius: 14,
                       offset: const Offset(0, 8),
                     ),
@@ -786,8 +810,8 @@ class _ConstructionPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = isDarkMode
-          ? Colors.blueGrey.withOpacity(0.03)
-          : Colors.blueGrey.withOpacity(0.04);
+          ? Colors.blueGrey.withValues(alpha: 0.03)
+          : Colors.blueGrey.withValues(alpha: 0.04);
 
     final random = Random(42);
     final double ancho = size.width;
@@ -800,8 +824,10 @@ class _ConstructionPainter extends CustomPainter {
       final double angulo = random.nextDouble() * 2 * pi;
 
       paint.color = isDarkMode
-          ? Colors.blueGrey.withOpacity(0.05 + random.nextDouble() * 0.08)
-          : Colors.blueGrey.withOpacity(0.03 + random.nextDouble() * 0.06);
+          ? Colors.blueGrey.withValues(alpha: 0.05 + random.nextDouble() * 0.08)
+          : Colors.blueGrey.withValues(
+              alpha: 0.03 + random.nextDouble() * 0.06,
+            );
 
       canvas.save();
       canvas.translate(x, y);
@@ -814,8 +840,8 @@ class _ConstructionPainter extends CustomPainter {
       );
 
       paint.color = isDarkMode
-          ? Colors.blueGrey.withOpacity(0.08)
-          : Colors.blueGrey.withOpacity(0.06);
+          ? Colors.blueGrey.withValues(alpha: 0.08)
+          : Colors.blueGrey.withValues(alpha: 0.06);
       canvas.drawCircle(const Offset(-20, 0), 2, paint);
       canvas.drawCircle(const Offset(20, 0), 2, paint);
 
@@ -830,8 +856,10 @@ class _ConstructionPainter extends CustomPainter {
       final double angulo = random.nextDouble() * 2 * pi;
 
       paint.color = isDarkMode
-          ? Colors.blueGrey.withOpacity(0.04 + random.nextDouble() * 0.06)
-          : Colors.blueGrey.withOpacity(0.03 + random.nextDouble() * 0.05);
+          ? Colors.blueGrey.withValues(alpha: 0.04 + random.nextDouble() * 0.06)
+          : Colors.blueGrey.withValues(
+              alpha: 0.03 + random.nextDouble() * 0.05,
+            );
 
       canvas.save();
       canvas.translate(x, y);
@@ -844,8 +872,8 @@ class _ConstructionPainter extends CustomPainter {
       canvas.drawRRect(rect, paint..style = PaintingStyle.stroke);
 
       paint.color = isDarkMode
-          ? Colors.blueGrey.withOpacity(0.04)
-          : Colors.blueGrey.withOpacity(0.03);
+          ? Colors.blueGrey.withValues(alpha: 0.04)
+          : Colors.blueGrey.withValues(alpha: 0.03);
 
       canvas.drawLine(
         Offset(-lado / 3, -lado / 2),
@@ -878,14 +906,14 @@ class _ConstructionPainter extends CustomPainter {
       final double radio = 30 + random.nextDouble() * 50;
 
       paint.color = isDarkMode
-          ? Colors.blueGrey.withOpacity(0.02)
-          : Colors.blueGrey.withOpacity(0.015);
+          ? Colors.blueGrey.withValues(alpha: 0.02)
+          : Colors.blueGrey.withValues(alpha: 0.015);
 
       canvas.drawCircle(Offset(x, y), radio, paint);
 
       paint.color = isDarkMode
-          ? Colors.blueGrey.withOpacity(0.03)
-          : Colors.blueGrey.withOpacity(0.02);
+          ? Colors.blueGrey.withValues(alpha: 0.03)
+          : Colors.blueGrey.withValues(alpha: 0.02);
       canvas.drawCircle(
         Offset(x, y),
         radio * 0.5,

@@ -8,10 +8,7 @@ class AuthController {
     required String contrasena,
   }) async {
     try {
-      await _authService.iniciarSesion(
-        correo: correo,
-        contrasena: contrasena,
-      );
+      await _authService.iniciarSesion(correo: correo, contrasena: contrasena);
 
       return true;
     } catch (e) {

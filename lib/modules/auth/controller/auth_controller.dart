@@ -3,20 +3,59 @@ import '../service/auth_service.dart';
 class AuthController {
   final AuthService _authService = AuthService();
 
-  Future<bool> iniciarSesion({
+  Future<String?> iniciarSesion({
     required String correo,
     required String contrasena,
   }) async {
+    // =========================
+    // VALIDACIONES DEL CORREO
+    // =========================
+
+    if (correo.trim().isEmpty) {
+      return 'Ingresa tu correo';
+    }
+
+    // No permitir espacios
+    if (correo.contains(' ')) {
+      return 'El correo no debe contener espacios';
+    }
+
+    // Validar estructura del correo
+    final correoValido = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+
+    if (!correoValido.hasMatch(correo.trim())) {
+      return 'Ingresa un correo válido, por ejemplo: usuario@gmail.com';
+    }
+
+    // =========================
+    // VALIDACIONES CONTRASEÑA
+    // =========================
+
+    if (contrasena.isEmpty) {
+      return 'Ingresa tu contraseña';
+    }
+
+    if (contrasena.length < 6) {
+      return 'La contraseña debe tener mínimo 6 caracteres';
+    }
+
+    // =========================
+    // INICIAR SESIÓN
+    // =========================
+
     try {
       await _authService.iniciarSesion(
-        correo: correo,
+        correo: correo.trim(),
         contrasena: contrasena,
       );
 
-      return true;
+      return null;
     } catch (e) {
       print('Error al iniciar sesión: $e');
-      return false;
+
+      return 'Correo o contraseña incorrectos';
     }
   }
 

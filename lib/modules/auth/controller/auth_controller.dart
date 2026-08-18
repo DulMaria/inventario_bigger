@@ -3,7 +3,7 @@ import '../service/auth_service.dart';
 class AuthController {
   final AuthService _authService = AuthService();
 
-  Future<bool> iniciarSesion({
+  Future<String?> iniciarSesion({
     required String correo,
     required String contrasena,
   }) async {
@@ -46,13 +46,16 @@ class AuthController {
     // =========================
 
     try {
-<<<<<<< HEAD
-      await _authService.iniciarSesion(correo: correo, contrasena: contrasena);
+      await _authService.iniciarSesion(
+        correo: correo.trim(),
+        contrasena: contrasena,
+      );
 
-      return true;
+      return null;
     } catch (e) {
       print('Error al iniciar sesión: $e');
-      return false;
+
+      return 'Correo o contraseña incorrectos';
     }
   }
 

@@ -21,50 +21,57 @@ class _CrearObraViewState extends State<CrearObraView> {
   double? _latitud;
   double? _longitud;
 
+  // ============================================================
+  // SELECCIONAR UBICACIÓN EN EL MAPA
+  // ============================================================
+
   Future<void> _seleccionarEnMapa() async {
     final resultado = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const SeleccionarUbicacionView(),
-      ),
+      MaterialPageRoute(builder: (_) => const SeleccionarUbicacionView()),
     );
 
     if (resultado == null || !mounted) return;
 
     setState(() {
-      _direccionController.text =
-          resultado['direccion'] ?? '';
+      _direccionController.text = resultado['direccion']?.toString() ?? '';
 
-      _latitud = resultado['latitud'];
-      _longitud = resultado['longitud'];
+      _latitud = resultado['latitud'] != null
+          ? (resultado['latitud'] as num).toDouble()
+          : null;
+
+      _longitud = resultado['longitud'] != null
+          ? (resultado['longitud'] as num).toDouble()
+          : null;
     });
   }
+
+  // ============================================================
+  // CREAR OBRA
+  // ============================================================
 
   Future<void> _crearObra() async {
     final nombre = _nombreController.text.trim();
     final direccion = _direccionController.text.trim();
 
-    // Validar nombre vacío
+    // ------------------------------------------------------------
+    // VALIDAR NOMBRE
+    // ------------------------------------------------------------
+
     if (nombre.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ingrese el nombre de la obra'),
-        ),
+        const SnackBar(content: Text('Ingrese el nombre de la obra')),
       );
       return;
     }
 
-    // Validar que no sean solamente espacios
     if (nombre.replaceAll(' ', '').isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('El nombre de la obra no es válido'),
-        ),
+        const SnackBar(content: Text('El nombre de la obra no es válido')),
       );
       return;
     }
 
-    // Máximo de caracteres
     if (nombre.length > 100) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -76,11 +83,27 @@ class _CrearObraViewState extends State<CrearObraView> {
       return;
     }
 
-    // Dirección obligatoria
+    // ------------------------------------------------------------
+    // VALIDAR DIRECCIÓN
+    // ------------------------------------------------------------
+
     if (direccion.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Ingrese o seleccione la dirección de la obra'),
+        ),
+      );
+      return;
+    }
+
+    // ------------------------------------------------------------
+    // VALIDAR UBICACIÓN
+    // ------------------------------------------------------------
+
+    if (_latitud == null || _longitud == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Seleccione la ubicación de la obra en el mapa'),
         ),
       );
       return;
@@ -91,30 +114,26 @@ class _CrearObraViewState extends State<CrearObraView> {
     });
 
     try {
-      // Comprobar si ya existe una obra con ese nombre
-      final existe = await _obraController.existeObraConNombre(
-        nombre,
-      );
+      // ----------------------------------------------------------
+      // COMPROBAR NOMBRE DUPLICADO
+      // ----------------------------------------------------------
+
+      final existe = await _obraController.existeObraConNombre(nombre);
 
       if (existe) {
         if (!mounted) return;
 
-        setState(() {
-          _cargando = false;
-        });
-
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Ya existe una obra con el nombre "$nombre"',
-            ),
-          ),
+          SnackBar(content: Text('Ya existe una obra con el nombre "$nombre"')),
         );
 
         return;
       }
 
-      // Crear obra
+      // ----------------------------------------------------------
+      // CREAR OBRA
+      // ----------------------------------------------------------
+
       await _obraController.crearObra(
         nombre: nombre,
         direccion: direccion,
@@ -125,20 +144,16 @@ class _CrearObraViewState extends State<CrearObraView> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Obra creada correctamente'),
-        ),
+        const SnackBar(content: Text('Obra creada correctamente')),
       );
 
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al crear la obra: $e'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al crear la obra: $e')));
     } finally {
       if (mounted) {
         setState(() {
@@ -148,26 +163,40 @@ class _CrearObraViewState extends State<CrearObraView> {
     }
   }
 
+  // ============================================================
+  // DISPOSE
+  // ============================================================
+
   @override
   void dispose() {
     _nombreController.dispose();
     _direccionController.dispose();
+
     super.dispose();
   }
+
+  // ============================================================
+  // BUILD
+  // ============================================================
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Crear obra'),
-      ),
+      appBar: AppBar(title: const Text('Crear obra')),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
+
         child: Column(
           children: [
+            // ----------------------------------------------------
+            // NOMBRE
+            // ----------------------------------------------------
+
             TextField(
               controller: _nombreController,
               maxLength: 100,
+
               decoration: const InputDecoration(
                 labelText: 'Nombre de la obra',
                 hintText: 'Ej. Edificio Central',
@@ -177,54 +206,94 @@ class _CrearObraViewState extends State<CrearObraView> {
 
             const SizedBox(height: 16),
 
+            // ----------------------------------------------------
+            // DIRECCIÓN
+            // ----------------------------------------------------
             TextField(
               controller: _direccionController,
               maxLength: 200,
+              maxLines: 2,
+
+              onChanged: (_) {
+                /*
+                 * Si el gerente modifica manualmente la dirección,
+                 * dejamos de considerar válida la ubicación anterior.
+                 */
+                if (_latitud != null || _longitud != null) {
+                  setState(() {
+                    _latitud = null;
+                    _longitud = null;
+                  });
+                }
+              },
+
               decoration: const InputDecoration(
                 labelText: 'Dirección',
-                hintText: 'Ej. Av. Arce, La Paz',
+                hintText: 'Seleccione la dirección en el mapa',
                 border: OutlineInputBorder(),
               ),
             ),
 
             const SizedBox(height: 8),
 
-            // BOTÓN DEL MAPA
+            // ----------------------------------------------------
+            // MAPA
+            // ----------------------------------------------------
             SizedBox(
               width: double.infinity,
+
               child: OutlinedButton.icon(
-                onPressed: _cargando
-                    ? null
-                    : _seleccionarEnMapa,
+                onPressed: _cargando ? null : _seleccionarEnMapa,
+
                 icon: const Icon(Icons.location_on),
-                label: const Text(
-                  'Seleccionar dirección en el mapa',
+
+                label: Text(
+                  _latitud != null && _longitud != null
+                      ? 'Cambiar ubicación en el mapa'
+                      : 'Seleccionar ubicación en el mapa',
                 ),
               ),
             ),
 
-            // Mostrar coordenadas solo como referencia
+            // ----------------------------------------------------
+            // UBICACIÓN SELECCIONADA
+            // ----------------------------------------------------
             if (_latitud != null && _longitud != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Ubicación seleccionada',
-                style: Theme.of(context).textTheme.bodySmall,
+              const SizedBox(height: 10),
+
+              Row(
+                children: [
+                  const Icon(Icons.check_circle, size: 20),
+
+                  const SizedBox(width: 8),
+
+                  Expanded(
+                    child: Text(
+                      'Ubicación seleccionada correctamente',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                ],
               ),
             ],
 
             const SizedBox(height: 24),
 
+            // ----------------------------------------------------
+            // BOTÓN CREAR
+            // ----------------------------------------------------
             SizedBox(
               width: double.infinity,
+
               child: ElevatedButton(
                 onPressed: _cargando ? null : _crearObra,
+
                 child: _cargando
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
+
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Text('Crear obra'),
               ),

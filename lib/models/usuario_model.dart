@@ -1,5 +1,3 @@
-import 'rol_model.dart';
-
 class UsuarioModel {
   final int idUsuario;
   final String idAuth;

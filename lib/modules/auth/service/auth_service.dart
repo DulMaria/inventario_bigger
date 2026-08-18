@@ -14,13 +14,33 @@ class AuthService {
     );
   }
 
+  Future<AuthResponse> registrarUsuario({
+    required String correo,
+    required String contrasena,
+    required String nombre,
+    required String apellido,
+    String? telefono,
+  }) async {
+    final respuesta = await _supabase.auth.signUp(
+      email: correo,
+      password: contrasena,
+      data: {'nombre': nombre, 'apellido': apellido, 'telefono': telefono},
+    );
+
+    if (respuesta.user == null) {
+      throw Exception('No se pudo crear la cuenta');
+    }
+
+    return respuesta;
+  }
+
   Future<void> cerrarSesion() async {
     await _supabase.auth.signOut();
   }
 
   User? get usuarioActual => _supabase.auth.currentUser;
 
-  // Obtener el rol del usuario autenticado
+  // Obtener las obras a las que pertenece el usuario
   Future<List<UsuarioObraModel>> obtenerObrasUsuario() async {
     final usuario = _supabase.auth.currentUser;
 

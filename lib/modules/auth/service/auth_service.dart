@@ -1,3 +1,4 @@
+import '../../../models/usuario_obra_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
@@ -20,19 +21,33 @@ class AuthService {
   User? get usuarioActual => _supabase.auth.currentUser;
 
   // Obtener el rol del usuario autenticado
-  Future<int?> obtenerRolUsuario() async {
+  Future<List<UsuarioObraModel>> obtenerObrasUsuario() async {
     final usuario = _supabase.auth.currentUser;
 
     if (usuario == null) {
-      return null;
+      return [];
     }
 
-    final respuesta = await _supabase
+    final usuarioBD = await _supabase
         .from('usuarios')
-        .select('id_rol')
+        .select('id_usuario')
         .eq('id_auth', usuario.id)
         .maybeSingle();
 
-    return respuesta?['id_rol'] as int?;
+    if (usuarioBD == null) {
+      return [];
+    }
+
+    final idUsuario = usuarioBD['id_usuario'] as int;
+
+    final respuesta = await _supabase
+        .from('usuario_obra')
+        .select()
+        .eq('id_usuario', idUsuario)
+        .eq('estado', true);
+
+    return (respuesta as List)
+        .map((item) => UsuarioObraModel.fromMap(item))
+        .toList();
   }
 }

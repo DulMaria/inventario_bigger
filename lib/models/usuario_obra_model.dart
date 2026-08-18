@@ -4,6 +4,8 @@ class UsuarioObraModel {
   final int idObra;
   final int idRol;
   final bool estado;
+  final String? nombreObra;
+  final String? nombreRol;
 
   UsuarioObraModel({
     required this.idUsuarioObra,
@@ -11,6 +13,8 @@ class UsuarioObraModel {
     required this.idObra,
     required this.idRol,
     required this.estado,
+    this.nombreObra,
+    this.nombreRol,
   });
 
   factory UsuarioObraModel.fromMap(Map<String, dynamic> map) {
@@ -20,6 +24,20 @@ class UsuarioObraModel {
       idObra: map['id_obra'],
       idRol: map['id_rol'],
       estado: map['estado'] ?? false,
+      nombreObra: map['obras']?['nombre'],
+      nombreRol: map['roles']?['nombre'],
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id_usuario_obra': idUsuarioObra,
+      'id_usuario': idUsuario,
+      'id_obra': idObra,
+      'id_rol': idRol,
+      'estado': estado,
+      'nombreObra': nombreObra,
+      'nombreRol': nombreRol,
+    };
   }
 }

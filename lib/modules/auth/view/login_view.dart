@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import '../controller/auth_controller.dart';
+import '../../../models/usuario_obra_model.dart';
 
 // Pantalla obrero
 import '../../usuario/view/obrero_home_view.dart';
@@ -61,99 +62,127 @@ class _LoginViewState extends State<LoginView>
       parent: _animController,
       curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
     );
-    _logoSlide = Tween<Offset>(
-      begin: const Offset(0, -0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animController,
-      curve: const Interval(0.0, 0.5, curve: Curves.easeOutBack),
-    ));
+    _logoSlide = Tween<Offset>(begin: const Offset(0, -0.3), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _animController,
+            curve: const Interval(0.0, 0.5, curve: Curves.easeOutBack),
+          ),
+        );
 
     _textoFade = CurvedAnimation(
       parent: _animController,
       curve: const Interval(0.25, 0.65, curve: Curves.easeOut),
     );
-    _textoSlide = Tween<Offset>(
-      begin: const Offset(0, 0.15),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animController,
-      curve: const Interval(0.25, 0.65, curve: Curves.easeOut),
-    ));
+    _textoSlide = Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _animController,
+            curve: const Interval(0.25, 0.65, curve: Curves.easeOut),
+          ),
+        );
 
     _cardFade = CurvedAnimation(
       parent: _animController,
       curve: const Interval(0.4, 1.0, curve: Curves.easeOut),
     );
-    _cardSlide = Tween<Offset>(
-      begin: const Offset(0, 0.25),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animController,
-      curve: const Interval(0.4, 1.0, curve: Curves.easeOutCubic),
-    ));
+    _cardSlide = Tween<Offset>(begin: const Offset(0, 0.25), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _animController,
+            curve: const Interval(0.4, 1.0, curve: Curves.easeOutCubic),
+          ),
+        );
 
     _animController.forward();
   }
 
   Future<void> _iniciarSesion() async {
-  setState(() {
-    _cargando = true;
-  });
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
-  final mensaje = await _authController.iniciarSesion(
-    correo: _correoController.text,
-    contrasena: _contrasenaController.text,
-  );
+    setState(() {
+      _cargando = true;
+    });
 
-  if (!mounted) return;
-
-  setState(() {
-    _cargando = false;
-  });
-
-  // Si hay un error
-  if (mensaje != null) {
-    _mostrarMensaje(mensaje);
-    return;
-  }
-
-  // Login correcto
-  final rol = await _authController.obtenerRolUsuario();
-
-  if (!mounted) return;
-
-  if (rol == 1) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const ObreroHomeView(),
-      ),
+    final mensaje = await _authController.iniciarSesion(
+      correo: _correoController.text,
+      contrasena: _contrasenaController.text,
     );
-  } else if (rol == 3) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const GerenteHomeView(),
-      ),
-    );
-  } else {
-    _mostrarMensaje('Rol no configurado todavía');
+
+    if (!mounted) return;
+
+    setState(() {
+      _cargando = false;
+    });
+
+    // Si hubo un error al iniciar sesión
+    if (mensaje != null) {
+      _mostrarMensaje(mensaje);
+      return;
+    }
+
+    // ============================================================
+    // OBTENER OBRAS Y ROLES DEL USUARIO
+    // ============================================================
+
+    try {
+      final relaciones = await _authController.obtenerObrasUsuario();
+
+      if (!mounted) return;
+
+      // No tiene ninguna obra asignada
+      if (relaciones.isEmpty) {
+        _mostrarMensaje('Tu usuario todavía no está asignado a ninguna obra');
+        return;
+      }
+
+      // ============================================================
+      // POR AHORA: UNA SOLA OBRA
+      // ============================================================
+
+      if (relaciones.length == 1) {
+        final UsuarioObraModel relacion = relaciones.first;
+
+        if (relacion.idRol == 1) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const ObreroHomeView()),
+          );
+        } else if (relacion.idRol == 3) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const GerenteHomeView()),
+          );
+        } else {
+          _mostrarMensaje(
+            'El rol asignado todavía no tiene una pantalla configurada',
+          );
+        }
+
+        return;
+      }
+
+      // ============================================================
+      // MÁS DE UNA OBRA
+      // ============================================================
+
+      _mostrarMensaje('Tienes varias obras asignadas. Debes seleccionar una.');
+    } catch (e) {
+      _mostrarMensaje('No se pudo obtener la información del usuario');
+    }
   }
-}
 
   void _mostrarMensaje(String texto) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          texto,
-          style: const TextStyle(color: Colors.white),
-        ),
-        backgroundColor: _isDarkMode ? Colors.grey[850] : _ByggerColors.azulOscuro,
+        content: Text(texto, style: const TextStyle(color: Colors.white)),
+        backgroundColor: _isDarkMode
+            ? Colors.grey[850]
+            : _ByggerColors.azulOscuro,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         duration: const Duration(seconds: 3),
         margin: const EdgeInsets.all(16),
       ),
@@ -178,7 +207,7 @@ class _LoginViewState extends State<LoginView>
   Widget _buildLogo() {
     // Elegir el logo según el modo
     final String logoPath = _isDarkMode
-        ? 'assets/images/logo.png'   // Logo para modo oscuro
+        ? 'assets/images/logo.png' // Logo para modo oscuro
         : 'assets/images/logoClaroo.png'; // Logo para modo claro
 
     return Image.asset(
@@ -258,18 +287,16 @@ class _LoginViewState extends State<LoginView>
         ),
         prefixIcon: Icon(
           icon,
-          color: _isDarkMode ? _ByggerColors.azulClaro : _ByggerColors.azulMedio,
+          color: _isDarkMode
+              ? _ByggerColors.azulClaro
+              : _ByggerColors.azulMedio,
         ),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: _isDarkMode
-            ? Colors.grey[800]
-            : _ByggerColors.fondoClaro,
+        fillColor: _isDarkMode ? Colors.grey[800] : _ByggerColors.fondoClaro,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: Colors.transparent,
-          ),
+          borderSide: const BorderSide(color: Colors.transparent),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -288,9 +315,7 @@ class _LoginViewState extends State<LoginView>
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: Colors.redAccent,
-          ),
+          borderSide: const BorderSide(color: Colors.redAccent),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -410,10 +435,11 @@ class _LoginViewState extends State<LoginView>
                                   borderRadius: BorderRadius.circular(28),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: (_isDarkMode
-                                          ? Colors.black
-                                          : _ByggerColors.azulOscuro)
-                                          .withOpacity(0.25),
+                                      color:
+                                          (_isDarkMode
+                                                  ? Colors.black
+                                                  : _ByggerColors.azulOscuro)
+                                              .withOpacity(0.25),
                                       blurRadius: 24,
                                       offset: const Offset(0, 12),
                                     ),
@@ -484,10 +510,11 @@ class _LoginViewState extends State<LoginView>
                                 borderRadius: BorderRadius.circular(24),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: (_isDarkMode
-                                        ? Colors.black
-                                        : _ByggerColors.azulOscuro)
-                                        .withOpacity(0.18),
+                                    color:
+                                        (_isDarkMode
+                                                ? Colors.black
+                                                : _ByggerColors.azulOscuro)
+                                            .withOpacity(0.18),
                                     blurRadius: 30,
                                     offset: const Offset(0, 16),
                                   ),
@@ -503,10 +530,12 @@ class _LoginViewState extends State<LoginView>
                                       icon: Icons.email_outlined,
                                       keyboardType: TextInputType.emailAddress,
                                       validator: (value) {
-                                        if (value == null || value.trim().isEmpty) {
+                                        if (value == null ||
+                                            value.trim().isEmpty) {
                                           return 'Ingresa tu correo';
                                         }
-                                        if (!value.contains('@') || !value.contains('.')) {
+                                        if (!value.contains('@') ||
+                                            !value.contains('.')) {
                                           return 'Correo inválido';
                                         }
                                         return null;
@@ -555,7 +584,7 @@ class _LoginViewState extends State<LoginView>
                                       onPressed: () {
                                         _mostrarMensaje(
                                           'Función en desarrollo\n'
-                                          'Pronto podrás recuperar tu contraseña'
+                                          'Pronto podrás recuperar tu contraseña',
                                         );
                                       },
                                       child: Text(
@@ -610,10 +639,7 @@ class _LoginViewState extends State<LoginView>
     return Container(
       width: tamano,
       height: tamano,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-      ),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
     );
   }
 }
@@ -623,10 +649,7 @@ class _ThemeToggleButton extends StatelessWidget {
   final bool isDarkMode;
   final VoidCallback onToggle;
 
-  const _ThemeToggleButton({
-    required this.isDarkMode,
-    required this.onToggle,
-  });
+  const _ThemeToggleButton({required this.isDarkMode, required this.onToggle});
 
   @override
   Widget build(BuildContext context) {
@@ -651,7 +674,9 @@ class _ThemeToggleButton extends StatelessWidget {
             size: 26,
           ),
           onPressed: onToggle,
-          tooltip: isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro',
+          tooltip: isDarkMode
+              ? 'Cambiar a modo claro'
+              : 'Cambiar a modo oscuro',
           splashRadius: 24,
         ),
       ),

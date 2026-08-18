@@ -1,4 +1,5 @@
 import '../service/auth_service.dart';
+import '../../../models/usuario_obra_model.dart';
 
 class AuthController {
   final AuthService _authService = AuthService();
@@ -59,8 +60,8 @@ class AuthController {
     }
   }
 
-  Future<int?> obtenerRolUsuario() async {
-    return await _authService.obtenerRolUsuario();
+  Future<List<UsuarioObraModel>> obtenerObrasUsuario() async {
+    return await _authService.obtenerObrasUsuario();
   }
 
   Future<void> cerrarSesion() async {

@@ -170,6 +170,10 @@ class ObraController {
     return await _obraService.obtenerObras();
   }
 
+  Future<List<ObraModel>> obtenerObrasDisponibles() async {
+    return await _obraService.obtenerObrasDisponibles();
+  }
+
   // ============================================================
   // EDITAR OBRA
   // ============================================================

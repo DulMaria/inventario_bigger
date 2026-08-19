@@ -40,6 +40,16 @@ class ObraService {
     return (respuesta as List).map((obra) => ObraModel.fromMap(obra)).toList();
   }
 
+  Future<List<ObraModel>> obtenerObrasDisponibles() async {
+    final respuesta = await _supabase
+        .from('obras')
+        .select()
+        .eq('estado', true)
+        .order('nombre');
+
+    return (respuesta as List).map((obra) => ObraModel.fromMap(obra)).toList();
+  }
+
   // ============================================================
   // EDITAR OBRA
   // ============================================================

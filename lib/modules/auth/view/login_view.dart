@@ -1,16 +1,23 @@
 // lib/modules/auth/view/login_view.dart
+
 import 'package:flutter/material.dart';
 import 'dart:math';
+
 import '../controller/auth_controller.dart';
 import '../../../models/usuario_obra_model.dart';
 import 'registro_view.dart';
+import '../../../modules/solicitud_acceso/view/seleccionar_obra_view.dart';
 
 // Pantalla obrero
 import '../../usuario/view/obrero_home_view.dart';
+
 // Pantalla gerente
 import '../../obra/view/gerente_home_view.dart';
 
-// Paleta de colores personalizada
+// ============================================================
+// PALETA DE COLORES
+// ============================================================
+
 class _ByggerColors {
   static const Color azulClaro = Color(0xFF6FC6EE);
   static const Color azulMedio = Color(0xFF2FA9E0);
@@ -18,9 +25,11 @@ class _ByggerColors {
   static const Color fondoClaro = Color(0xFFF4FAFE);
   static const Color textoOscuro = Color(0xFF1E2A32);
   static const Color textoGris = Color(0xFF7C8A93);
-  //static const Color fondoOscuro = Color(0xFF121212);
-  //static const Color cardOscuro = Color(0xFF1E1E1E);
 }
+
+// ============================================================
+// LOGIN
+// ============================================================
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -41,12 +50,18 @@ class _LoginViewState extends State<LoginView>
   bool _ocultarContrasena = true;
   bool _isDarkMode = false;
 
-  // Animaciones
+  // ============================================================
+  // ANIMACIONES
+  // ============================================================
+
   late final AnimationController _animController;
+
   late final Animation<double> _logoFade;
   late final Animation<Offset> _logoSlide;
+
   late final Animation<double> _textoFade;
   late final Animation<Offset> _textoSlide;
+
   late final Animation<double> _cardFade;
   late final Animation<Offset> _cardSlide;
 
@@ -63,6 +78,7 @@ class _LoginViewState extends State<LoginView>
       parent: _animController,
       curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
     );
+
     _logoSlide = Tween<Offset>(begin: const Offset(0, -0.3), end: Offset.zero)
         .animate(
           CurvedAnimation(
@@ -75,6 +91,7 @@ class _LoginViewState extends State<LoginView>
       parent: _animController,
       curve: const Interval(0.25, 0.65, curve: Curves.easeOut),
     );
+
     _textoSlide = Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero)
         .animate(
           CurvedAnimation(
@@ -87,6 +104,7 @@ class _LoginViewState extends State<LoginView>
       parent: _animController,
       curve: const Interval(0.4, 1.0, curve: Curves.easeOut),
     );
+
     _cardSlide = Tween<Offset>(begin: const Offset(0, 0.25), end: Offset.zero)
         .animate(
           CurvedAnimation(
@@ -98,6 +116,10 @@ class _LoginViewState extends State<LoginView>
     _animController.forward();
   }
 
+  // ============================================================
+  // INICIAR SESIÓN
+  // ============================================================
+
   Future<void> _iniciarSesion() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -108,72 +130,239 @@ class _LoginViewState extends State<LoginView>
     });
 
     final mensaje = await _authController.iniciarSesion(
-      correo: _correoController.text,
+      correo: _correoController.text.trim(),
       contrasena: _contrasenaController.text,
     );
 
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
 
     setState(() {
       _cargando = false;
     });
 
-    // Si hubo un error al iniciar sesión
+    // ============================================================
+    // ERROR DE LOGIN
+    // ============================================================
+
     if (mensaje != null) {
       _mostrarMensaje(mensaje);
       return;
     }
 
     // ============================================================
-    // OBTENER OBRAS Y ROLES DEL USUARIO
+    // LOGIN CORRECTO
     // ============================================================
 
     try {
       final relaciones = await _authController.obtenerObrasUsuario();
 
-      if (!mounted) return;
-
-      // No tiene ninguna obra asignada
-      if (relaciones.isEmpty) {
-        _mostrarMensaje('Tu usuario todavía no está asignado a ninguna obra');
+      if (!mounted) {
         return;
       }
 
       // ============================================================
-      // POR AHORA: UNA SOLA OBRA
+      // CASO 1:
+      // EL USUARIO NO TIENE NINGUNA OBRA APROBADA
+      //
+      // En lugar de mostrar solamente un error,
+      // lo enviamos a seleccionar obras.
+      // ============================================================
+
+      if (relaciones.isEmpty) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SeleccionarObraView()),
+        );
+
+        return;
+      }
+
+      // ============================================================
+      // CASO 2:
+      // EL USUARIO TIENE UNA SOLA OBRA
       // ============================================================
 
       if (relaciones.length == 1) {
         final UsuarioObraModel relacion = relaciones.first;
 
-        if (relacion.idRol == 1) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const ObreroHomeView()),
-          );
-        } else if (relacion.idRol == 3) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const GerenteHomeView()),
-          );
-        } else {
-          _mostrarMensaje(
-            'El rol asignado todavía no tiene una pantalla configurada',
-          );
-        }
+        await _abrirPantallaSegunRol(relacion);
 
         return;
       }
 
       // ============================================================
-      // MÁS DE UNA OBRA
+      // CASO 3:
+      // EL USUARIO TIENE VARIAS OBRAS
+      //
+      // Por ahora mostramos una pantalla para seleccionar
+      // la obra.
       // ============================================================
 
-      _mostrarMensaje('Tienes varias obras asignadas. Debes seleccionar una.');
+      await _seleccionarObraAsignada(relaciones);
     } catch (e) {
-      _mostrarMensaje('No se pudo obtener la información del usuario');
+      if (!mounted) {
+        return;
+      }
+
+      _mostrarMensaje('No se pudo obtener la información de tus obras');
     }
   }
+
+  // ============================================================
+  // ABRIR PANTALLA SEGÚN ROL
+  // ============================================================
+
+  Future<void> _abrirPantallaSegunRol(UsuarioObraModel relacion) async {
+    if (!mounted) {
+      return;
+    }
+
+    // OBRERO
+    if (relacion.idRol == 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ObreroHomeView()),
+      );
+
+      return;
+    }
+
+    // GERENTE
+    if (relacion.idRol == 3) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const GerenteHomeView()),
+      );
+
+      return;
+    }
+
+    // OTROS ROLES
+    _mostrarMensaje(
+      'El rol asignado todavía no tiene una pantalla configurada',
+    );
+  }
+
+  // ============================================================
+  // SELECCIONAR OBRA ASIGNADA
+  // ============================================================
+
+  Future<void> _seleccionarObraAsignada(
+    List<UsuarioObraModel> relaciones,
+  ) async {
+    if (!mounted) {
+      return;
+    }
+
+    // Por ahora, mientras terminamos la pantalla de selección
+    // de obra asignada, mostramos las obras disponibles.
+
+    final UsuarioObraModel? seleccion =
+        await showModalBottomSheet<UsuarioObraModel>(
+          context: context,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          builder: (context) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'Selecciona una obra',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 21,
+                        fontWeight: FontWeight.bold,
+                        color: _ByggerColors.textoOscuro,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    const Text(
+                      'Tienes acceso a varias obras',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: _ByggerColors.textoGris),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    ...relaciones.map((relacion) {
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        child: ListTile(
+                          leading: const CircleAvatar(
+                            backgroundColor: _ByggerColors.azulClaro,
+                            child: Icon(Icons.business, color: Colors.white),
+                          ),
+                          title: Text(
+                            relacion.idObra.toString(),
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: Text('Rol: ${_nombreRol(relacion.idRol)}'),
+                          trailing: const Icon(
+                            Icons.arrow_forward_ios,
+                            size: 18,
+                          ),
+                          onTap: () {
+                            Navigator.pop(context, relacion);
+                          },
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+
+    if (!mounted || seleccion == null) {
+      return;
+    }
+
+    await _abrirPantallaSegunRol(seleccion);
+  }
+
+  // ============================================================
+  // NOMBRE DEL ROL
+  // ============================================================
+
+  String _nombreRol(int idRol) {
+    switch (idRol) {
+      case 1:
+        return 'Obrero';
+
+      case 2:
+        return 'Técnico';
+
+      case 3:
+        return 'Gerente';
+
+      case 4:
+        return 'Compras';
+
+      case 5:
+        return 'Almacén';
+
+      case 6:
+        return 'Supervisor';
+
+      default:
+        return 'Rol desconocido';
+    }
+  }
+
+  // ============================================================
+  // MOSTRAR MENSAJE
+  // ============================================================
 
   void _mostrarMensaje(String texto) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -190,6 +379,10 @@ class _LoginViewState extends State<LoginView>
     );
   }
 
+  // ============================================================
+  // CAMBIAR TEMA
+  // ============================================================
+
   void _toggleTheme() {
     setState(() {
       _isDarkMode = !_isDarkMode;
@@ -201,15 +394,18 @@ class _LoginViewState extends State<LoginView>
     _animController.dispose();
     _correoController.dispose();
     _contrasenaController.dispose();
+
     super.dispose();
   }
 
-  // ====== CONSTRUIR LOGO CON DOS VERSIONES ======
+  // ============================================================
+  // LOGO
+  // ============================================================
+
   Widget _buildLogo() {
-    // Elegir el logo según el modo
     final String logoPath = _isDarkMode
-        ? 'assets/images/logo.png' // Logo para modo oscuro
-        : 'assets/images/logoClaroo.png'; // Logo para modo claro
+        ? 'assets/images/logo.png'
+        : 'assets/images/logoClaroo.png';
 
     return Image.asset(
       logoPath,
@@ -217,16 +413,18 @@ class _LoginViewState extends State<LoginView>
       width: 110,
       fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) {
-        // Si no encuentra el logo específico, intenta con el otro o muestra fallback
         print('Error al cargar logo: $error');
+
         return _buildLogoFallback();
       },
     );
   }
 
-  // ====== LOGO DE RESPALDO (si no encuentra las imágenes) ======
+  // ============================================================
+  // LOGO DE RESPALDO
+  // ============================================================
+
   Widget _buildLogoFallback() {
-    // Fallback también cambia según el modo
     return Container(
       height: 110,
       width: 110,
@@ -261,7 +459,10 @@ class _LoginViewState extends State<LoginView>
     );
   }
 
-  // ====== CONSTRUIR CAMPO DE TEXTO ======
+  // ============================================================
+  // CAMPO DE TEXTO
+  // ============================================================
+
   Widget _buildCampo({
     required TextEditingController controller,
     required String label,
@@ -326,6 +527,10 @@ class _LoginViewState extends State<LoginView>
     );
   }
 
+  // ============================================================
+  // BUILD
+  // ============================================================
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -359,13 +564,18 @@ class _LoginViewState extends State<LoginView>
         ),
         child: Stack(
           children: [
-            // Fondo de construcción
+            // ====================================================
+            // FONDO
+            // ====================================================
+
             CustomPaint(
               painter: _ConstructionPainter(isDarkMode: _isDarkMode),
               size: Size.infinite,
             ),
 
-            // Burbujas decorativas
+            // ====================================================
+            // BURBUJAS
+            // ====================================================
             Positioned(
               top: -60,
               right: -50,
@@ -376,6 +586,7 @@ class _LoginViewState extends State<LoginView>
                     : Colors.white.withValues(alpha: 0.12),
               ),
             ),
+
             Positioned(
               top: 90,
               left: -70,
@@ -386,6 +597,7 @@ class _LoginViewState extends State<LoginView>
                     : Colors.white.withValues(alpha: 0.10),
               ),
             ),
+
             Positioned(
               bottom: -30,
               right: -30,
@@ -397,7 +609,9 @@ class _LoginViewState extends State<LoginView>
               ),
             ),
 
-            // Botón de cambio de tema
+            // ====================================================
+            // CAMBIO DE TEMA
+            // ====================================================
             Positioned(
               top: 20,
               right: 20,
@@ -407,6 +621,9 @@ class _LoginViewState extends State<LoginView>
               ),
             ),
 
+            // ====================================================
+            // CONTENIDO
+            // ====================================================
             SafeArea(
               child: Center(
                 child: SingleChildScrollView(
@@ -421,7 +638,9 @@ class _LoginViewState extends State<LoginView>
                       children: [
                         SizedBox(height: size.height * 0.02),
 
-                        // LOGO - Cambia según el tema
+                        // ==================================================
+                        // LOGO
+                        // ==================================================
                         FadeTransition(
                           opacity: _logoFade,
                           child: SlideTransition(
@@ -446,7 +665,7 @@ class _LoginViewState extends State<LoginView>
                                     ),
                                   ],
                                 ),
-                                child: _buildLogo(), // ← Logo dinámico
+                                child: _buildLogo(),
                               ),
                             ),
                           ),
@@ -454,7 +673,9 @@ class _LoginViewState extends State<LoginView>
 
                         const SizedBox(height: 22),
 
-                        // Texto de bienvenida
+                        // ==================================================
+                        // BIENVENIDA
+                        // ==================================================
                         FadeTransition(
                           opacity: _textoFade,
                           child: SlideTransition(
@@ -465,9 +686,7 @@ class _LoginViewState extends State<LoginView>
                                   'Bienvenido de nuevo',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: _isDarkMode
-                                        ? Colors.white
-                                        : Colors.white,
+                                    color: Colors.white,
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                     shadows: const [
@@ -497,7 +716,9 @@ class _LoginViewState extends State<LoginView>
 
                         const SizedBox(height: 30),
 
-                        // Tarjeta del formulario
+                        // ==================================================
+                        // FORMULARIO
+                        // ==================================================
                         FadeTransition(
                           opacity: _cardFade,
                           child: SlideTransition(
@@ -525,6 +746,7 @@ class _LoginViewState extends State<LoginView>
                                 key: _formKey,
                                 child: Column(
                                   children: [
+                                    // CORREO
                                     _buildCampo(
                                       controller: _correoController,
                                       label: 'Correo electrónico',
@@ -535,14 +757,19 @@ class _LoginViewState extends State<LoginView>
                                             value.trim().isEmpty) {
                                           return 'Ingresa tu correo';
                                         }
+
                                         if (!value.contains('@') ||
                                             !value.contains('.')) {
                                           return 'Correo inválido';
                                         }
+
                                         return null;
                                       },
                                     ),
+
                                     const SizedBox(height: 18),
+
+                                    // CONTRASEÑA
                                     _buildCampo(
                                       controller: _contrasenaController,
                                       label: 'Contraseña',
@@ -568,19 +795,27 @@ class _LoginViewState extends State<LoginView>
                                         if (value == null || value.isEmpty) {
                                           return 'Ingresa tu contraseña';
                                         }
+
                                         if (value.length < 6) {
                                           return 'Mínimo 6 caracteres';
                                         }
+
                                         return null;
                                       },
                                     ),
+
                                     const SizedBox(height: 28),
+
+                                    // BOTÓN
                                     _BotonAnimado(
                                       cargando: _cargando,
                                       onPressed: _iniciarSesion,
                                       isDarkMode: _isDarkMode,
                                     ),
+
                                     const SizedBox(height: 16),
+
+                                    // RECUPERAR CONTRASEÑA
                                     TextButton(
                                       onPressed: () {
                                         _mostrarMensaje(
@@ -599,6 +834,8 @@ class _LoginViewState extends State<LoginView>
                                         ),
                                       ),
                                     ),
+
+                                    // REGISTRO
                                     TextButton(
                                       onPressed: _cargando
                                           ? null
@@ -631,7 +868,9 @@ class _LoginViewState extends State<LoginView>
 
                         const SizedBox(height: 24),
 
-                        // Footer
+                        // ==================================================
+                        // FOOTER
+                        // ==================================================
                         FadeTransition(
                           opacity: _cardFade,
                           child: Text(
@@ -659,6 +898,10 @@ class _LoginViewState extends State<LoginView>
     );
   }
 
+  // ============================================================
+  // BURBUJA
+  // ============================================================
+
   Widget _burbuja(double tamano, Color color) {
     return Container(
       width: tamano,
@@ -668,7 +911,10 @@ class _LoginViewState extends State<LoginView>
   }
 }
 
-// ====== BOTÓN DE CAMBIO DE TEMA ======
+// ============================================================
+// BOTÓN CAMBIO DE TEMA
+// ============================================================
+
 class _ThemeToggleButton extends StatelessWidget {
   final bool isDarkMode;
   final VoidCallback onToggle;
@@ -708,7 +954,10 @@ class _ThemeToggleButton extends StatelessWidget {
   }
 }
 
-// ====== BOTÓN DE INICIO DE SESIÓN CON ANIMACIÓN ======
+// ============================================================
+// BOTÓN ANIMADO
+// ============================================================
+
 class _BotonAnimado extends StatefulWidget {
   final bool cargando;
   final VoidCallback onPressed;
@@ -728,15 +977,21 @@ class _BotonAnimadoState extends State<_BotonAnimado> {
   double _escala = 1.0;
 
   void _onTapDown(TapDownDetails details) {
-    setState(() => _escala = 0.96);
+    setState(() {
+      _escala = 0.96;
+    });
   }
 
   void _onTapUp(TapUpDetails details) {
-    setState(() => _escala = 1.0);
+    setState(() {
+      _escala = 1.0;
+    });
   }
 
   void _onTapCancel() {
-    setState(() => _escala = 1.0);
+    setState(() {
+      _escala = 1.0;
+    });
   }
 
   @override
@@ -800,7 +1055,10 @@ class _BotonAnimadoState extends State<_BotonAnimado> {
   }
 }
 
-// ====== PAINTER PARA FONDO DE CONSTRUCCIÓN ======
+// ============================================================
+// FONDO DE CONSTRUCCIÓN
+// ============================================================
+
 class _ConstructionPainter extends CustomPainter {
   final bool isDarkMode;
 
@@ -814,10 +1072,11 @@ class _ConstructionPainter extends CustomPainter {
           : Colors.blueGrey.withValues(alpha: 0.04);
 
     final random = Random(42);
+
     final double ancho = size.width;
     final double alto = size.height;
 
-    // Líneas de construcción
+    // Líneas
     for (int i = 0; i < 25; i++) {
       final double x = random.nextDouble() * ancho;
       final double y = random.nextDouble() * alto;
@@ -830,6 +1089,7 @@ class _ConstructionPainter extends CustomPainter {
             );
 
       canvas.save();
+
       canvas.translate(x, y);
       canvas.rotate(angulo);
 
@@ -842,13 +1102,15 @@ class _ConstructionPainter extends CustomPainter {
       paint.color = isDarkMode
           ? Colors.blueGrey.withValues(alpha: 0.08)
           : Colors.blueGrey.withValues(alpha: 0.06);
+
       canvas.drawCircle(const Offset(-20, 0), 2, paint);
+
       canvas.drawCircle(const Offset(20, 0), 2, paint);
 
       canvas.restore();
     }
 
-    // Cuadrados de construcción
+    // Cuadrados
     for (int i = 0; i < 12; i++) {
       final double x = random.nextDouble() * ancho;
       final double y = random.nextDouble() * alto;
@@ -862,6 +1124,7 @@ class _ConstructionPainter extends CustomPainter {
             );
 
       canvas.save();
+
       canvas.translate(x, y);
       canvas.rotate(angulo);
 
@@ -869,6 +1132,7 @@ class _ConstructionPainter extends CustomPainter {
         Rect.fromCenter(center: Offset.zero, width: lado, height: lado),
         const Radius.circular(4),
       );
+
       canvas.drawRRect(rect, paint..style = PaintingStyle.stroke);
 
       paint.color = isDarkMode
@@ -880,16 +1144,19 @@ class _ConstructionPainter extends CustomPainter {
         Offset(-lado / 3, lado / 2),
         paint..strokeWidth = 0.5,
       );
+
       canvas.drawLine(
         Offset(lado / 3, -lado / 2),
         Offset(lado / 3, lado / 2),
         paint..strokeWidth = 0.5,
       );
+
       canvas.drawLine(
         Offset(-lado / 2, -lado / 3),
         Offset(lado / 2, -lado / 3),
         paint..strokeWidth = 0.5,
       );
+
       canvas.drawLine(
         Offset(-lado / 2, lado / 3),
         Offset(lado / 2, lado / 3),
@@ -899,7 +1166,7 @@ class _ConstructionPainter extends CustomPainter {
       canvas.restore();
     }
 
-    // Círculos decorativos
+    // Círculos
     for (int i = 0; i < 6; i++) {
       final double x = random.nextDouble() * ancho;
       final double y = random.nextDouble() * alto;
@@ -914,11 +1181,13 @@ class _ConstructionPainter extends CustomPainter {
       paint.color = isDarkMode
           ? Colors.blueGrey.withValues(alpha: 0.03)
           : Colors.blueGrey.withValues(alpha: 0.02);
+
       canvas.drawCircle(
         Offset(x, y),
         radio * 0.5,
         paint..style = PaintingStyle.stroke,
       );
+
       canvas.drawCircle(
         Offset(x, y),
         radio * 1.5,

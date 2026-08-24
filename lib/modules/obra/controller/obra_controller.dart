@@ -27,7 +27,7 @@ class ObraController {
     }
 
     //Maximo de caracteres
-    if (nombreLimpio.length > 100) {
+    if (nombreLimpio.length > 1000) {
       throw Exception(
         'El nombre de la obra no puede superar los 100 caracteres',
       );
@@ -40,15 +40,6 @@ class ObraController {
 
     if (!contieneLetra) {
       throw Exception('El nombre de la obra debe contener al menos una letra');
-    }
-
-    // No permitir caracteres especiales
-    final nombreValido = RegExp(
-      r'^[A-Za-zÁÉÍÓÚáéíóúÑñÜü0-9 ]+$',
-    ).hasMatch(nombreLimpio);
-
-    if (!nombreValido) {
-      throw Exception('El nombre de la obra contiene caracteres no permitidos');
     }
   }
 

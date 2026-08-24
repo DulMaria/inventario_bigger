@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../obra/view/obra_view.dart';
+import 'obra_view.dart';
+
+import '../../solicitud_acceso/view/solicitudes_acceso_view.dart';
 
 class GerenteHomeView extends StatelessWidget {
   const GerenteHomeView({super.key});
@@ -8,10 +10,8 @@ class GerenteHomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Panel del Gerente'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Panel del Gerente'), centerTitle: true),
+
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -19,62 +19,64 @@ class GerenteHomeView extends StatelessWidget {
           children: [
             const Text(
               'Bienvenido',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
 
-            const Text(
-              'Seleccione una opción',
-              style: TextStyle(fontSize: 16),
-            ),
+            const Text('Seleccione una opción', style: TextStyle(fontSize: 16)),
 
             const SizedBox(height: 30),
 
+            // ============================================
+            // VER OBRAS
+            // ============================================
             Card(
               child: ListTile(
                 leading: const Icon(Icons.business),
+
                 title: const Text('Gestión de Obras'),
-                subtitle: const Text(
-                  'Crear, editar y visualizar obras',
-                ),
+
+                subtitle: const Text('Visualizar, crear y editar obras'),
+
                 trailing: const Icon(Icons.arrow_forward_ios),
+
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const ObrasView(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const ObrasView()),
                   );
                 },
               ),
             ),
 
-            // Más adelante podrás agregar:
-            //
-            // Card(
-            //   child: ListTile(
-            //     leading: Icon(Icons.apartment),
-            //     title: Text('Gestión de Pisos'),
-            //   ),
-            // ),
-            //
-            // Card(
-            //   child: ListTile(
-            //     leading: Icon(Icons.inventory),
-            //     title: Text('Materiales'),
-            //   ),
-            // ),
-            //
-            // Card(
-            //   child: ListTile(
-            //     leading: Icon(Icons.people),
-            //     title: Text('Usuarios'),
-            //   ),
-            // ),
+            const SizedBox(height: 12),
+
+            // ============================================
+            // SOLICITUDES DE ACCESO
+            // ============================================
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.person_add_alt_1),
+
+                title: const Text('Solicitudes'),
+
+                subtitle: const Text(
+                  'Revisar solicitudes de acceso a las obras',
+                ),
+
+                trailing: const Icon(Icons.arrow_forward_ios),
+
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const SolicitudesAccesoView(),
+                    ),
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),

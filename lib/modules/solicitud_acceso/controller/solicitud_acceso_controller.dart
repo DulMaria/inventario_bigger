@@ -14,6 +14,30 @@ class SolicitudAccesoController {
   }
 
   // ============================================================
+  // OBTENER OBRAS APROBADAS
+  // ============================================================
+
+  Future<List<ObraModel>> obtenerObrasAprobadas() async {
+    return await _service.obtenerObrasAprobadas();
+  }
+
+  // ============================================================
+  // OBTENER MIS OBRAS
+  // ============================================================
+
+  Future<List<ObraModel>> obtenerMisObras() async {
+    return await _service.obtenerMisObras();
+  }
+
+  // ============================================================
+  // OBTENER ROL EN UNA OBRA
+  // ============================================================
+
+  Future<int?> obtenerRolEnObra(int idObra) async {
+    return await _service.obtenerRolEnObra(idObra);
+  }
+
+  // ============================================================
   // OBTENER ROLES
   // ============================================================
 

@@ -142,72 +142,15 @@ class _LoginViewState extends State<LoginView>
       _cargando = false;
     });
 
-    // ============================================================
-    // ERROR DE LOGIN
-    // ============================================================
-
     if (mensaje != null) {
       _mostrarMensaje(mensaje);
       return;
     }
 
-    // ============================================================
-    // LOGIN CORRECTO
-    // ============================================================
-
-    try {
-      final relaciones = await _authController.obtenerObrasUsuario();
-
-      if (!mounted) {
-        return;
-      }
-
-      // ============================================================
-      // CASO 1:
-      // EL USUARIO NO TIENE NINGUNA OBRA APROBADA
-      //
-      // En lugar de mostrar solamente un error,
-      // lo enviamos a seleccionar obras.
-      // ============================================================
-
-      if (relaciones.isEmpty) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const SeleccionarObraView()),
-        );
-
-        return;
-      }
-
-      // ============================================================
-      // CASO 2:
-      // EL USUARIO TIENE UNA SOLA OBRA
-      // ============================================================
-
-      if (relaciones.length == 1) {
-        final UsuarioObraModel relacion = relaciones.first;
-
-        await _abrirPantallaSegunRol(relacion);
-
-        return;
-      }
-
-      // ============================================================
-      // CASO 3:
-      // EL USUARIO TIENE VARIAS OBRAS
-      //
-      // Por ahora mostramos una pantalla para seleccionar
-      // la obra.
-      // ============================================================
-
-      await _seleccionarObraAsignada(relaciones);
-    } catch (e) {
-      if (!mounted) {
-        return;
-      }
-
-      _mostrarMensaje('No se pudo obtener la información de tus obras');
-    }
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const SeleccionarObraView()),
+    );
   }
 
   // ============================================================

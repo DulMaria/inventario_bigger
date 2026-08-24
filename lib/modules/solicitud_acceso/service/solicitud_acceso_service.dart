@@ -27,7 +27,7 @@ class SolicitudAccesoService {
       throw Exception('No se encontró el usuario en la base de datos');
     }
 
-    final idUsuario = usuario['id_usuario'];
+    final idUsuario = usuario['id_usuario'] as int;
 
     final obras = await _supabase
         .from('obras')
@@ -69,6 +69,133 @@ class SolicitudAccesoService {
   }
 
   // ============================================================
+  // OBTENER OBRAS APROBADAS
+  // ============================================================
+
+  Future<List<ObraModel>> obtenerObrasAprobadas() async {
+    final usuarioAuth = _supabase.auth.currentUser;
+
+    if (usuarioAuth == null) {
+      throw Exception('No hay un usuario autenticado');
+    }
+
+    final usuario = await _supabase
+        .from('usuarios')
+        .select('id_usuario')
+        .eq('id_auth', usuarioAuth.id)
+        .maybeSingle();
+
+    if (usuario == null) {
+      throw Exception('No se encontró el usuario en la base de datos');
+    }
+
+    final idUsuario = usuario['id_usuario'] as int;
+
+    final respuesta = await _supabase
+        .from('usuario_obra')
+        .select('id_obra, obras(*)')
+        .eq('id_usuario', idUsuario)
+        .eq('estado', true);
+
+    final obrasAprobadas = <ObraModel>[];
+
+    for (final item in respuesta) {
+      final obra = item['obras'];
+
+      if (obra != null) {
+        obrasAprobadas.add(ObraModel.fromMap(obra));
+      }
+    }
+
+    return obrasAprobadas;
+  }
+
+  // ============================================================
+  // OBTENER MIS OBRAS
+  // ============================================================
+
+  Future<List<ObraModel>> obtenerMisObras() async {
+    final usuarioAuth = _supabase.auth.currentUser;
+
+    if (usuarioAuth == null) {
+      throw Exception('No hay un usuario autenticado');
+    }
+
+    final usuario = await _supabase
+        .from('usuarios')
+        .select('id_usuario')
+        .eq('id_auth', usuarioAuth.id)
+        .maybeSingle();
+
+    if (usuario == null) {
+      throw Exception('No se encontró el usuario en la base de datos');
+    }
+
+    final idUsuario = usuario['id_usuario'] as int;
+
+    final usuarioObras = await _supabase
+        .from('usuario_obra')
+        .select('id_obra')
+        .eq('id_usuario', idUsuario)
+        .eq('estado', true);
+
+    if (usuarioObras.isEmpty) {
+      return [];
+    }
+
+    final idsObras = (usuarioObras as List)
+        .map((item) => item['id_obra'] as int)
+        .toList();
+
+    final obras = await _supabase
+        .from('obras')
+        .select()
+        .inFilter('id_obra', idsObras)
+        .eq('estado', true)
+        .order('id_obra');
+
+    return (obras as List).map((obra) => ObraModel.fromMap(obra)).toList();
+  }
+
+  // ============================================================
+  // OBTENER ROL EN UNA OBRA
+  // ============================================================
+
+  Future<int?> obtenerRolEnObra(int idObra) async {
+    final usuarioAuth = _supabase.auth.currentUser;
+
+    if (usuarioAuth == null) {
+      throw Exception('No hay un usuario autenticado');
+    }
+
+    final usuario = await _supabase
+        .from('usuarios')
+        .select('id_usuario')
+        .eq('id_auth', usuarioAuth.id)
+        .maybeSingle();
+
+    if (usuario == null) {
+      throw Exception('No se encontró el usuario en la base de datos');
+    }
+
+    final idUsuario = usuario['id_usuario'] as int;
+
+    final respuesta = await _supabase
+        .from('usuario_obra')
+        .select('id_rol')
+        .eq('id_usuario', idUsuario)
+        .eq('id_obra', idObra)
+        .eq('estado', true)
+        .maybeSingle();
+
+    if (respuesta == null) {
+      return null;
+    }
+
+    return respuesta['id_rol'] as int;
+  }
+
+  // ============================================================
   // OBTENER ROLES
   // ============================================================
 
@@ -82,7 +209,7 @@ class SolicitudAccesoService {
   }
 
   // ============================================================
-  // ENVIAR SOLICITUD DE ACCESO
+  // SOLICITAR ACCESO
   // ============================================================
 
   Future<SolicitudAccesoModel> solicitarAcceso({
@@ -190,7 +317,6 @@ class SolicitudAccesoService {
       throw Exception('No hay un usuario autenticado');
     }
 
-    // Buscar al usuario autenticado
     final usuarioActual = await _supabase
         .from('usuarios')
         .select('id_usuario, nombre, apellido, correo')
@@ -203,7 +329,6 @@ class SolicitudAccesoService {
 
     final idUsuarioActual = usuarioActual['id_usuario'] as int;
 
-    // Obtener las obras donde este usuario es gerente
     final obrasGerente = await _supabase
         .from('usuario_obra')
         .select('id_obra')
@@ -219,7 +344,6 @@ class SolicitudAccesoService {
       return [];
     }
 
-    // Obtener solicitudes
     final respuesta = await _supabase
         .from('solicitudes_acceso')
         .select()
@@ -232,19 +356,16 @@ class SolicitudAccesoService {
       return [];
     }
 
-    // Obtener IDs de usuarios
     final idsUsuarios = solicitudes
         .map((item) => item['id_usuario'] as int)
         .toSet()
         .toList();
 
-    // Obtener IDs de obras
     final idsObras = solicitudes
         .map((item) => item['id_obra'] as int)
         .toSet()
         .toList();
 
-    // Obtener IDs de roles solicitados Y aprobados
     final idsRoles = solicitudes
         .expand(
           (item) => [
@@ -255,7 +376,6 @@ class SolicitudAccesoService {
         .toSet()
         .toList();
 
-    // Obtener usuarios
     final usuariosRespuesta = await _supabase
         .from('usuarios')
         .select('id_usuario, nombre, apellido, correo')
@@ -269,7 +389,6 @@ class SolicitudAccesoService {
       );
     }
 
-    // Obtener obras
     final obrasRespuesta = await _supabase
         .from('obras')
         .select('id_obra, nombre')
@@ -281,7 +400,6 @@ class SolicitudAccesoService {
       obras[obra['id_obra'] as int] = Map<String, dynamic>.from(obra);
     }
 
-    // Obtener roles
     final rolesRespuesta = await _supabase
         .from('roles')
         .select('id_rol, nombre')
@@ -293,7 +411,6 @@ class SolicitudAccesoService {
       roles[rol['id_rol'] as int] = Map<String, dynamic>.from(rol);
     }
 
-    // Unir toda la información
     for (final solicitud in solicitudes) {
       final idUsuario = solicitud['id_usuario'] as int;
       final idObra = solicitud['id_obra'] as int;
@@ -303,7 +420,6 @@ class SolicitudAccesoService {
       solicitud['obra'] = obras[idObra];
       solicitud['rol'] = roles[idRolSolicitado];
 
-      // Agregar información del rol aprobado
       if (solicitud['id_rol_aprobado'] != null) {
         final idRolAprobado = solicitud['id_rol_aprobado'] as int;
 
@@ -324,7 +440,6 @@ class SolicitudAccesoService {
     required int idObra,
     required int idRol,
   }) async {
-    // Primero agregamos al usuario a la obra
     await _supabase.from('usuario_obra').insert({
       'id_usuario': idUsuario,
       'id_obra': idObra,
@@ -332,7 +447,6 @@ class SolicitudAccesoService {
       'estado': true,
     });
 
-    // Después actualizamos la solicitud
     await _supabase
         .from('solicitudes_acceso')
         .update({'estado': 'APROBADA', 'id_rol_aprobado': idRol})
@@ -354,7 +468,7 @@ class SolicitudAccesoService {
   }
 
   // ============================================================
-  // CAMBIAR ROL Y APROBAR
+  // APROBAR CON OTRO ROL
   // ============================================================
 
   Future<void> aprobarConRol({

@@ -56,4 +56,80 @@ class SolicitudAccesoController {
   Future<List<SolicitudAccesoModel>> obtenerMisSolicitudes() async {
     return await _service.obtenerMisSolicitudes();
   }
+
+  // ============================================================
+  // OBTENER SOLICITUDES PARA EL GERENTE
+  // ============================================================
+
+  Future<List<Map<String, dynamic>>> obtenerSolicitudes() async {
+    return await _service.obtenerSolicitudes();
+  }
+
+  // ============================================================
+  // APROBAR SOLICITUD
+  // ============================================================
+
+  Future<String?> aprobarSolicitud({
+    required int idSolicitud,
+    required int idUsuario,
+    required int idObra,
+    required int idRol,
+  }) async {
+    try {
+      await _service.aprobarSolicitud(
+        idSolicitud: idSolicitud,
+        idUsuario: idUsuario,
+        idObra: idObra,
+        idRol: idRol,
+      );
+
+      return null;
+    } catch (e) {
+      return e.toString().replaceFirst('Exception: ', '');
+    }
+  }
+
+  // ============================================================
+  // RECHAZAR SOLICITUD
+  // ============================================================
+
+  Future<String?> rechazarSolicitud({
+    required int idSolicitud,
+    String? observacion,
+  }) async {
+    try {
+      await _service.rechazarSolicitud(
+        idSolicitud: idSolicitud,
+        observacion: observacion,
+      );
+
+      return null;
+    } catch (e) {
+      return e.toString().replaceFirst('Exception: ', '');
+    }
+  }
+
+  // ============================================================
+  // APROBAR CON OTRO ROL
+  // ============================================================
+
+  Future<String?> aprobarConRol({
+    required int idSolicitud,
+    required int idUsuario,
+    required int idObra,
+    required int idRol,
+  }) async {
+    try {
+      await _service.aprobarConRol(
+        idSolicitud: idSolicitud,
+        idUsuario: idUsuario,
+        idObra: idObra,
+        idRol: idRol,
+      );
+
+      return null;
+    } catch (e) {
+      return e.toString().replaceFirst('Exception: ', '');
+    }
+  }
 }

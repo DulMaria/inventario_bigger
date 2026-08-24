@@ -45,8 +45,11 @@ class AuthService {
     final usuario = _supabase.auth.currentUser;
 
     if (usuario == null) {
+      print('NO HAY USUARIO AUTENTICADO');
       return [];
     }
+
+    print('AUTH UID: ${usuario.id}');
 
     final usuarioBD = await _supabase
         .from('usuarios')
@@ -54,11 +57,16 @@ class AuthService {
         .eq('id_auth', usuario.id)
         .maybeSingle();
 
+    print('USUARIO BD: $usuarioBD');
+
     if (usuarioBD == null) {
+      print('NO SE ENCONTRO EL USUARIO EN usuarios');
       return [];
     }
 
     final idUsuario = usuarioBD['id_usuario'] as int;
+
+    print('ID USUARIO: $idUsuario');
 
     final respuesta = await _supabase
         .from('usuario_obra')
@@ -66,8 +74,14 @@ class AuthService {
         .eq('id_usuario', idUsuario)
         .eq('estado', true);
 
-    return (respuesta as List)
+    print('RELACIONES usuario_obra: $respuesta');
+
+    final relaciones = (respuesta as List)
         .map((item) => UsuarioObraModel.fromMap(item))
         .toList();
+
+    print('RELACIONES CONVERTIDAS: ${relaciones.length}');
+
+    return relaciones;
   }
 }

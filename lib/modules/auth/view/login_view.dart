@@ -138,18 +138,22 @@ class _LoginViewState extends State<LoginView>
       return;
     }
 
-    setState(() {
-      _cargando = false;
-    });
-
     if (mensaje != null) {
+      setState(() {
+        _cargando = false;
+      });
+
       _mostrarMensaje(mensaje);
       return;
     }
 
-    Navigator.pushReplacement(
+    setState(() {
+      _cargando = false;
+    });
+
+    await Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const SeleccionarObraView()),
+      MaterialPageRoute(builder: (_) => const SeleccionarObraView()),
     );
   }
 
@@ -166,9 +170,13 @@ class _LoginViewState extends State<LoginView>
     if (relacion.idRol == 1) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const ObreroHomeView()),
+        MaterialPageRoute(
+          builder: (context) => ObreroHomeView(
+            idObra: relacion.idObra,
+            idUsuario: relacion.idUsuario,
+          ),
+        ),
       );
-
       return;
     }
 
@@ -178,11 +186,9 @@ class _LoginViewState extends State<LoginView>
         context,
         MaterialPageRoute(builder: (context) => const GerenteHomeView()),
       );
-
       return;
     }
 
-    // OTROS ROLES
     _mostrarMensaje(
       'El rol asignado todavía no tiene una pantalla configurada',
     );
@@ -202,70 +208,69 @@ class _LoginViewState extends State<LoginView>
     // Por ahora, mientras terminamos la pantalla de selección
     // de obra asignada, mostramos las obras disponibles.
 
-    final UsuarioObraModel? seleccion =
-        await showModalBottomSheet<UsuarioObraModel>(
-          context: context,
-          isScrollControlled: true,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          builder: (context) {
-            return SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'Selecciona una obra',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 21,
-                        fontWeight: FontWeight.bold,
-                        color: _ByggerColors.textoOscuro,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    const Text(
-                      'Tienes acceso a varias obras',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: _ByggerColors.textoGris),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    ...relaciones.map((relacion) {
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        child: ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: _ByggerColors.azulClaro,
-                            child: Icon(Icons.business, color: Colors.white),
-                          ),
-                          title: Text(
-                            relacion.idObra.toString(),
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          subtitle: Text('Rol: ${_nombreRol(relacion.idRol)}'),
-                          trailing: const Icon(
-                            Icons.arrow_forward_ios,
-                            size: 18,
-                          ),
-                          onTap: () {
-                            Navigator.pop(context, relacion);
-                          },
-                        ),
-                      );
-                    }),
-                  ],
+    final UsuarioObraModel?
+    seleccion = await showModalBottomSheet<UsuarioObraModel>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Selecciona una obra',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 21,
+                    fontWeight: FontWeight.bold,
+                    color: _ByggerColors.textoOscuro,
+                  ),
                 ),
-              ),
-            );
-          },
+
+                const SizedBox(height: 8),
+
+                const Text(
+                  'Tienes acceso a varias obras',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: _ByggerColors.textoGris),
+                ),
+
+                const SizedBox(height: 20),
+
+                ...relaciones.map((relacion) {
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    child: ListTile(
+                      leading: const CircleAvatar(
+                        backgroundColor: _ByggerColors.azulClaro,
+                        child: Icon(Icons.business, color: Colors.white),
+                      ),
+                      title: Text(
+                        relacion.nombreObra ?? 'Obra ${relacion.idObra}',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(
+                        'Rol: ${relacion.nombreRol ?? _nombreRol(relacion.idRol)}',
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+                      onTap: () {
+                        Navigator.pop(context, relacion);
+                      },
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
         );
+      },
+    );
 
     if (!mounted || seleccion == null) {
       return;

@@ -128,6 +128,10 @@ class AuthController {
     return await _authService.obtenerObrasUsuario();
   }
 
+  Future<int?> obtenerIdUsuario() async {
+    return await _authService.obtenerIdUsuario();
+  }
+
   Future<void> cerrarSesion() async {
     await _authService.cerrarSesion();
   }

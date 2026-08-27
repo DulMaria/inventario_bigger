@@ -10,6 +10,7 @@ import 'seleccionar_rol_view.dart';
 // IMPORTA TUS HOMES
 import '../../usuario/view/obrero_home_view.dart';
 import '../../obra/view/gerente_home_view.dart';
+import '../../auth/controller/auth_controller.dart';
 
 class SeleccionarObraView extends StatefulWidget {
   const SeleccionarObraView({super.key});
@@ -20,6 +21,8 @@ class SeleccionarObraView extends StatefulWidget {
 
 class _SeleccionarObraViewState extends State<SeleccionarObraView> {
   final SolicitudAccesoController _controller = SolicitudAccesoController();
+
+  final AuthController _authController = AuthController();
 
   List<ObraModel> _obras = [];
 
@@ -202,6 +205,12 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
   // ============================================================
 
   Future<void> _entrarSegunRol({required int rol, required int idObra}) async {
+    final idUsuario = await _authController.obtenerIdUsuario();
+
+    if (idUsuario == null) {
+      _mostrarMensaje('No se encontró el usuario.');
+      return;
+    }
     switch (rol) {
       // ========================================================
       // OBRERO
@@ -209,7 +218,10 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
       case 1:
         await Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const ObreroHomeView()),
+          MaterialPageRoute(
+            builder: (_) =>
+                ObreroHomeView(idObra: idObra, idUsuario: idUsuario),
+          ),
         );
         break;
 

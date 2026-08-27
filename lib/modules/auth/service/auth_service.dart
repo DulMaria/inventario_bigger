@@ -70,7 +70,15 @@ class AuthService {
 
     final respuesta = await _supabase
         .from('usuario_obra')
-        .select()
+        .select('''
+      id_usuario_obra,
+      id_usuario,
+      id_obra,
+      id_rol,
+      estado,
+      obras(nombre),
+      roles(nombre)
+    ''')
         .eq('id_usuario', idUsuario)
         .eq('estado', true);
 
@@ -83,5 +91,25 @@ class AuthService {
     print('RELACIONES CONVERTIDAS: ${relaciones.length}');
 
     return relaciones;
+  }
+
+  Future<int?> obtenerIdUsuario() async {
+    final user = Supabase.instance.client.auth.currentUser;
+
+    if (user == null) {
+      return null;
+    }
+
+    final respuesta = await Supabase.instance.client
+        .from('usuarios')
+        .select('id_usuario')
+        .eq('id_auth', user.id)
+        .maybeSingle();
+
+    if (respuesta == null) {
+      return null;
+    }
+
+    return respuesta['id_usuario'] as int;
   }
 }

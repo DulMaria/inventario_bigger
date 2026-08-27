@@ -236,7 +236,7 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
                   const SizedBox(height: 16),
 
                   DropdownButtonFormField<int>(
-                    value: rolSeleccionado,
+                    initialValue: rolSeleccionado,
                     decoration: const InputDecoration(
                       labelText: 'Rol',
                       border: OutlineInputBorder(),

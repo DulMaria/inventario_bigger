@@ -1,18 +1,9 @@
-// lib/modules/auth/view/login_view.dart
-
 import 'package:flutter/material.dart';
 import 'dart:math';
 
 import '../controller/auth_controller.dart';
-import '../../../models/usuario_obra_model.dart';
 import 'registro_view.dart';
 import '../../../modules/solicitud_acceso/view/seleccionar_obra_view.dart';
-
-// Pantalla obrero
-import '../../usuario/view/obrero_home_view.dart';
-
-// Pantalla gerente
-import '../../obra/view/gerente_home_view.dart';
 
 // ============================================================
 // PALETA DE COLORES
@@ -40,7 +31,7 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView>
     with SingleTickerProviderStateMixin {
-  final _correoController = TextEditingController();
+  final _identificadorController = TextEditingController();
   final _contrasenaController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -130,7 +121,7 @@ class _LoginViewState extends State<LoginView>
     });
 
     final mensaje = await _authController.iniciarSesion(
-      correo: _correoController.text.trim(),
+      telefono: _identificadorController.text.trim(),
       contrasena: _contrasenaController.text,
     );
 
@@ -157,156 +148,7 @@ class _LoginViewState extends State<LoginView>
     );
   }
 
-  // ============================================================
-  // ABRIR PANTALLA SEGÚN ROL
-  // ============================================================
 
-  Future<void> _abrirPantallaSegunRol(UsuarioObraModel relacion) async {
-    if (!mounted) {
-      return;
-    }
-
-    // OBRERO
-    if (relacion.idRol == 1) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ObreroHomeView(
-            idObra: relacion.idObra,
-            idUsuario: relacion.idUsuario,
-          ),
-        ),
-      );
-      return;
-    }
-
-    // GERENTE
-    if (relacion.idRol == 3) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const GerenteHomeView()),
-      );
-      return;
-    }
-
-    _mostrarMensaje(
-      'El rol asignado todavía no tiene una pantalla configurada',
-    );
-  }
-
-  // ============================================================
-  // SELECCIONAR OBRA ASIGNADA
-  // ============================================================
-
-  Future<void> _seleccionarObraAsignada(
-    List<UsuarioObraModel> relaciones,
-  ) async {
-    if (!mounted) {
-      return;
-    }
-
-    // Por ahora, mientras terminamos la pantalla de selección
-    // de obra asignada, mostramos las obras disponibles.
-
-    final UsuarioObraModel?
-    seleccion = await showModalBottomSheet<UsuarioObraModel>(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Selecciona una obra',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 21,
-                    fontWeight: FontWeight.bold,
-                    color: _ByggerColors.textoOscuro,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                const Text(
-                  'Tienes acceso a varias obras',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: _ByggerColors.textoGris),
-                ),
-
-                const SizedBox(height: 20),
-
-                ...relaciones.map((relacion) {
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    child: ListTile(
-                      leading: const CircleAvatar(
-                        backgroundColor: _ByggerColors.azulClaro,
-                        child: Icon(Icons.business, color: Colors.white),
-                      ),
-                      title: Text(
-                        relacion.nombreObra ?? 'Obra ${relacion.idObra}',
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text(
-                        'Rol: ${relacion.nombreRol ?? _nombreRol(relacion.idRol)}',
-                      ),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 18),
-                      onTap: () {
-                        Navigator.pop(context, relacion);
-                      },
-                    ),
-                  );
-                }),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-
-    if (!mounted || seleccion == null) {
-      return;
-    }
-
-    await _abrirPantallaSegunRol(seleccion);
-  }
-
-  // ============================================================
-  // NOMBRE DEL ROL
-  // ============================================================
-
-  String _nombreRol(int idRol) {
-    switch (idRol) {
-      case 1:
-        return 'Obrero';
-
-      case 2:
-        return 'Técnico';
-
-      case 3:
-        return 'Gerente';
-
-      case 4:
-        return 'Compras';
-
-      case 5:
-        return 'Almacén';
-
-      case 6:
-        return 'Supervisor';
-
-      default:
-        return 'Rol desconocido';
-    }
-  }
 
   // ============================================================
   // MOSTRAR MENSAJE
@@ -340,7 +182,7 @@ class _LoginViewState extends State<LoginView>
   @override
   void dispose() {
     _animController.dispose();
-    _correoController.dispose();
+    _identificadorController.dispose();
     _contrasenaController.dispose();
 
     super.dispose();
@@ -694,21 +536,16 @@ class _LoginViewState extends State<LoginView>
                                 key: _formKey,
                                 child: Column(
                                   children: [
-                                    // CORREO
+                                    // CELULAR / CORREO
                                     _buildCampo(
-                                      controller: _correoController,
-                                      label: 'Correo electrónico',
-                                      icon: Icons.email_outlined,
-                                      keyboardType: TextInputType.emailAddress,
+                                      controller: _identificadorController,
+                                      label: 'Número de celular',
+                                      icon: Icons.phone_android_outlined,
+                                      keyboardType: TextInputType.text,
                                       validator: (value) {
                                         if (value == null ||
                                             value.trim().isEmpty) {
-                                          return 'Ingresa tu correo';
-                                        }
-
-                                        if (!value.contains('@') ||
-                                            !value.contains('.')) {
-                                          return 'Correo inválido';
+                                          return 'Ingresa tu número de celular';
                                         }
 
                                         return null;

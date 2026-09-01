@@ -6,7 +6,7 @@ class PisoModel {
   final String? nombre;
   final String estadoObra;
   final String tipoPiso;
-  final int? numeroPiso;
+  final int numeroPiso;
   final bool estado;
 
   PisoModel({
@@ -15,19 +15,28 @@ class PisoModel {
     this.nombre,
     required this.estadoObra,
     required this.tipoPiso,
-    this.numeroPiso,
+    required this.numeroPiso,
     required this.estado,
   });
 
   factory PisoModel.fromMap(Map<String, dynamic> map) {
     return PisoModel(
-      idPiso: map['id_piso'],
-      obra: ObraModel.fromMap(map['obras']),
-      nombre: map['nombre'],
-      estadoObra: map['estado_obra'] ?? 'NO INICIADO',
-      tipoPiso: map['tipo_piso'] ?? 'NORMAL',
-      numeroPiso: map['numero_piso'] as int?,
-      estado: map['estado'] ?? true,
+      idPiso: map['id_piso'] as int,
+      obra: map['obras'] != null
+          ? ObraModel.fromMap(Map<String, dynamic>.from(map['obras']))
+          : ObraModel(
+              idObra: map['id_obra'] as int,
+              nombre: 'Obra',
+              direccion: null,
+              latitud: null,
+              longitud: null,
+              estado: true,
+            ),
+      nombre: map['nombre'] as String?,
+      estadoObra: map['estado_obra'] as String? ?? 'NO INICIADO',
+      tipoPiso: map['tipo_piso'] as String? ?? 'NORMAL',
+      numeroPiso: (map['numero_piso'] as int?) ?? 1,
+      estado: map['estado'] as bool? ?? true,
     );
   }
 

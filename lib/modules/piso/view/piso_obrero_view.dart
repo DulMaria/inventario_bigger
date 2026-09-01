@@ -7,11 +7,13 @@ import '../../material/view/materiales_view.dart';
 class PisosObraView extends StatefulWidget {
   final int idObra;
   final int idUsuario;
+  final int idRol;
 
   const PisosObraView({
     super.key,
     required this.idObra,
     required this.idUsuario,
+    this.idRol = 1,
   });
 
   @override
@@ -53,10 +55,22 @@ class _PisosObraViewState extends State<PisosObraView> {
     }
   }
 
+  String _textoTipo(String tipo, int numero) {
+    if (tipo == 'TERRAZA') return 'Terraza • Nivel $numero';
+    if (tipo == 'SOTANO') return 'Sótano • Nivel $numero';
+    return 'Piso / Dpto • Nivel $numero';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Pisos de la obra')),
+      backgroundColor: const Color(0xFFF4FAFE),
+      appBar: AppBar(
+        title: Text(widget.idRol == 2 ? 'Solicitud Directa de Material' : 'Pisos de la obra'),
+        backgroundColor: const Color(0xFF2FA9E0),
+        foregroundColor: Colors.white,
+        centerTitle: true,
+      ),
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
           : _pisos.isEmpty
@@ -71,15 +85,63 @@ class _PisosObraViewState extends State<PisosObraView> {
 
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     child: ListTile(
-                      leading: const CircleAvatar(child: Icon(Icons.apartment)),
-                      title: Text(piso.nombre ?? 'Sin nombre'),
-                      subtitle: Text(
-                        piso.numeroPiso != null
-                            ? 'Piso ${piso.numeroPiso}'
-                            : piso.tipoPiso,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
                       ),
-                      trailing: Text(piso.estadoObra),
+                      leading: Container(
+                        width: 46,
+                        height: 46,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE1F3FC),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.apartment,
+                          color: Color(0xFF2FA9E0),
+                        ),
+                      ),
+                      title: Text(
+                        piso.nombre ?? 'Sin nombre',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                      subtitle: Text(
+                        _textoTipo(piso.tipoPiso, piso.numeroPiso),
+                        style: const TextStyle(color: Color(0xFF7C8A93)),
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE1F3FC),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              piso.estadoObra,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1D7FAE),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFF7C8A93)),
+                        ],
+                      ),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -88,6 +150,7 @@ class _PisosObraViewState extends State<PisosObraView> {
                               idObra: widget.idObra,
                               idPiso: piso.idPiso,
                               idUsuario: widget.idUsuario,
+                              idRol: widget.idRol,
                             ),
                           ),
                         );
@@ -100,3 +163,4 @@ class _PisosObraViewState extends State<PisosObraView> {
     );
   }
 }
+

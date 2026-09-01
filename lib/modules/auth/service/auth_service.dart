@@ -1,9 +1,13 @@
+// lib/modules/auth/service/auth_service.dart
 import '../../../models/usuario_obra_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
+  // ============================================================
+  // INICIAR SESIÓN CON TELÉFONO + CONTRASEÑA
+  // ============================================================
   Future<AuthResponse> iniciarSesion({
     required String telefono,
     required String contrasena,
@@ -97,6 +101,9 @@ class AuthService {
     );
   }
 
+  // ============================================================
+  // REGISTRAR USUARIO
+  // ============================================================
   Future<AuthResponse> registrarUsuario({
     required String telefono,
     required String contrasena,
@@ -146,13 +153,21 @@ class AuthService {
     return respuesta;
   }
 
+  // ============================================================
+  // CERRAR SESIÓN
+  // ============================================================
   Future<void> cerrarSesion() async {
     await _supabase.auth.signOut();
   }
 
+  // ============================================================
+  // OBTENER USUARIO ACTUAL
+  // ============================================================
   User? get usuarioActual => _supabase.auth.currentUser;
 
-  // Obtener las obras a las que pertenece el usuario
+  // ============================================================
+  // OBTENER OBRAS DEL USUARIO
+  // ============================================================
   Future<List<UsuarioObraModel>> obtenerObrasUsuario() async {
     final usuario = _supabase.auth.currentUser;
 
@@ -205,6 +220,9 @@ class AuthService {
     return relaciones;
   }
 
+  // ============================================================
+  // OBTENER ID DEL USUARIO
+  // ============================================================
   Future<int?> obtenerIdUsuario() async {
     final user = Supabase.instance.client.auth.currentUser;
 
@@ -223,5 +241,173 @@ class AuthService {
     }
 
     return respuesta['id_usuario'] as int;
+  }
+
+  // ============================================================
+  // ✅ NUEVO: VERIFICAR SI ES ADMINISTRADOR
+  // ============================================================
+  Future<bool> esAdministrador() async {
+    final usuario = _supabase.auth.currentUser;
+    
+    if (usuario == null) {
+      print('--> [ADMIN] No hay usuario autenticado');
+      return false;
+    }
+
+    try {
+      print('--> [ADMIN] Verificando si es admin para usuario: ${usuario.id}');
+
+      // 1. Obtener ID del usuario en tabla 'usuarios'
+      final usuarioBD = await _supabase
+          .from('usuarios')
+          .select('id_usuario')
+          .eq('id_auth', usuario.id)
+          .maybeSingle();
+
+      if (usuarioBD == null) {
+        print('--> [ADMIN] Usuario no encontrado en tabla usuarios');
+        return false;
+      }
+
+      final idUsuario = usuarioBD['id_usuario'] as int;
+      print('--> [ADMIN] ID Usuario encontrado: $idUsuario');
+
+      // 2. Buscar en 'usuario_obra' con JOIN a 'roles'
+      final rol = await _supabase
+          .from('usuario_obra')
+          .select('''
+            id_rol,
+            roles (
+              nombre
+            )
+          ''')
+          .eq('id_usuario', idUsuario)
+          .eq('estado', true)
+          .maybeSingle();
+
+      if (rol == null) {
+        print('--> [ADMIN] No se encontró relación usuario_obra');
+        return false;
+      }
+
+      // 3. Obtener el nombre del rol
+      final rolData = rol['roles'] as Map?;
+      final nombreRol = rolData != null 
+          ? (rolData['nombre'] as String?)?.toLowerCase()
+          : null;
+
+      print('--> [ADMIN] Rol del usuario: $nombreRol');
+
+      // 4. Verificar si es administrador
+      final esAdmin = nombreRol == 'administrador' || nombreRol == 'admin';
+      
+      print('--> [ADMIN] ¿Es administrador? $esAdmin');
+      return esAdmin;
+
+    } catch (e) {
+      print('--> [ADMIN] Error al verificar rol de administrador: $e');
+      return false;
+    }
+  }
+
+  // ============================================================
+  // ✅ NUEVO: OBTENER ROL DEL USUARIO
+  // ============================================================
+  Future<String?> obtenerRolUsuario() async {
+    final usuario = _supabase.auth.currentUser;
+    
+    if (usuario == null) {
+      return null;
+    }
+
+    try {
+      final usuarioBD = await _supabase
+          .from('usuarios')
+          .select('id_usuario')
+          .eq('id_auth', usuario.id)
+          .maybeSingle();
+
+      if (usuarioBD == null) {
+        return null;
+      }
+
+      final idUsuario = usuarioBD['id_usuario'] as int;
+
+      final rol = await _supabase
+          .from('usuario_obra')
+          .select('''
+            roles (
+              nombre
+            )
+          ''')
+          .eq('id_usuario', idUsuario)
+          .eq('estado', true)
+          .maybeSingle();
+
+      if (rol != null && rol['roles'] != null) {
+        final rolData = rol['roles'] as Map;
+        return rolData['nombre'] as String?;
+      }
+
+      return null;
+    } catch (e) {
+      print('Error al obtener rol: $e');
+      return null;
+    }
+  }
+
+  // ============================================================
+  // ✅ NUEVO: OBTENER DATOS COMPLETOS DEL USUARIO
+  // ============================================================
+  Future<Map<String, dynamic>?> obtenerDatosUsuario() async {
+    final usuario = _supabase.auth.currentUser;
+    
+    if (usuario == null) {
+      return null;
+    }
+
+    try {
+      final usuarioBD = await _supabase
+          .from('usuarios')
+          .select('*')
+          .eq('id_auth', usuario.id)
+          .maybeSingle();
+
+      if (usuarioBD == null) {
+        return null;
+      }
+
+      final idUsuario = usuarioBD['id_usuario'] as int;
+
+      final rol = await _supabase
+          .from('usuario_obra')
+          .select('''
+            roles (
+              nombre
+            )
+          ''')
+          .eq('id_usuario', idUsuario)
+          .eq('estado', true)
+          .maybeSingle();
+
+      String? nombreRol;
+      if (rol != null && rol['roles'] != null) {
+        final rolData = rol['roles'] as Map;
+        nombreRol = rolData['nombre'] as String?;
+      }
+
+      return {
+        'id': usuarioBD['id_usuario'],
+        'nombre': usuarioBD['nombre'],
+        'apellido': usuarioBD['apellido'],
+        'telefono': usuarioBD['telefono'],
+        'correo': usuarioBD['correo'],
+        'rol': nombreRol,
+        'esAdmin': nombreRol == 'administrador' || nombreRol == 'admin',
+      };
+    } catch (e) {
+      print('Error al obtener datos del usuario: $e');
+      return null;
+    }
   }
 }

@@ -1,5 +1,5 @@
+// lib/modules/solicitud_acceso/service/solicitud_acceso_service.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import '../../../models/obra_model.dart';
 import '../../../models/solicitud_acceso_model.dart';
 
@@ -9,7 +9,6 @@ class SolicitudAccesoService {
   // ============================================================
   // OBTENER OBRAS DISPONIBLES
   // ============================================================
-
   Future<List<ObraModel>> obtenerObrasDisponibles() async {
     final usuarioAuth = _supabase.auth.currentUser;
 
@@ -58,7 +57,6 @@ class SolicitudAccesoService {
     final obrasDisponibles = (obras as List)
         .where((obra) {
           final idObra = obra['id_obra'] as int;
-
           return !idsObrasUsuario.contains(idObra) &&
               !idsObrasPendientes.contains(idObra);
         })
@@ -71,7 +69,6 @@ class SolicitudAccesoService {
   // ============================================================
   // OBTENER OBRAS APROBADAS
   // ============================================================
-
   Future<List<ObraModel>> obtenerObrasAprobadas() async {
     final usuarioAuth = _supabase.auth.currentUser;
 
@@ -101,7 +98,6 @@ class SolicitudAccesoService {
 
     for (final item in respuesta) {
       final obra = item['obras'];
-
       if (obra != null) {
         obrasAprobadas.add(ObraModel.fromMap(obra));
       }
@@ -113,7 +109,6 @@ class SolicitudAccesoService {
   // ============================================================
   // OBTENER MIS OBRAS
   // ============================================================
-
   Future<List<ObraModel>> obtenerMisObras() async {
     final usuarioAuth = _supabase.auth.currentUser;
 
@@ -160,7 +155,6 @@ class SolicitudAccesoService {
   // ============================================================
   // OBTENER ROL EN UNA OBRA
   // ============================================================
-
   Future<int?> obtenerRolEnObra(int idObra) async {
     final usuarioAuth = _supabase.auth.currentUser;
 
@@ -198,7 +192,6 @@ class SolicitudAccesoService {
   // ============================================================
   // OBTENER ROLES
   // ============================================================
-
   Future<List<Map<String, dynamic>>> obtenerRoles() async {
     final respuesta = await _supabase
         .from('roles')
@@ -211,7 +204,6 @@ class SolicitudAccesoService {
   // ============================================================
   // SOLICITAR ACCESO
   // ============================================================
-
   Future<SolicitudAccesoModel> solicitarAcceso({
     required int idObra,
     required int idRolSolicitado,
@@ -275,7 +267,6 @@ class SolicitudAccesoService {
   // ============================================================
   // OBTENER MIS SOLICITUDES
   // ============================================================
-
   Future<List<SolicitudAccesoModel>> obtenerMisSolicitudes() async {
     final usuarioAuth = _supabase.auth.currentUser;
 
@@ -306,29 +297,118 @@ class SolicitudAccesoService {
         .toList();
   }
 
-  // ============================================================
-  // OBTENER SOLICITUDES PARA EL GERENTE
-  // ============================================================
+// lib/modules/solicitud_acceso/service/solicitud_acceso_service.dart
 
-  Future<List<Map<String, dynamic>>> obtenerSolicitudes() async {
-    final usuarioAuth = _supabase.auth.currentUser;
+// ============================================================
+// OBTENER SOLICITUDES - Gerente ve sus obras, Admin ve TODAS
+// ============================================================
 
-    if (usuarioAuth == null) {
-      throw Exception('No hay un usuario autenticado');
+Future<List<Map<String, dynamic>>> obtenerSolicitudes() async {
+  final usuarioAuth = _supabase.auth.currentUser;
+
+  if (usuarioAuth == null) {
+    print('❌ No hay usuario autenticado');
+    throw Exception('No hay un usuario autenticado');
+  }
+
+  print('🔍 Usuario autenticado ID: ${usuarioAuth.id}');
+
+  final usuarioActual = await _supabase
+      .from('usuarios')
+      .select('id_usuario, nombre, apellido, correo')
+      .eq('id_auth', usuarioAuth.id)
+      .maybeSingle();
+
+  if (usuarioActual == null) {
+    print('❌ Usuario no encontrado en tabla usuarios');
+    throw Exception('No se encontró el usuario en la base de datos');
+  }
+
+  final idUsuarioActual = usuarioActual['id_usuario'] as int;
+  print('🔍 ID Usuario en tabla usuarios: $idUsuarioActual');
+
+  // ✅ OBTENER EL ROL DEL USUARIO ACTUAL
+  final rolesUsuario = await _supabase
+      .from('usuario_obra')
+      .select('id_rol, id_obra')
+      .eq('id_usuario', idUsuarioActual)
+      .eq('estado', true);
+
+  print('🔍 Roles del usuario: ${rolesUsuario.length}');
+
+  if (rolesUsuario.isEmpty) {
+    print('❌ Usuario sin roles asignados');
+    return [];
+  }
+
+  // Obtener todos los roles del usuario
+  final List<int> rolesIds = rolesUsuario.map((r) => r['id_rol'] as int).toList();
+  print('🔍 IDs de roles: $rolesIds');
+
+  // ✅ SI ES ADMINISTRADOR (id_rol = 8) → VER TODAS LAS SOLICITUDES
+  if (rolesIds.contains(8)) {
+    print('📋 [ADMIN] Usuario es Administrador - Obteniendo TODAS las solicitudes...');
+    
+    final solicitudes = await _supabase
+        .from('solicitudes_acceso')
+        .select('''
+          *,
+          usuarios!inner (
+            id_usuario,
+            nombre,
+            apellido,
+            telefono,
+            correo
+          ),
+          obras!inner (
+            id_obra,
+            nombre,
+            direccion
+          )
+        ''')
+        .order('fecha', ascending: false);
+
+    print('📋 [ADMIN] Solicitudes encontradas: ${solicitudes.length}');
+
+    List<Map<String, dynamic>> solicitudesConDetalles = [];
+
+    for (var solicitud in solicitudes) {
+      final idRolSolicitado = solicitud['id_rol_solicitado'] as int?;
+
+      Map<String, dynamic> solicitudDetalle = Map<String, dynamic>.from(solicitud);
+
+      if (idRolSolicitado != null) {
+        final rolSolicitado = await _supabase
+            .from('roles')
+            .select('nombre')
+            .eq('id_rol', idRolSolicitado)
+            .maybeSingle();
+        solicitudDetalle['rol_solicitado'] = rolSolicitado?['nombre'] ?? 'Sin rol';
+      } else {
+        solicitudDetalle['rol_solicitado'] = 'Sin rol';
+      }
+
+      if (solicitud['id_rol_aprobado'] != null) {
+        final idRolAprobado = solicitud['id_rol_aprobado'] as int;
+        final rolAprobado = await _supabase
+            .from('roles')
+            .select('nombre')
+            .eq('id_rol', idRolAprobado)
+            .maybeSingle();
+        solicitudDetalle['rol_aprobado'] = rolAprobado?['nombre'] ?? 'Sin rol';
+      }
+
+      solicitudesConDetalles.add(solicitudDetalle);
     }
 
-    final usuarioActual = await _supabase
-        .from('usuarios')
-        .select('id_usuario, nombre, apellido, correo')
-        .eq('id_auth', usuarioAuth.id)
-        .maybeSingle();
+    return solicitudesConDetalles;
+  }
 
-    if (usuarioActual == null) {
-      throw Exception('No se encontró el usuario actual en la base de datos');
-    }
+  // ✅ SI ES GERENTE (id_rol = 3) → VER SOLO SUS OBRAS
+  if (rolesIds.contains(3)) {
+    print('📋 [GERENTE] Usuario es Gerente - Obteniendo solicitudes de sus obras...');
 
-    final idUsuarioActual = usuarioActual['id_usuario'] as int;
-
+    // Obtener obras donde es gerente
     final obrasGerente = await _supabase
         .from('usuario_obra')
         .select('id_obra')
@@ -340,100 +420,77 @@ class SolicitudAccesoService {
         .map((item) => item['id_obra'] as int)
         .toList();
 
+    print('📋 [GERENTE] IDs de obras: $idsObrasGerente');
+
     if (idsObrasGerente.isEmpty) {
+      print('📋 [GERENTE] No es gerente en ninguna obra');
       return [];
     }
 
     final respuesta = await _supabase
         .from('solicitudes_acceso')
-        .select()
+        .select('''
+          *,
+          usuarios!inner (
+            id_usuario,
+            nombre,
+            apellido,
+            telefono,
+            correo
+          ),
+          obras!inner (
+            id_obra,
+            nombre,
+            direccion
+          )
+        ''')
         .inFilter('id_obra', idsObrasGerente)
         .order('fecha', ascending: false);
 
-    final solicitudes = List<Map<String, dynamic>>.from(respuesta);
+    print('📋 [GERENTE] Solicitudes encontradas: ${respuesta.length}');
 
-    if (solicitudes.isEmpty) {
-      return [];
-    }
+    List<Map<String, dynamic>> solicitudesConDetalles = [];
 
-    final idsUsuarios = solicitudes
-        .map((item) => item['id_usuario'] as int)
-        .toSet()
-        .toList();
+    for (var solicitud in respuesta) {
+      final idRolSolicitado = solicitud['id_rol_solicitado'] as int?;
 
-    final idsObras = solicitudes
-        .map((item) => item['id_obra'] as int)
-        .toSet()
-        .toList();
+      Map<String, dynamic> solicitudDetalle = Map<String, dynamic>.from(solicitud);
 
-    final idsRoles = solicitudes
-        .expand(
-          (item) => [
-            item['id_rol_solicitado'] as int,
-            if (item['id_rol_aprobado'] != null) item['id_rol_aprobado'] as int,
-          ],
-        )
-        .toSet()
-        .toList();
-
-    final usuariosRespuesta = await _supabase
-        .from('usuarios')
-        .select('id_usuario, nombre, apellido, correo')
-        .inFilter('id_usuario', idsUsuarios);
-
-    final usuarios = <int, Map<String, dynamic>>{};
-
-    for (final usuario in usuariosRespuesta) {
-      usuarios[usuario['id_usuario'] as int] = Map<String, dynamic>.from(
-        usuario,
-      );
-    }
-
-    final obrasRespuesta = await _supabase
-        .from('obras')
-        .select('id_obra, nombre')
-        .inFilter('id_obra', idsObras);
-
-    final obras = <int, Map<String, dynamic>>{};
-
-    for (final obra in obrasRespuesta) {
-      obras[obra['id_obra'] as int] = Map<String, dynamic>.from(obra);
-    }
-
-    final rolesRespuesta = await _supabase
-        .from('roles')
-        .select('id_rol, nombre')
-        .inFilter('id_rol', idsRoles);
-
-    final roles = <int, Map<String, dynamic>>{};
-
-    for (final rol in rolesRespuesta) {
-      roles[rol['id_rol'] as int] = Map<String, dynamic>.from(rol);
-    }
-
-    for (final solicitud in solicitudes) {
-      final idUsuario = solicitud['id_usuario'] as int;
-      final idObra = solicitud['id_obra'] as int;
-      final idRolSolicitado = solicitud['id_rol_solicitado'] as int;
-
-      solicitud['usuario'] = usuarios[idUsuario];
-      solicitud['obra'] = obras[idObra];
-      solicitud['rol'] = roles[idRolSolicitado];
+      if (idRolSolicitado != null) {
+        final rolSolicitado = await _supabase
+            .from('roles')
+            .select('nombre')
+            .eq('id_rol', idRolSolicitado)
+            .maybeSingle();
+        solicitudDetalle['rol_solicitado'] = rolSolicitado?['nombre'] ?? 'Sin rol';
+      } else {
+        solicitudDetalle['rol_solicitado'] = 'Sin rol';
+      }
 
       if (solicitud['id_rol_aprobado'] != null) {
         final idRolAprobado = solicitud['id_rol_aprobado'] as int;
-
-        solicitud['rol_aprobado'] = roles[idRolAprobado];
+        final rolAprobado = await _supabase
+            .from('roles')
+            .select('nombre')
+            .eq('id_rol', idRolAprobado)
+            .maybeSingle();
+        solicitudDetalle['rol_aprobado'] = rolAprobado?['nombre'] ?? 'Sin rol';
       }
+
+      solicitudesConDetalles.add(solicitudDetalle);
     }
 
-    return solicitudes;
+    return solicitudesConDetalles;
   }
+
+  // ✅ OTROS ROLES → NO VEN SOLICITUDES
+  print('📋 [OTRO ROL] Usuario con roles $rolesIds no tiene permisos para ver solicitudes');
+  return [];
+}
 
   // ============================================================
   // APROBAR SOLICITUD
   // ============================================================
-
   Future<void> aprobarSolicitud({
     required int idSolicitud,
     required int idUsuario,
@@ -456,7 +513,6 @@ class SolicitudAccesoService {
   // ============================================================
   // RECHAZAR SOLICITUD
   // ============================================================
-
   Future<void> rechazarSolicitud({
     required int idSolicitud,
     String? observacion,
@@ -470,7 +526,6 @@ class SolicitudAccesoService {
   // ============================================================
   // APROBAR CON OTRO ROL
   // ============================================================
-
   Future<void> aprobarConRol({
     required int idSolicitud,
     required int idUsuario,
@@ -488,5 +543,74 @@ class SolicitudAccesoService {
         .from('solicitudes_acceso')
         .update({'estado': 'APROBADA', 'id_rol_aprobado': idRol})
         .eq('id_solicitud_acceso', idSolicitud);
+  }
+
+  // ============================================================
+  // ✅ NUEVO: OBTENER TODAS LAS SOLICITUDES (PARA ADMIN)
+  // ✅ ESTE MÉTODO DEBE ESTAR DENTRO DE LA CLASE
+  // ============================================================
+  Future<List<Map<String, dynamic>>> obtenerTodasLasSolicitudes() async {
+    try {
+      print('📋 [ADMIN] Obteniendo TODAS las solicitudes...');
+
+      final solicitudes = await _supabase
+          .from('solicitudes_acceso')
+          .select('''
+            *,
+            usuarios!inner (
+              id_usuario,
+              nombre,
+              apellido,
+              telefono,
+              correo
+            ),
+            obras!inner (
+              id_obra,
+              nombre,
+              direccion
+            )
+          ''')
+          .order('fecha', ascending: false);
+
+      print('📋 [ADMIN] Solicitudes encontradas: ${solicitudes.length}');
+
+      List<Map<String, dynamic>> solicitudesConDetalles = [];
+
+      for (var solicitud in solicitudes) {
+        final idRolSolicitado = solicitud['id_rol_solicitado'] as int?;
+
+        Map<String, dynamic> solicitudDetalle = Map<String, dynamic>.from(solicitud);
+
+        // Obtener nombre del rol solicitado
+        if (idRolSolicitado != null) {
+          final rolSolicitado = await _supabase
+              .from('roles')
+              .select('nombre')
+              .eq('id_rol', idRolSolicitado)
+              .maybeSingle();
+          solicitudDetalle['rol_solicitado'] = rolSolicitado?['nombre'] ?? 'Sin rol';
+        } else {
+          solicitudDetalle['rol_solicitado'] = 'Sin rol';
+        }
+
+        // Si tiene rol aprobado
+        if (solicitud['id_rol_aprobado'] != null) {
+          final idRolAprobado = solicitud['id_rol_aprobado'] as int;
+          final rolAprobado = await _supabase
+              .from('roles')
+              .select('nombre')
+              .eq('id_rol', idRolAprobado)
+              .maybeSingle();
+          solicitudDetalle['rol_aprobado'] = rolAprobado?['nombre'] ?? 'Sin rol';
+        }
+
+        solicitudesConDetalles.add(solicitudDetalle);
+      }
+
+      return solicitudesConDetalles;
+    } catch (e) {
+      print('❌ Error al obtener todas las solicitudes: $e');
+      return [];
+    }
   }
 }

@@ -1,3 +1,4 @@
+// lib/modules/solicitud_acceso/controller/solicitud_acceso_controller.dart
 import '../../../models/obra_model.dart';
 import '../../../models/solicitud_acceso_model.dart';
 import '../service/solicitud_acceso_service.dart';
@@ -8,7 +9,6 @@ class SolicitudAccesoController {
   // ============================================================
   // OBTENER OBRAS DISPONIBLES
   // ============================================================
-
   Future<List<ObraModel>> obtenerObrasDisponibles() async {
     return await _service.obtenerObrasDisponibles();
   }
@@ -16,7 +16,6 @@ class SolicitudAccesoController {
   // ============================================================
   // OBTENER OBRAS APROBADAS
   // ============================================================
-
   Future<List<ObraModel>> obtenerObrasAprobadas() async {
     return await _service.obtenerObrasAprobadas();
   }
@@ -24,7 +23,6 @@ class SolicitudAccesoController {
   // ============================================================
   // OBTENER MIS OBRAS
   // ============================================================
-
   Future<List<ObraModel>> obtenerMisObras() async {
     return await _service.obtenerMisObras();
   }
@@ -32,7 +30,6 @@ class SolicitudAccesoController {
   // ============================================================
   // OBTENER ROL EN UNA OBRA
   // ============================================================
-
   Future<int?> obtenerRolEnObra(int idObra) async {
     return await _service.obtenerRolEnObra(idObra);
   }
@@ -40,7 +37,6 @@ class SolicitudAccesoController {
   // ============================================================
   // OBTENER ROLES
   // ============================================================
-
   Future<List<Map<String, dynamic>>> obtenerRoles() async {
     return await _service.obtenerRoles();
   }
@@ -48,7 +44,6 @@ class SolicitudAccesoController {
   // ============================================================
   // SOLICITAR ACCESO
   // ============================================================
-
   Future<String?> solicitarAcceso({
     required int idObra,
     required int idRolSolicitado,
@@ -76,7 +71,6 @@ class SolicitudAccesoController {
   // ============================================================
   // OBTENER MIS SOLICITUDES
   // ============================================================
-
   Future<List<SolicitudAccesoModel>> obtenerMisSolicitudes() async {
     return await _service.obtenerMisSolicitudes();
   }
@@ -84,15 +78,20 @@ class SolicitudAccesoController {
   // ============================================================
   // OBTENER SOLICITUDES PARA EL GERENTE
   // ============================================================
-
   Future<List<Map<String, dynamic>>> obtenerSolicitudes() async {
     return await _service.obtenerSolicitudes();
   }
 
   // ============================================================
+  // ✅ NUEVO: OBTENER TODAS LAS SOLICITUDES (PARA ADMIN)
+  // ============================================================
+  Future<List<Map<String, dynamic>>> obtenerTodasLasSolicitudes() async {
+    return await _service.obtenerTodasLasSolicitudes();
+  }
+
+  // ============================================================
   // APROBAR SOLICITUD
   // ============================================================
-
   Future<String?> aprobarSolicitud({
     required int idSolicitud,
     required int idUsuario,
@@ -116,7 +115,6 @@ class SolicitudAccesoController {
   // ============================================================
   // RECHAZAR SOLICITUD
   // ============================================================
-
   Future<String?> rechazarSolicitud({
     required int idSolicitud,
     String? observacion,
@@ -136,7 +134,6 @@ class SolicitudAccesoController {
   // ============================================================
   // APROBAR CON OTRO ROL
   // ============================================================
-
   Future<String?> aprobarConRol({
     required int idSolicitud,
     required int idUsuario,

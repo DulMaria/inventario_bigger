@@ -4,6 +4,7 @@ import 'dart:math';
 import '../controller/auth_controller.dart';
 import 'registro_view.dart';
 import '../../../modules/solicitud_acceso/view/seleccionar_obra_view.dart';
+import '../../../modules/administrador/view/admin_page.dart';
 
 // ============================================================
 // PALETA DE COLORES
@@ -112,42 +113,57 @@ class _LoginViewState extends State<LoginView>
   // ============================================================
 
   Future<void> _iniciarSesion() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+  if (!_formKey.currentState!.validate()) {
+    return;
+  }
 
-    setState(() {
-      _cargando = true;
-    });
+  setState(() {
+    _cargando = true;
+  });
 
-    final mensaje = await _authController.iniciarSesion(
-      telefono: _identificadorController.text.trim(),
-      contrasena: _contrasenaController.text,
-    );
+  final mensaje = await _authController.iniciarSesion(
+    telefono: _identificadorController.text.trim(),
+    contrasena: _contrasenaController.text,
+  );
 
-    if (!mounted) {
-      return;
-    }
+  if (!mounted) {
+    return;
+  }
 
-    if (mensaje != null) {
-      setState(() {
-        _cargando = false;
-      });
-
-      _mostrarMensaje(mensaje);
-      return;
-    }
-
+  if (mensaje != null) {
     setState(() {
       _cargando = false;
     });
+    _mostrarMensaje(mensaje);
+    return;
+  }
 
+  // ✅ VERIFICAR SI ES ADMINISTRADOR
+  final esAdmin = await _authController.verificarSiEsAdmin();
+
+  setState(() {
+    _cargando = false;
+  });
+
+  if (!mounted) {
+    return;
+  }
+
+  // ✅ REDIRECCIÓN SEGÚN ROL
+  if (esAdmin) {
+    // Administrador → Panel de Administración
+    await Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const AdminPage()),
+    );
+  } else {
+    // Usuario normal → Seleccionar obra
     await Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const SeleccionarObraView()),
     );
   }
-
+}
 
 
   // ============================================================

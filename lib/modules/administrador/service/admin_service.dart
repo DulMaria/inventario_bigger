@@ -11,47 +11,30 @@ class AdminService {
   // ============================================================
   Future<Map<String, dynamic>> getDashboardStats() async {
     try {
-      final obras = await _supabase.from('obras').select();
-      final totalObras = obras.length;
+      final obras = await _supabase.from('obras').select('id_obra');
+      final totalObras = (obras as List).length;
 
-      final usuarios = await _supabase.from('usuarios').select();
-      final totalUsuarios = usuarios.length;
+      final usuarios = await _supabase.from('usuarios').select('id_usuario');
+      final totalUsuarios = (usuarios as List).length;
 
-      final materiales = await _supabase.from('materiales').select();
-      final totalMateriales = materiales.length;
+      final materiales = await _supabase.from('materiales').select('id_material');
+      final totalMateriales = (materiales as List).length;
 
-      final solicitudesPendientes = await _supabase
-          .from('solicitudes_acceso')
-          .select()
-          .eq('estado', 'PENDIENTE');
-      final totalSolicitudesPendientes = solicitudesPendientes.length;
+      final solicitudes = await _solicitudService.obtenerTodasLasSolicitudes();
+      final totalSolicitudesPendientes = solicitudes
+          .where((s) => (s['estado'] ?? 'PENDIENTE') == 'PENDIENTE')
+          .length;
 
-      final solicitudesRecientes = await _supabase
-          .from('solicitudes_acceso')
-          .select('''
-            *,
-            usuarios!inner (
-              nombre,
-              apellido,
-              telefono
-            ),
-            obras!inner (
-              nombre,
-              direccion
-            )
-          ''')
-          .order('fecha', ascending: false)
-          .limit(5);
+      final solicitudesRecientes = solicitudes.take(5).toList();
 
       return {
         'total_obras': totalObras,
         'total_usuarios': totalUsuarios,
         'total_materiales': totalMateriales,
         'solicitudes_pendientes': totalSolicitudesPendientes,
-        'solicitudes_recientes': solicitudesRecientes as List<Map<String, dynamic>>,
+        'solicitudes_recientes': solicitudesRecientes,
       };
     } catch (e) {
-      print('Error al obtener estadísticas: $e');
       return {
         'total_obras': 0,
         'total_usuarios': 0,
@@ -90,6 +73,18 @@ class AdminService {
           .select('*')
           .order('nombre', ascending: true);
 
+      final roles = await getRoles();
+      final Map<int, String> rolesMap = {
+        for (var r in roles)
+          if (r['id_rol'] != null) r['id_rol'] as int: r['nombre'].toString()
+      };
+
+      final obras = await getObras();
+      final Map<int, String> obrasMap = {
+        for (var o in obras)
+          if (o['id_obra'] != null) o['id_obra'] as int: o['nombre'].toString()
+      };
+
       List<Map<String, dynamic>> usuariosConRol = [];
 
       for (var usuario in usuarios) {
@@ -97,44 +92,29 @@ class AdminService {
 
         final relaciones = await _supabase
             .from('usuario_obra')
-            .select('''
-              id_rol,
-              id_obra,
-              roles!inner (
-                nombre
-              ),
-              obras!inner (
-                nombre
-              )
-            ''')
+            .select('id_rol, id_obra')
             .eq('id_usuario', idUsuario)
             .eq('estado', true);
 
         String? rol;
-        List<String> obras = [];
+        List<String> obrasList = [];
 
         for (var rel in relaciones) {
-          if (rel['roles'] != null) {
-            final rolData = rel['roles'] as Map<String, dynamic>;
-            final rolNombre = rolData['nombre'] as String?;
-            if (rol == null && rolNombre != null) {
-              rol = rolNombre;
-            }
+          final idRol = rel['id_rol'] as int?;
+          if (idRol != null) {
+            rol ??= rolesMap[idRol];
           }
 
-          if (rel['obras'] != null) {
-            final obraData = rel['obras'] as Map<String, dynamic>;
-            final obraNombre = obraData['nombre'] as String?;
-            if (obraNombre != null) {
-              obras.add(obraNombre);
-            }
+          final idObra = rel['id_obra'] as int?;
+          if (idObra != null && obrasMap.containsKey(idObra)) {
+            obrasList.add(obrasMap[idObra]!);
           }
         }
 
         usuariosConRol.add({
           ...usuario,
           'rol': rol ?? 'Sin rol',
-          'obras': obras,
+          'obras': obrasList,
         });
       }
 

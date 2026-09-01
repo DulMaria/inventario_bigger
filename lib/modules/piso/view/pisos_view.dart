@@ -178,7 +178,7 @@ class _PisosViewState extends State<PisosView> {
           child: Icon(_iconoTipo(piso.tipoPiso), color: const Color(0xFF2FA9E0)),
         ),
         title: Text(
-          piso.nombre ?? 'Sin nombre',
+          piso.etiquetaNivel,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         subtitle: Column(

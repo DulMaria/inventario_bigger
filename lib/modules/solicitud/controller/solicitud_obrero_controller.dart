@@ -25,7 +25,21 @@ class SolicitudObreroController {
   }
 
   // ============================================================
-  // OBTENER SOLICITUDES DEL OBRERO
+  // OBTENER SOLICITUDES DEL OBRERO POR PISO
+  // ============================================================
+
+  Future<List<SolicitudObreroModel>> obtenerSolicitudesPorPiso({
+    required int idPiso,
+    required int idUsuario,
+  }) async {
+    return await _service.obtenerSolicitudesPorPiso(
+      idPiso: idPiso,
+      idUsuario: idUsuario,
+    );
+  }
+
+  // ============================================================
+  // OBTENER SOLICITUDES DEL OBRERO POR OBRA
   // ============================================================
 
   Future<List<SolicitudObreroModel>> obtenerMisSolicitudes({

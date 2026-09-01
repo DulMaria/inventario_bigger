@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../solicitud/controller/solicitud_obrero_controller.dart';
 import '../../piso/view/piso_obrero_view.dart';
+import '../../solicitud_acceso/view/seleccionar_obra_view.dart';
 import 'solicitudes_obreros_view.dart';
 import 'historial_tecnico_view.dart';
 
@@ -138,6 +139,16 @@ class _TecnicoHomeViewState extends State<TecnicoHomeView> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4FAFE),
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Cambiar de obra',
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const SeleccionarObraView()),
+            );
+          },
+        ),
         title: const Text('Panel del Técnico'),
         backgroundColor: const Color(0xFF2FA9E0),
         foregroundColor: Colors.white,
@@ -164,12 +175,34 @@ class _TecnicoHomeViewState extends State<TecnicoHomeView> {
             ),
             const SizedBox(height: 25),
 
-            // 1. SOLICITUDES DE OBREROS (REVISIÓN)
+            // 1. PISOS DE LA OBRA (Igual que en obrero)
+            _opcion(
+              icono: Icons.layers_outlined,
+              titulo: 'Pisos de la obra',
+              descripcion:
+                  'Consulta los pisos de esta obra y gestiona o solicita material directamente.',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PisosObraView(
+                      idObra: widget.idObra,
+                      idUsuario: widget.idUsuario,
+                      idRol: 2, // Rol Técnico
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 16),
+
+            // 2. SOLICITUDES DE OBREROS (PÁGINA NUEVA DE REVISIÓN)
             _opcion(
               icono: Icons.pending_actions,
-              titulo: 'Solicitudes de Obreros',
+              titulo: 'Solicitudes de Materiales',
               descripcion:
-                  'Revisa, edita cantidades, aprueba o rechaza los pedidos de material de los obreros.',
+                  'Revisa, edita cantidades, aprueba o rechaza los pedidos de material enviados por los obreros.',
               badge: _conteoPendientes,
               onTap: () async {
                 await Navigator.push(
@@ -187,29 +220,7 @@ class _TecnicoHomeViewState extends State<TecnicoHomeView> {
 
             const SizedBox(height: 16),
 
-            // 2. SOLICITUD DIRECTA POR PISO (A COMPRAS)
-            _opcion(
-              icono: Icons.add_shopping_cart,
-              titulo: 'Solicitud Directa a Compras',
-              descripcion:
-                  'Solicita material por piso y envíalo directamente al encargado de compras.',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => PisosObraView(
-                      idObra: widget.idObra,
-                      idUsuario: widget.idUsuario,
-                      idRol: 2, // Rol Técnico
-                    ),
-                  ),
-                );
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // 3. HISTORIAL DE SOLICITUDES
+            // 3. HISTORIAL DE LA OBRA
             _opcion(
               icono: Icons.history,
               titulo: 'Historial de la Obra',

@@ -186,13 +186,17 @@ class SolicitudAccesoService {
         .eq('id_usuario', idUsuario)
         .eq('id_obra', idObra)
         .eq('estado', true)
-        .maybeSingle();
+        .order('id_usuario_obra', ascending: false)
+        .limit(1);
 
-    if (respuesta == null) {
+    if ((respuesta as List).isEmpty) {
       return null;
     }
 
-    return respuesta['id_rol'] as int;
+    final rolRaw = respuesta.first['id_rol'];
+    if (rolRaw is int) return rolRaw;
+    if (rolRaw is String) return int.tryParse(rolRaw);
+    return null;
   }
 
   // ============================================================
@@ -440,6 +444,16 @@ class SolicitudAccesoService {
     required int idObra,
     required int idRol,
   }) async {
+    // 1. Desactivar asignaciones previas en esta obra para evitar duplicados
+    try {
+      await _supabase
+          .from('usuario_obra')
+          .update({'estado': false})
+          .eq('id_usuario', idUsuario)
+          .eq('id_obra', idObra);
+    } catch (_) {}
+
+    // 2. Insertar el nuevo rol activo
     await _supabase.from('usuario_obra').insert({
       'id_usuario': idUsuario,
       'id_obra': idObra,
@@ -447,6 +461,7 @@ class SolicitudAccesoService {
       'estado': true,
     });
 
+    // 3. Actualizar el estado de la solicitud
     await _supabase
         .from('solicitudes_acceso')
         .update({'estado': 'APROBADA', 'id_rol_aprobado': idRol})

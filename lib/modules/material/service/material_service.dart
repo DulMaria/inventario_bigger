@@ -5,6 +5,22 @@ import '../../../models/material_model.dart';
 class MaterialService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
+  // ============================================================
+  // NORMALIZACIÓN DE TEXTO (Quita acentos, tildes y mayúsculas)
+  // ============================================================
+
+  static String normalizar(String texto) {
+    return texto
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'[áàäâ]'), 'a')
+        .replaceAll(RegExp(r'[éèëê]'), 'e')
+        .replaceAll(RegExp(r'[íìïî]'), 'i')
+        .replaceAll(RegExp(r'[óòöô]'), 'o')
+        .replaceAll(RegExp(r'[úùüû]'), 'u')
+        .replaceAll('ñ', 'n');
+  }
+
   Future<List<MaterialModel>> obtenerMateriales() async {
     final respuesta = await _supabase
         .from('materiales')
@@ -16,48 +32,96 @@ class MaterialService {
         .toList();
   }
 
+  // ============================================================
+  // BÚSQUEDA PREDICTIVA / SUGERENCIAS MIENTRAS ESCRIBE
+  // ============================================================
+
+  Future<List<MaterialModel>> buscarSugerencias(String query) async {
+    final queryNorm = normalizar(query);
+    if (queryNorm.isEmpty) return [];
+
+    final todos = await obtenerMateriales();
+
+    return todos.where((m) {
+      final nombreNorm = normalizar(m.nombre);
+      final codigoNorm = (m.codigo ?? '').toLowerCase();
+      return nombreNorm.contains(queryNorm) || codigoNorm.contains(queryNorm);
+    }).toList();
+  }
+
+  // ============================================================
+  // BUSCAR MATERIAL (Insensible a acentos, mayúsculas y espacios)
+  // ============================================================
+
   Future<MaterialModel?> buscarMaterial(String nombre) async {
-    final nombreLimpio = nombre.trim();
+    final nombreNorm = normalizar(nombre);
+    if (nombreNorm.isEmpty) return null;
 
-    final respuesta = await _supabase
-        .from('materiales')
-        .select()
-        .ilike('nombre', nombreLimpio)
-        .maybeSingle();
+    final todos = await obtenerMateriales();
 
-    if (respuesta == null) {
-      return null;
+    for (final m in todos) {
+      if (normalizar(m.nombre) == nombreNorm) {
+        return m;
+      }
     }
 
-    return MaterialModel.fromMap(respuesta);
+    return null;
   }
+
+  // ============================================================
+  // CREAR MATERIAL (Evita duplicados por acentos)
+  // ============================================================
 
   Future<MaterialModel> crearMaterial({required String nombre}) async {
     final nombreLimpio = nombre.trim();
 
-    // Primero verificamos si ya existe.
+    // 1. Verificamos si ya existe con o sin acento (ej. Hormigón == Hormigon)
     final existente = await buscarMaterial(nombreLimpio);
 
     if (existente != null) {
       return existente;
     }
 
-    // Obtenemos el siguiente número de la secuencia.
-    final numero = await _obtenerSiguienteNumero();
+    // 2. Obtenemos el siguiente correlativo numérico.
+    int numero = await _obtenerSiguienteNumero();
 
-    // Generamos las iniciales del material.
+    // 3. Generamos las iniciales del material.
     final iniciales = _obtenerIniciales(nombreLimpio);
 
-    // Ejemplo: ICL001
-    final codigo = 'I$iniciales${numero.toString().padLeft(3, '0')}';
+    // 4. Asegurar código único
+    String codigo = 'I$iniciales${numero.toString().padLeft(3, '0')}';
 
-    final respuesta = await _supabase
+    final existenteConMismoCodigo = await _supabase
         .from('materiales')
-        .insert({'codigo': codigo, 'nombre': nombreLimpio})
-        .select()
-        .single();
+        .select('id_material')
+        .eq('codigo', codigo)
+        .maybeSingle();
 
-    return MaterialModel.fromMap(respuesta);
+    if (existenteConMismoCodigo != null) {
+      numero++;
+      codigo = 'I$iniciales${numero.toString().padLeft(3, '0')}';
+    }
+
+    try {
+      final respuesta = await _supabase
+          .from('materiales')
+          .insert({'codigo': codigo, 'nombre': nombreLimpio})
+          .select()
+          .single();
+
+      return MaterialModel.fromMap(respuesta);
+    } catch (_) {
+      // Si por concurrencia falló el código, reintentar con número incrementado
+      numero += 2;
+      codigo = 'I$iniciales${numero.toString().padLeft(3, '0')}';
+      final respuesta = await _supabase
+          .from('materiales')
+          .insert({'codigo': codigo, 'nombre': nombreLimpio})
+          .select()
+          .single();
+
+      return MaterialModel.fromMap(respuesta);
+    }
   }
 
   Future<int> _obtenerSiguienteNumero() async {

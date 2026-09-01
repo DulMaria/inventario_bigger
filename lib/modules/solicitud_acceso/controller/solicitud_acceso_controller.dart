@@ -76,10 +76,10 @@ class SolicitudAccesoController {
   }
 
   // ============================================================
-  // OBTENER SOLICITUDES PARA EL GERENTE
+  // OBTENER SOLICITUDES (Gerente o Admin con filtro opcional)
   // ============================================================
-  Future<List<Map<String, dynamic>>> obtenerSolicitudes() async {
-    return await _service.obtenerSolicitudes();
+  Future<List<Map<String, dynamic>>> obtenerSolicitudes({int? idObra}) async {
+    return await _service.obtenerSolicitudes(idObraFiltro: idObra);
   }
 
   // ============================================================

@@ -301,196 +301,100 @@ class SolicitudAccesoService {
         .toList();
   }
 
-// lib/modules/solicitud_acceso/service/solicitud_acceso_service.dart
+  // ============================================================
+  // OBTENER SOLICITUDES (100% Robusto, sin depender de joins frágiles)
+  // ============================================================
 
-// ============================================================
-// OBTENER SOLICITUDES - Gerente ve sus obras, Admin ve TODAS
-// ============================================================
+  Future<List<Map<String, dynamic>>> obtenerSolicitudes({int? idObraFiltro}) async {
+    dynamic respuesta;
 
-Future<List<Map<String, dynamic>>> obtenerSolicitudes() async {
-  final usuarioAuth = _supabase.auth.currentUser;
-
-  if (usuarioAuth == null) {
-    print('❌ No hay usuario autenticado');
-    throw Exception('No hay un usuario autenticado');
-  }
-
-  print('🔍 Usuario autenticado ID: ${usuarioAuth.id}');
-
-  final usuarioActual = await _supabase
-      .from('usuarios')
-      .select('id_usuario, nombre, apellido, correo')
-      .eq('id_auth', usuarioAuth.id)
-      .maybeSingle();
-
-  if (usuarioActual == null) {
-    print('❌ Usuario no encontrado en tabla usuarios');
-    throw Exception('No se encontró el usuario en la base de datos');
-  }
-
-  final idUsuarioActual = usuarioActual['id_usuario'] as int;
-  print('🔍 ID Usuario en tabla usuarios: $idUsuarioActual');
-
-  // ✅ OBTENER EL ROL DEL USUARIO ACTUAL
-  final rolesUsuario = await _supabase
-      .from('usuario_obra')
-      .select('id_rol, id_obra')
-      .eq('id_usuario', idUsuarioActual)
-      .eq('estado', true);
-
-  print('🔍 Roles del usuario: ${rolesUsuario.length}');
-
-  if (rolesUsuario.isEmpty) {
-    print('❌ Usuario sin roles asignados');
-    return [];
-  }
-
-  // Obtener todos los roles del usuario
-  final List<int> rolesIds = rolesUsuario.map((r) => r['id_rol'] as int).toList();
-  print('🔍 IDs de roles: $rolesIds');
-
-  // ✅ SI ES ADMINISTRADOR (id_rol = 8) → VER TODAS LAS SOLICITUDES
-  if (rolesIds.contains(8)) {
-    print('📋 [ADMIN] Usuario es Administrador - Obteniendo TODAS las solicitudes...');
-    
-    final solicitudes = await _supabase
-        .from('solicitudes_acceso')
-        .select('''
-          *,
-          usuarios!inner (
-            id_usuario,
-            nombre,
-            apellido,
-            telefono,
-            correo
-          ),
-          obras!inner (
-            id_obra,
-            nombre,
-            direccion
-          )
-        ''')
-        .order('fecha', ascending: false);
-
-    print('📋 [ADMIN] Solicitudes encontradas: ${solicitudes.length}');
-
-    List<Map<String, dynamic>> solicitudesConDetalles = [];
-
-    for (var solicitud in solicitudes) {
-      final idRolSolicitado = solicitud['id_rol_solicitado'] as int?;
-
-      Map<String, dynamic> solicitudDetalle = Map<String, dynamic>.from(solicitud);
-
-      if (idRolSolicitado != null) {
-        final rolSolicitado = await _supabase
-            .from('roles')
-            .select('nombre')
-            .eq('id_rol', idRolSolicitado)
-            .maybeSingle();
-        solicitudDetalle['rol_solicitado'] = rolSolicitado?['nombre'] ?? 'Sin rol';
-      } else {
-        solicitudDetalle['rol_solicitado'] = 'Sin rol';
-      }
-
-      if (solicitud['id_rol_aprobado'] != null) {
-        final idRolAprobado = solicitud['id_rol_aprobado'] as int;
-        final rolAprobado = await _supabase
-            .from('roles')
-            .select('nombre')
-            .eq('id_rol', idRolAprobado)
-            .maybeSingle();
-        solicitudDetalle['rol_aprobado'] = rolAprobado?['nombre'] ?? 'Sin rol';
-      }
-
-      solicitudesConDetalles.add(solicitudDetalle);
+    // 1. Si se especificó una obra puntual (ej. Gerente entrando a su obra)
+    if (idObraFiltro != null) {
+      respuesta = await _supabase
+          .from('solicitudes_acceso')
+          .select()
+          .eq('id_obra', idObraFiltro)
+          .order('fecha', ascending: false);
+    } else {
+      // 2. Si no se especificó obra (Vista Global de Administrador)
+      respuesta = await _supabase
+          .from('solicitudes_acceso')
+          .select()
+          .order('fecha', ascending: false);
     }
 
-    return solicitudesConDetalles;
-  }
+    final listaSolicitudes = List<Map<String, dynamic>>.from(respuesta as List);
 
-  // ✅ SI ES GERENTE (id_rol = 3) → VER SOLO SUS OBRAS
-  if (rolesIds.contains(3)) {
-    print('📋 [GERENTE] Usuario es Gerente - Obteniendo solicitudes de sus obras...');
-
-    // Obtener obras donde es gerente
-    final obrasGerente = await _supabase
-        .from('usuario_obra')
-        .select('id_obra')
-        .eq('id_usuario', idUsuarioActual)
-        .eq('id_rol', 3)
-        .eq('estado', true);
-
-    final idsObrasGerente = (obrasGerente as List)
-        .map((item) => item['id_obra'] as int)
-        .toList();
-
-    print('📋 [GERENTE] IDs de obras: $idsObrasGerente');
-
-    if (idsObrasGerente.isEmpty) {
-      print('📋 [GERENTE] No es gerente en ninguna obra');
+    if (listaSolicitudes.isEmpty) {
       return [];
     }
 
-    final respuesta = await _supabase
-        .from('solicitudes_acceso')
-        .select('''
-          *,
-          usuarios!inner (
-            id_usuario,
-            nombre,
-            apellido,
-            telefono,
-            correo
-          ),
-          obras!inner (
-            id_obra,
-            nombre,
-            direccion
-          )
-        ''')
-        .inFilter('id_obra', idsObrasGerente)
-        .order('fecha', ascending: false);
-
-    print('📋 [GERENTE] Solicitudes encontradas: ${respuesta.length}');
-
-    List<Map<String, dynamic>> solicitudesConDetalles = [];
-
-    for (var solicitud in respuesta) {
-      final idRolSolicitado = solicitud['id_rol_solicitado'] as int?;
-
-      Map<String, dynamic> solicitudDetalle = Map<String, dynamic>.from(solicitud);
-
-      if (idRolSolicitado != null) {
-        final rolSolicitado = await _supabase
-            .from('roles')
-            .select('nombre')
-            .eq('id_rol', idRolSolicitado)
-            .maybeSingle();
-        solicitudDetalle['rol_solicitado'] = rolSolicitado?['nombre'] ?? 'Sin rol';
-      } else {
-        solicitudDetalle['rol_solicitado'] = 'Sin rol';
-      }
-
-      if (solicitud['id_rol_aprobado'] != null) {
-        final idRolAprobado = solicitud['id_rol_aprobado'] as int;
-        final rolAprobado = await _supabase
-            .from('roles')
-            .select('nombre')
-            .eq('id_rol', idRolAprobado)
-            .maybeSingle();
-        solicitudDetalle['rol_aprobado'] = rolAprobado?['nombre'] ?? 'Sin rol';
-      }
-
-      solicitudesConDetalles.add(solicitudDetalle);
-    }
-
-    return solicitudesConDetalles;
+    // 3. Traer usuarios, obras y roles para mapear detalles sin riesgo de error de schema
+    return await _completarDetallesRoles(listaSolicitudes);
   }
 
-  // ✅ OTROS ROLES → NO VEN SOLICITUDES
-  print('📋 [OTRO ROL] Usuario con roles $rolesIds no tiene permisos para ver solicitudes');
-  return [];
-}
+  Future<List<Map<String, dynamic>>> _completarDetallesRoles(
+    List<Map<String, dynamic>> solicitudes,
+  ) async {
+    // Mapa de Roles
+    final Map<int, String> rolesMap = {};
+    try {
+      final roles = await _supabase.from('roles').select('id_rol, nombre');
+      for (var r in roles) {
+        if (r['id_rol'] != null) {
+          rolesMap[r['id_rol'] as int] = r['nombre'].toString();
+        }
+      }
+    } catch (_) {}
+
+    // Mapa de Obras
+    final Map<int, Map<String, dynamic>> obrasMap = {};
+    try {
+      final obras = await _supabase.from('obras').select('id_obra, nombre, direccion');
+      for (var o in obras) {
+        if (o['id_obra'] != null) {
+          obrasMap[o['id_obra'] as int] = Map<String, dynamic>.from(o);
+        }
+      }
+    } catch (_) {}
+
+    // Mapa de Usuarios
+    final Map<int, Map<String, dynamic>> usuariosMap = {};
+    try {
+      final usuarios = await _supabase
+          .from('usuarios')
+          .select('id_usuario, nombre, apellido, telefono, correo');
+      for (var u in usuarios) {
+        if (u['id_usuario'] != null) {
+          usuariosMap[u['id_usuario'] as int] = Map<String, dynamic>.from(u);
+        }
+      }
+    } catch (_) {}
+
+    List<Map<String, dynamic>> resultado = [];
+
+    for (var solicitud in solicitudes) {
+      Map<String, dynamic> item = Map<String, dynamic>.from(solicitud);
+
+      final idUser = item['id_usuario'] as int?;
+      final idObra = item['id_obra'] as int?;
+      final idRolSol = item['id_rol_solicitado'] as int?;
+      final idRolApr = item['id_rol_aprobado'] as int?;
+
+      item['usuarios'] = idUser != null ? usuariosMap[idUser] : null;
+      item['obras'] = idObra != null ? obrasMap[idObra] : null;
+      item['rol_solicitado'] = idRolSol != null
+          ? (rolesMap[idRolSol] ?? 'Rol #$idRolSol')
+          : 'Sin rol';
+      item['rol_aprobado'] = idRolApr != null
+          ? (rolesMap[idRolApr] ?? 'Rol #$idRolApr')
+          : 'No especificado';
+
+      resultado.add(item);
+    }
+
+    return resultado;
+  }
 
   // ============================================================
   // APROBAR SOLICITUD
@@ -539,7 +443,7 @@ Future<List<Map<String, dynamic>>> obtenerSolicitudes() async {
   }
 
   // ============================================================
-  // APROBAR CON OTRO ROL
+  // APROBAR CON OTRO ROL (ADMIN)
   // ============================================================
   Future<void> aprobarConRol({
     required int idSolicitud,
@@ -547,6 +451,16 @@ Future<List<Map<String, dynamic>>> obtenerSolicitudes() async {
     required int idObra,
     required int idRol,
   }) async {
+    // 1. Desactivar asignaciones previas en esta obra
+    try {
+      await _supabase
+          .from('usuario_obra')
+          .update({'estado': false})
+          .eq('id_usuario', idUsuario)
+          .eq('id_obra', idObra);
+    } catch (_) {}
+
+    // 2. Insertar con el rol especificado por el Administrador
     await _supabase.from('usuario_obra').insert({
       'id_usuario': idUsuario,
       'id_obra': idObra,
@@ -554,6 +468,7 @@ Future<List<Map<String, dynamic>>> obtenerSolicitudes() async {
       'estado': true,
     });
 
+    // 3. Actualizar solicitud
     await _supabase
         .from('solicitudes_acceso')
         .update({'estado': 'APROBADA', 'id_rol_aprobado': idRol})
@@ -561,71 +476,9 @@ Future<List<Map<String, dynamic>>> obtenerSolicitudes() async {
   }
 
   // ============================================================
-  // ✅ NUEVO: OBTENER TODAS LAS SOLICITUDES (PARA ADMIN)
-  // ✅ ESTE MÉTODO DEBE ESTAR DENTRO DE LA CLASE
+  // OBTENER TODAS LAS SOLICITUDES (PARA ADMIN)
   // ============================================================
   Future<List<Map<String, dynamic>>> obtenerTodasLasSolicitudes() async {
-    try {
-      print('📋 [ADMIN] Obteniendo TODAS las solicitudes...');
-
-      final solicitudes = await _supabase
-          .from('solicitudes_acceso')
-          .select('''
-            *,
-            usuarios!inner (
-              id_usuario,
-              nombre,
-              apellido,
-              telefono,
-              correo
-            ),
-            obras!inner (
-              id_obra,
-              nombre,
-              direccion
-            )
-          ''')
-          .order('fecha', ascending: false);
-
-      print('📋 [ADMIN] Solicitudes encontradas: ${solicitudes.length}');
-
-      List<Map<String, dynamic>> solicitudesConDetalles = [];
-
-      for (var solicitud in solicitudes) {
-        final idRolSolicitado = solicitud['id_rol_solicitado'] as int?;
-
-        Map<String, dynamic> solicitudDetalle = Map<String, dynamic>.from(solicitud);
-
-        // Obtener nombre del rol solicitado
-        if (idRolSolicitado != null) {
-          final rolSolicitado = await _supabase
-              .from('roles')
-              .select('nombre')
-              .eq('id_rol', idRolSolicitado)
-              .maybeSingle();
-          solicitudDetalle['rol_solicitado'] = rolSolicitado?['nombre'] ?? 'Sin rol';
-        } else {
-          solicitudDetalle['rol_solicitado'] = 'Sin rol';
-        }
-
-        // Si tiene rol aprobado
-        if (solicitud['id_rol_aprobado'] != null) {
-          final idRolAprobado = solicitud['id_rol_aprobado'] as int;
-          final rolAprobado = await _supabase
-              .from('roles')
-              .select('nombre')
-              .eq('id_rol', idRolAprobado)
-              .maybeSingle();
-          solicitudDetalle['rol_aprobado'] = rolAprobado?['nombre'] ?? 'Sin rol';
-        }
-
-        solicitudesConDetalles.add(solicitudDetalle);
-      }
-
-      return solicitudesConDetalles;
-    } catch (e) {
-      print('❌ Error al obtener todas las solicitudes: $e');
-      return [];
-    }
+    return await obtenerSolicitudes(idObraFiltro: null);
   }
 }

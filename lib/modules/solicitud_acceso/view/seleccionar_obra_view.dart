@@ -11,7 +11,9 @@ import 'seleccionar_rol_view.dart';
 import '../../usuario/view/obrero_home_view.dart';
 import '../../tecnico/view/tecnico_home_view.dart';
 import '../../obra/view/gerente_home_view.dart';
+import '../../administrador/view/admin_page.dart';
 import '../../auth/controller/auth_controller.dart';
+import '../../auth/view/login_view.dart';
 
 class SeleccionarObraView extends StatefulWidget {
   const SeleccionarObraView({super.key});
@@ -246,7 +248,12 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
       case 3:
         await Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const GerenteHomeView()),
+          MaterialPageRoute(
+            builder: (_) => GerenteHomeView(
+              idObra: idObra,
+              nombreObra: _obraSeleccionada?.nombre,
+            ),
+          ),
         );
         break;
 
@@ -269,6 +276,16 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
       // ========================================================
       case 6:
         _mostrarMensaje('Rol Supervisor detectado. Falta conectar su Home.');
+        break;
+
+      // ========================================================
+      // ADMINISTRADOR
+      // ========================================================
+      case 8:
+        await Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const AdminPage()),
+        );
         break;
 
       // ========================================================
@@ -343,6 +360,47 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
     return Icons.add_circle_outline;
   }
 
+  Future<void> _cerrarSesion() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.logout, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Cerrar sesión'),
+          ],
+        ),
+        content: const Text('¿Estás seguro de que deseas cerrar tu sesión?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Cerrar sesión'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true) {
+      final authController = AuthController();
+      await authController.cerrarSesion();
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginView()),
+        (route) => false,
+      );
+    }
+  }
+
   // ============================================================
   // BUILD
   // ============================================================
@@ -356,6 +414,13 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
         title: const Text('Seleccionar obra'),
         backgroundColor: const Color(0xFF2FA9E0),
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Cerrar sesión',
+            onPressed: _cerrarSesion,
+          ),
+        ],
       ),
 
       body: _cargando

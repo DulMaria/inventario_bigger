@@ -9,6 +9,7 @@ import '../../piso/view/pisos_view.dart';
 import '../../solicitud_acceso/view/solicitudes_acceso_view.dart';  // ✅ NUEVA IMPORTACIÓN
 import '../../../models/obra_model.dart';
 import '../../auth/controller/auth_controller.dart';
+import '../../auth/view/login_view.dart';
 
 class AdminPage extends StatelessWidget {
   const AdminPage({super.key});
@@ -766,10 +767,14 @@ class AdminPage extends StatelessWidget {
 
         if (context.mounted) {
           Get.delete<AdminController>();
-          Navigator.pushReplacementNamed(context, '/login');
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginView()),
+            (route) => false,
+          );
         }
       } catch (e) {
-        print('Error al cerrar sesión: $e');
+        // Manejar error silenciosamente
       }
     }
   }

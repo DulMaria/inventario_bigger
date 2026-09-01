@@ -4,6 +4,8 @@ import '../../piso/view/piso_obrero_view.dart';
 import '../../solicitud_acceso/view/seleccionar_obra_view.dart';
 import 'solicitudes_obreros_view.dart';
 import 'historial_tecnico_view.dart';
+import '../../auth/controller/auth_controller.dart';
+import '../../auth/view/login_view.dart';
 
 class TecnicoHomeView extends StatefulWidget {
   final int idObra;
@@ -134,6 +136,47 @@ class _TecnicoHomeViewState extends State<TecnicoHomeView> {
     );
   }
 
+  Future<void> _cerrarSesion() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.logout, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Cerrar sesión'),
+          ],
+        ),
+        content: const Text('¿Estás seguro de que deseas cerrar tu sesión?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Cerrar sesión'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true) {
+      final authController = AuthController();
+      await authController.cerrarSesion();
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginView()),
+        (route) => false,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -153,6 +196,13 @@ class _TecnicoHomeViewState extends State<TecnicoHomeView> {
         backgroundColor: const Color(0xFF2FA9E0),
         foregroundColor: Colors.white,
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Cerrar sesión',
+            onPressed: _cerrarSesion,
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _cargarConteo,

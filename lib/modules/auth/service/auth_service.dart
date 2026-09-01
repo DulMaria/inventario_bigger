@@ -250,13 +250,10 @@ class AuthService {
     final usuario = _supabase.auth.currentUser;
     
     if (usuario == null) {
-      print('--> [ADMIN] No hay usuario autenticado');
       return false;
     }
 
     try {
-      print('--> [ADMIN] Verificando si es admin para usuario: ${usuario.id}');
-
       // 1. Obtener ID del usuario en tabla 'usuarios'
       final usuarioBD = await _supabase
           .from('usuarios')
@@ -265,15 +262,13 @@ class AuthService {
           .maybeSingle();
 
       if (usuarioBD == null) {
-        print('--> [ADMIN] Usuario no encontrado en tabla usuarios');
         return false;
       }
 
       final idUsuario = usuarioBD['id_usuario'] as int;
-      print('--> [ADMIN] ID Usuario encontrado: $idUsuario');
 
       // 2. Buscar en 'usuario_obra' con JOIN a 'roles'
-      final rol = await _supabase
+      final roles = await _supabase
           .from('usuario_obra')
           .select('''
             id_rol,
@@ -282,30 +277,28 @@ class AuthService {
             )
           ''')
           .eq('id_usuario', idUsuario)
-          .eq('estado', true)
-          .maybeSingle();
+          .eq('estado', true);
 
-      if (rol == null) {
-        print('--> [ADMIN] No se encontró relación usuario_obra');
+      if ((roles as List).isEmpty) {
         return false;
       }
 
-      // 3. Obtener el nombre del rol
-      final rolData = rol['roles'] as Map?;
-      final nombreRol = rolData != null 
-          ? (rolData['nombre'] as String?)?.toLowerCase()
-          : null;
+      for (final r in roles) {
+        final idRol = r['id_rol'];
+        if (idRol == 8) return true;
 
-      print('--> [ADMIN] Rol del usuario: $nombreRol');
+        final rolData = r['roles'] as Map?;
+        final nombreRol = rolData != null 
+            ? (rolData['nombre'] as String?)?.toLowerCase() ?? ''
+            : '';
 
-      // 4. Verificar si es administrador
-      final esAdmin = nombreRol == 'administrador' || nombreRol == 'admin';
-      
-      print('--> [ADMIN] ¿Es administrador? $esAdmin');
-      return esAdmin;
+        if (nombreRol.contains('admin')) {
+          return true;
+        }
+      }
 
+      return false;
     } catch (e) {
-      print('--> [ADMIN] Error al verificar rol de administrador: $e');
       return false;
     }
   }

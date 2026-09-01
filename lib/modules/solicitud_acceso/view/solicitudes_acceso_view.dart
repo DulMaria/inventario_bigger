@@ -1,6 +1,7 @@
+// lib/modules/solicitud_acceso/view/solicitudes_acceso_view.dart
 import 'package:flutter/material.dart';
-
 import '../controller/solicitud_acceso_controller.dart';
+import '../../auth/controller/auth_controller.dart';
 
 class SolicitudesAccesoView extends StatefulWidget {
   const SolicitudesAccesoView({super.key});
@@ -11,9 +12,9 @@ class SolicitudesAccesoView extends StatefulWidget {
 
 class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
   final SolicitudAccesoController _controller = SolicitudAccesoController();
+  final AuthController _authController = AuthController();
 
   List<Map<String, dynamic>> _solicitudes = [];
-
   List<Map<String, dynamic>> _roles = [];
 
   bool _cargando = true;
@@ -34,11 +35,12 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
     });
 
     try {
+      // 🔥 CAMBIAR ESTA LÍNEA - Usar obtenerSolicitudes()
       final solicitudes = await _controller.obtenerSolicitudes();
 
       final roles = await _controller.obtenerRoles();
 
-      print('SOLICITUDES: $solicitudes');
+      print('📋 SOLICITUDES ENCONTRADAS: ${solicitudes.length}');
 
       if (!mounted) return;
 
@@ -66,11 +68,8 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
 
   Future<void> _aprobarSolicitud(Map<String, dynamic> solicitud) async {
     final idSolicitud = solicitud['id_solicitud_acceso'] as int;
-
     final idUsuario = solicitud['id_usuario'] as int;
-
     final idObra = solicitud['id_obra'] as int;
-
     final idRol = solicitud['id_rol_solicitado'] as int;
 
     setState(() {
@@ -94,7 +93,6 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(error), backgroundColor: Colors.red),
       );
-
       return;
     }
 
@@ -126,9 +124,7 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text('¿Deseas rechazar esta solicitud?'),
-
               const SizedBox(height: 16),
-
               TextField(
                 controller: observacionController,
                 maxLines: 3,
@@ -147,7 +143,6 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
               },
               child: const Text('Cancelar'),
             ),
-
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context, true);
@@ -191,7 +186,6 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(error), backgroundColor: Colors.red),
       );
-
       return;
     }
 
@@ -211,9 +205,7 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
 
   Future<void> _editarRol(Map<String, dynamic> solicitud) async {
     final idSolicitud = solicitud['id_solicitud_acceso'] as int;
-
     final idUsuario = solicitud['id_usuario'] as int;
-
     final idObra = solicitud['id_obra'] as int;
 
     int? rolSeleccionado = solicitud['id_rol_solicitado'] as int?;
@@ -232,9 +224,7 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
                   const Text(
                     'Selecciona el rol que tendrá el usuario en esta obra:',
                   ),
-
                   const SizedBox(height: 16),
-
                   DropdownButtonFormField<int>(
                     initialValue: rolSeleccionado,
                     decoration: const InputDecoration(
@@ -262,7 +252,6 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
                   },
                   child: const Text('Cancelar'),
                 ),
-
                 ElevatedButton(
                   onPressed: rolSeleccionado == null
                       ? null
@@ -303,7 +292,6 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(error), backgroundColor: Colors.red),
       );
-
       return;
     }
 
@@ -329,7 +317,6 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
     }
 
     final nombre = usuario['nombre'] ?? '';
-
     final apellido = usuario['apellido'] ?? '';
 
     return '$nombre $apellido'.trim();
@@ -397,17 +384,11 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
 
   Widget _buildSolicitud(Map<String, dynamic> solicitud) {
     final estado = solicitud['estado']?.toString() ?? 'PENDIENTE';
-
     final nombreUsuario = _nombreUsuario(solicitud);
-
     final correo = _correoUsuario(solicitud);
-
     final nombreObra = _nombreObra(solicitud);
-
     final nombreRol = _nombreRol(solicitud);
-
     final nombreRolAprobado = _nombreRolAprobado(solicitud);
-
     final idSolicitud = solicitud['id_solicitud_acceso']?.toString() ?? '';
 
     return Card(
@@ -422,14 +403,11 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
             // ==================================================
             // CABECERA
             // ==================================================
-
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const CircleAvatar(radius: 24, child: Icon(Icons.person)),
-
                 const SizedBox(width: 12),
-
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -441,9 +419,7 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-
                       const SizedBox(height: 3),
-
                       Text(
                         correo,
                         style: TextStyle(fontSize: 13, color: Colors.grey[600]),
@@ -451,11 +427,9 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
                     ],
                   ),
                 ),
-
                 _EstadoSolicitud(estado: estado),
               ],
             ),
-
             const Divider(height: 28),
 
             // ==================================================
@@ -466,27 +440,21 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
               titulo: 'Obra',
               valor: nombreObra,
             ),
-
             const SizedBox(height: 10),
-
             _DatoSolicitud(
               icono: Icons.badge_outlined,
               titulo: 'Rol solicitado',
               valor: nombreRol,
             ),
-
             if (estado == 'APROBADA') ...[
               const SizedBox(height: 10),
-
               _DatoSolicitud(
                 icono: Icons.verified_user_outlined,
                 titulo: 'Rol aprobado',
                 valor: nombreRolAprobado,
               ),
             ],
-
             const SizedBox(height: 10),
-
             _DatoSolicitud(
               icono: Icons.numbers,
               titulo: 'Solicitud',
@@ -499,7 +467,6 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
             if (solicitud['observacion'] != null &&
                 solicitud['observacion'].toString().trim().isNotEmpty) ...[
               const SizedBox(height: 14),
-
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
@@ -508,8 +475,7 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  'Observación: '
-                  '${solicitud['observacion']}',
+                  'Observación: ${solicitud['observacion']}',
                   style: const TextStyle(fontSize: 13),
                 ),
               ),
@@ -520,7 +486,6 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
             // ==================================================
             if (estado == 'PENDIENTE') ...[
               const SizedBox(height: 18),
-
               Row(
                 children: [
                   Expanded(
@@ -541,9 +506,7 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
                       ),
                     ),
                   ),
-
                   const SizedBox(width: 10),
-
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: _cargando
@@ -560,9 +523,7 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 10),
-
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -590,7 +551,6 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
             // ==================================================
             if (estado == 'APROBADA') ...[
               const SizedBox(height: 14),
-
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
@@ -601,9 +561,7 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
                 child: const Row(
                   children: [
                     Icon(Icons.check_circle, color: Colors.green),
-
                     SizedBox(width: 8),
-
                     Expanded(
                       child: Text(
                         'Esta solicitud ya fue aprobada.',
@@ -623,7 +581,6 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
             // ==================================================
             if (estado == 'RECHAZADA') ...[
               const SizedBox(height: 14),
-
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
@@ -634,9 +591,7 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
                 child: const Row(
                   children: [
                     Icon(Icons.cancel, color: Colors.red),
-
                     SizedBox(width: 8),
-
                     Expanded(
                       child: Text(
                         'Esta solicitud fue rechazada.',
@@ -666,58 +621,61 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
       appBar: AppBar(
         title: const Text('Solicitudes de acceso'),
         centerTitle: true,
+        backgroundColor: Colors.blue[700],
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _cargarDatos,
+          ),
+        ],
       ),
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
           : _solicitudes.isEmpty
-          ? RefreshIndicator(
-              onRefresh: _cargarDatos,
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: const [
-                  SizedBox(height: 180),
-
-                  Center(
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.inbox_outlined,
-                          size: 70,
-                          color: Colors.grey,
+              ? RefreshIndicator(
+                  onRefresh: _cargarDatos,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: const [
+                      SizedBox(height: 180),
+                      Center(
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.inbox_outlined,
+                              size: 70,
+                              color: Colors.grey,
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'No hay solicitudes',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              'Las nuevas solicitudes aparecerán aquí.',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
                         ),
-
-                        SizedBox(height: 16),
-
-                        Text(
-                          'No hay solicitudes',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-
-                        SizedBox(height: 6),
-
-                        Text(
-                          'Las nuevas solicitudes aparecerán aquí.',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            )
-          : RefreshIndicator(
-              onRefresh: _cargarDatos,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _solicitudes.length,
-                itemBuilder: (context, index) {
-                  return _buildSolicitud(_solicitudes[index]);
-                },
-              ),
-            ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _cargarDatos,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _solicitudes.length,
+                    itemBuilder: (context, index) {
+                      return _buildSolicitud(_solicitudes[index]);
+                    },
+                  ),
+                ),
     );
   }
 }
@@ -742,11 +700,8 @@ class _DatoSolicitud extends StatelessWidget {
     return Row(
       children: [
         Icon(icono, size: 20, color: Colors.blue),
-
         const SizedBox(width: 10),
-
         Text('$titulo: ', style: const TextStyle(fontWeight: FontWeight.w600)),
-
         Expanded(child: Text(valor)),
       ],
     );
@@ -770,11 +725,9 @@ class _EstadoSolicitud extends StatelessWidget {
       case 'APROBADA':
         color = Colors.green;
         break;
-
       case 'RECHAZADA':
         color = Colors.red;
         break;
-
       default:
         color = Colors.orange;
     }

@@ -1,11 +1,14 @@
+// lib/modules/auth/controller/auth_controller.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import '../service/auth_service.dart';
 import '../../../models/usuario_obra_model.dart';
 
 class AuthController {
   final AuthService _authService = AuthService();
 
+  // ============================================================
+  // INICIAR SESIÓN
+  // ============================================================
   Future<String?> iniciarSesion({
     required String telefono,
     required String contrasena,
@@ -53,6 +56,9 @@ class AuthController {
     }
   }
 
+  // ============================================================
+  // REGISTRAR USUARIO
+  // ============================================================
   Future<String?> registrarUsuario({
     String? correo,
     required String contrasena,
@@ -128,15 +134,60 @@ class AuthController {
     }
   }
 
+  // ============================================================
+  // OBTENER OBRAS DEL USUARIO
+  // ============================================================
   Future<List<UsuarioObraModel>> obtenerObrasUsuario() async {
     return await _authService.obtenerObrasUsuario();
   }
 
+  // ============================================================
+  // OBTENER ID DEL USUARIO
+  // ============================================================
   Future<int?> obtenerIdUsuario() async {
     return await _authService.obtenerIdUsuario();
   }
 
+  // ============================================================
+  // CERRAR SESIÓN
+  // ============================================================
   Future<void> cerrarSesion() async {
     await _authService.cerrarSesion();
+  }
+
+  // ============================================================
+  // ✅ NUEVO: VERIFICAR SI ES ADMINISTRADOR
+  // ============================================================
+  Future<bool> verificarSiEsAdmin() async {
+    try {
+      return await _authService.esAdministrador();
+    } catch (e) {
+      print('Error al verificar si es admin: $e');
+      return false;
+    }
+  }
+
+  // ============================================================
+  // ✅ NUEVO: OBTENER ROL DEL USUARIO
+  // ============================================================
+  Future<String?> obtenerRolUsuario() async {
+    try {
+      return await _authService.obtenerRolUsuario();
+    } catch (e) {
+      print('Error al obtener rol: $e');
+      return null;
+    }
+  }
+
+  // ============================================================
+  // ✅ NUEVO: OBTENER DATOS COMPLETOS DEL USUARIO
+  // ============================================================
+  Future<Map<String, dynamic>?> obtenerDatosUsuario() async {
+    try {
+      return await _authService.obtenerDatosUsuario();
+    } catch (e) {
+      print('Error al obtener datos del usuario: $e');
+      return null;
+    }
   }
 }

@@ -33,14 +33,15 @@ class _RegistroViewState extends State<RegistroView> {
       _cargando = true;
     });
 
+    final correo = _correoController.text.trim();
     final telefono = _telefonoController.text.trim();
 
     final mensaje = await _authController.registrarUsuario(
-      correo: _correoController.text,
+      correo: correo.isEmpty ? null : correo,
       contrasena: _contrasenaController.text,
       nombre: _nombreController.text,
       apellido: _apellidoController.text,
-      telefono: telefono.isEmpty ? null : telefono,
+      telefono: telefono,
     );
 
     if (!mounted) {
@@ -152,23 +153,17 @@ class _RegistroViewState extends State<RegistroView> {
                 const SizedBox(height: 16),
 
                 _campo(
-                  controller: _correoController,
-                  label: 'Correo electrónico',
-                  icon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
+                  controller: _telefonoController,
+                  label: 'Número de celular',
+                  icon: Icons.phone_android_outlined,
+                  keyboardType: TextInputType.phone,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Ingresa tu correo';
+                      return 'Ingresa tu número de celular';
                     }
-
-                    final correoValido = RegExp(
-                      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-                    );
-
-                    if (!correoValido.hasMatch(value.trim())) {
-                      return 'Ingresa un correo válido';
+                    if (value.trim().length < 7) {
+                      return 'El celular debe tener al menos 7 dígitos';
                     }
-
                     return null;
                   },
                 ),
@@ -176,10 +171,22 @@ class _RegistroViewState extends State<RegistroView> {
                 const SizedBox(height: 16),
 
                 _campo(
-                  controller: _telefonoController,
-                  label: 'Teléfono',
-                  icon: Icons.phone_outlined,
-                  keyboardType: TextInputType.phone,
+                  controller: _correoController,
+                  label: 'Correo electrónico (Opcional)',
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value != null && value.trim().isNotEmpty) {
+                      final correoValido = RegExp(
+                        r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                      );
+
+                      if (!correoValido.hasMatch(value.trim())) {
+                        return 'Ingresa un correo válido';
+                      }
+                    }
+                    return null;
+                  },
                 ),
 
                 const SizedBox(height: 16),

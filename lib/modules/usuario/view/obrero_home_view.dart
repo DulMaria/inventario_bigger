@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:inventario_bigger/modules/piso/view/piso_obrero_view.dart'
     show PisosObraView;
+import 'Obrero/historial_solicitudes_obrero_view.dart';
 
 class ObreroHomeView extends StatefulWidget {
   final int idObra;
@@ -92,7 +93,15 @@ class _ObreroHomeViewState extends State<ObreroHomeView> {
               descripcion:
                   'Consulta el historial de tus solicitudes y actividades.',
               onTap: () {
-                // Aquí conectaremos la vista de historial.
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HistorialSolicitudesObreroView(
+                      idObra: widget.idObra,
+                      idUsuario: widget.idUsuario,
+                    ),
+                  ),
+                );
               },
             ),
           ],

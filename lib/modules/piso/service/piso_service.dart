@@ -13,7 +13,7 @@ class PisoService {
     required int idObra,
     required String nombre,
     required String tipoPiso,
-    required int? numeroPiso,
+    required int numeroPiso,
   }) async {
     final respuesta = await _supabase
         .from('pisos')
@@ -40,8 +40,7 @@ class PisoService {
         .from('pisos')
         .select('*, obras(*)')
         .eq('id_obra', idObra)
-        .eq('estado', true)
-        .order('numero_piso', ascending: true);
+        .order('numero_piso', ascending: false);
 
     return (respuesta as List).map((piso) => PisoModel.fromMap(piso)).toList();
   }
@@ -55,7 +54,7 @@ class PisoService {
     required String nombre,
     required String estadoObra,
     required String tipoPiso,
-    required int? numeroPiso,
+    required int numeroPiso,
   }) async {
     final respuesta = await _supabase
         .from('pisos')
@@ -116,11 +115,8 @@ class PisoService {
 
   Future<bool> existeNumeroPiso({
     required int idObra,
-    required int? numeroPiso,
+    required int numeroPiso,
   }) async {
-    if (numeroPiso == null) {
-      return false;
-    }
     final respuesta = await _supabase
         .from('pisos')
         .select('id_piso')
@@ -138,11 +134,8 @@ class PisoService {
   Future<bool> existeOtroNumeroPiso({
     required int idObra,
     required int idPisoActual,
-    required int? numeroPiso,
+    required int numeroPiso,
   }) async {
-    if (numeroPiso == null) {
-      return false;
-    }
     final respuesta = await _supabase
         .from('pisos')
         .select('id_piso')

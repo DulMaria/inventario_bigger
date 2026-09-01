@@ -22,6 +22,12 @@ class _CrearPisoViewState extends State<CrearPisoView> {
 
   int? _numeroPiso;
 
+  @override
+  void initState() {
+    super.initState();
+    _calcularNumeroPiso();
+  }
+
   // ============================================================
   // CALCULAR NÚMERO AUTOMÁTICO
   // ============================================================
@@ -30,32 +36,22 @@ class _CrearPisoViewState extends State<CrearPisoView> {
     final pisos = await _pisoController.obtenerPisos(widget.idObra);
 
     // ----------------------------------------------------------
-    // TERRAZA
+    // PISOS SUPERIORES / SOBRE LOZA (NORMAL O TERRAZA)
     // ----------------------------------------------------------
-    // Las terrazas NO tienen número de piso.
-    if (_tipoPiso == 'TERRAZA') {
-      _numeroPiso = null;
-      return;
-    }
-
-    // ----------------------------------------------------------
-    // PISOS NORMALES
-    // ----------------------------------------------------------
-    if (_tipoPiso == 'NORMAL') {
-      final normales = pisos
-          .where((p) => p.tipoPiso == 'NORMAL')
+    if (_tipoPiso == 'NORMAL' || _tipoPiso == 'TERRAZA') {
+      final positivos = pisos
+          .where((p) => p.numeroPiso > 0)
           .map((p) => p.numeroPiso)
-          .whereType<int>()
-          .where((n) => n > 0)
           .toList();
 
-      if (normales.isEmpty) {
+      if (positivos.isEmpty) {
         _numeroPiso = 1;
       } else {
-        normales.sort();
-        _numeroPiso = normales.last + 1;
+        positivos.sort();
+        _numeroPiso = positivos.last + 1;
       }
 
+      if (mounted) setState(() {});
       return;
     }
 
@@ -64,19 +60,18 @@ class _CrearPisoViewState extends State<CrearPisoView> {
     // ----------------------------------------------------------
     if (_tipoPiso == 'SOTANO') {
       final sotanos = pisos
-          .where((p) => p.tipoPiso == 'SOTANO')
+          .where((p) => p.numeroPiso < 0)
           .map((p) => p.numeroPiso)
-          .whereType<int>()
-          .where((n) => n < 0)
           .toList();
 
       if (sotanos.isEmpty) {
         _numeroPiso = -1;
       } else {
         sotanos.sort();
-        _numeroPiso = sotanos.first - 1;
+        _numeroPiso = sotanos.first - 1; // sotanos.first es el más negativo (-2 < -1)
       }
 
+      if (mounted) setState(() {});
       return;
     }
   }
@@ -94,10 +89,10 @@ class _CrearPisoViewState extends State<CrearPisoView> {
         return _numeroPiso != null ? 'Sótano ${_numeroPiso!.abs()}' : 'Sótano';
 
       case 'TERRAZA':
-        return 'Terraza';
+        return _numeroPiso != null ? 'Terraza (Nivel $_numeroPiso)' : 'Terraza';
 
       default:
-        return '';
+        return 'Nivel';
     }
   }
 
@@ -113,26 +108,24 @@ class _CrearPisoViewState extends State<CrearPisoView> {
     });
 
     try {
-      // Primero calculamos el número.
+      // Calculamos o confirmamos el número
       await _calcularNumeroPiso();
+
+      if (_numeroPiso == null) {
+        throw Exception('No se pudo calcular el número de nivel.');
+      }
 
       if (!mounted) return;
 
-      // --------------------------------------------------------
-      // SI NO ESCRIBIÓ NOMBRE
-      // --------------------------------------------------------
       final nombre = nombreIngresado.isEmpty
           ? _nombrePredeterminado()
           : nombreIngresado;
 
-      // --------------------------------------------------------
-      // CREAR
-      // --------------------------------------------------------
       await _pisoController.crearPiso(
         idObra: widget.idObra,
         nombre: nombre,
         tipoPiso: _tipoPiso,
-        numeroPiso: _numeroPiso,
+        numeroPiso: _numeroPiso!,
       );
 
       if (!mounted) return;
@@ -172,15 +165,11 @@ class _CrearPisoViewState extends State<CrearPisoView> {
     setState(() {
       _tipoPiso = valor;
       _numeroPiso = null;
-
-      // Limpiamos el nombre porque cambia el tipo.
       _nombreController.clear();
     });
-  }
 
-  // ============================================================
-  // DISPOSE
-  // ============================================================
+    _calcularNumeroPiso();
+  }
 
   @override
   void dispose() {
@@ -198,38 +187,50 @@ class _CrearPisoViewState extends State<CrearPisoView> {
 
     switch (_tipoPiso) {
       case 'SOTANO':
-        hint = 'Sótano 1';
+        hint = _numeroPiso != null ? 'Sótano ${_numeroPiso!.abs()}' : 'Sótano 1';
         break;
 
       case 'TERRAZA':
-        hint = 'Terraza principal';
+        hint = _numeroPiso != null ? 'Terraza (Nivel $_numeroPiso)' : 'Terraza';
         break;
 
       default:
-        hint = 'Piso 1';
+        hint = _numeroPiso != null ? 'Piso $_numeroPiso' : 'Piso 1';
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Crear piso')),
-
+      appBar: AppBar(
+        title: const Text('Crear piso'),
+        backgroundColor: const Color(0xFF2FA9E0),
+        foregroundColor: Colors.white,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // ==================================================
             // TIPO
             // ==================================================
-
             DropdownButtonFormField<String>(
               initialValue: _tipoPiso,
               decoration: const InputDecoration(
-                labelText: 'Tipo de nivel',
+                labelText: 'Tipo de nivel / losa',
                 border: OutlineInputBorder(),
               ),
               items: const [
-                DropdownMenuItem(value: 'NORMAL', child: Text('Piso normal')),
-                DropdownMenuItem(value: 'SOTANO', child: Text('Sótano')),
-                DropdownMenuItem(value: 'TERRAZA', child: Text('Terraza')),
+                DropdownMenuItem(
+                  value: 'NORMAL',
+                  child: Text('Piso normal / Departamento'),
+                ),
+                DropdownMenuItem(
+                  value: 'TERRAZA',
+                  child: Text('Terraza'),
+                ),
+                DropdownMenuItem(
+                  value: 'SOTANO',
+                  child: Text('Sótano (Subterráneo)'),
+                ),
               ],
               onChanged: _cargando ? null : _cambiarTipo,
             ),
@@ -244,39 +245,69 @@ class _CrearPisoViewState extends State<CrearPisoView> {
               maxLength: 100,
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
-                labelText: 'Nombre',
+                labelText: 'Nombre o descripción del piso',
                 hintText: hint,
                 border: const OutlineInputBorder(),
                 helperText: 'Si lo dejas vacío se asignará automáticamente.',
               ),
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
             // ==================================================
             // INFORMACIÓN DEL NÚMERO
             // ==================================================
-            if (_tipoPiso == 'TERRAZA')
-              const Text('Las terrazas no utilizan número de piso.')
-            else
-              const Text('El número de piso se asignará automáticamente.'),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE1F3FC),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: Color(0xFF1D7FAE)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      _numeroPiso != null
+                          ? 'Nivel asignado automáticamente: Nivel $_numeroPiso'
+                          : 'Calculando nivel...',
+                      style: const TextStyle(
+                        color: Color(0xFF1D7FAE),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
 
             // ==================================================
             // BOTÓN
             // ==================================================
             SizedBox(
-              width: double.infinity,
+              height: 48,
               child: ElevatedButton(
                 onPressed: _cargando ? null : _crearPiso,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2FA9E0),
+                  foregroundColor: Colors.white,
+                ),
                 child: _cargando
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
-                    : const Text('Crear piso'),
+                    : const Text(
+                        'Crear piso',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
               ),
             ),
           ],

@@ -7,23 +7,21 @@ class AuthController {
   final AuthService _authService = AuthService();
 
   Future<String?> iniciarSesion({
-    required String correo,
+    required String telefono,
     required String contrasena,
   }) async {
-    if (correo.trim().isEmpty) {
-      return 'Ingresa tu correo';
+    final limpio = telefono.trim();
+
+    if (limpio.isEmpty) {
+      return 'Ingresa tu número de celular';
     }
 
-    if (correo.contains(' ')) {
-      return 'El correo no debe contener espacios';
+    if (limpio.contains(' ')) {
+      return 'No debe contener espacios';
     }
 
-    final correoValido = RegExp(
-      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-    );
-
-    if (!correoValido.hasMatch(correo.trim())) {
-      return 'Ingresa un correo válido, por ejemplo: usuario@gmail.com';
+    if (limpio.length < 7) {
+      return 'Ingresa un número de celular válido (mínimo 7 dígitos)';
     }
 
     if (contrasena.isEmpty) {
@@ -36,24 +34,31 @@ class AuthController {
 
     try {
       await _authService.iniciarSesion(
-        correo: correo.trim(),
+        telefono: limpio,
         contrasena: contrasena,
       );
 
       return null;
+    } on AuthException catch (e) {
+      // ignore: avoid_print
+      print('--> [AUTH EXCEPTION] Code: ${e.statusCode} | Msg: ${e.message}');
+      if (e.message.toLowerCase().contains('invalid login credentials')) {
+        return 'Credenciales inválidas: la contraseña no coincide o el usuario no está registrado en Supabase Auth.';
+      }
+      return 'Error de autenticación: ${e.message}';
     } catch (e) {
-      print('Error al iniciar sesión: $e');
-
-      return 'Correo o contraseña incorrectos';
+      // ignore: avoid_print
+      print('--> [AUTH ERROR] Inesperado: $e');
+      return 'Error al iniciar sesión: ${e.toString().replaceFirst("Exception: ", "")}';
     }
   }
 
   Future<String?> registrarUsuario({
-    required String correo,
+    String? correo,
     required String contrasena,
     required String nombre,
     required String apellido,
-    String? telefono,
+    required String telefono,
   }) async {
     if (nombre.trim().isEmpty) {
       return 'Ingresa tu nombre';
@@ -63,20 +68,27 @@ class AuthController {
       return 'Ingresa tu apellido';
     }
 
-    if (correo.trim().isEmpty) {
-      return 'Ingresa tu correo';
+    if (telefono.trim().isEmpty) {
+      return 'Ingresa tu número de celular';
     }
 
-    if (correo.contains(' ')) {
-      return 'El correo no debe contener espacios';
+    if (telefono.trim().length < 7) {
+      return 'El número de celular debe tener al menos 7 dígitos';
     }
 
-    final correoValido = RegExp(
-      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-    );
+    if (correo != null && correo.trim().isNotEmpty) {
+      final correoLimpio = correo.trim();
+      if (correoLimpio.contains(' ')) {
+        return 'El correo no debe contener espacios';
+      }
 
-    if (!correoValido.hasMatch(correo.trim())) {
-      return 'Ingresa un correo válido';
+      final correoValido = RegExp(
+        r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+      );
+
+      if (!correoValido.hasMatch(correoLimpio)) {
+        return 'Ingresa un correo válido';
+      }
     }
 
     if (contrasena.isEmpty) {
@@ -89,11 +101,11 @@ class AuthController {
 
     try {
       final respuesta = await _authService.registrarUsuario(
-        correo: correo.trim(),
+        correo: correo?.trim(),
         contrasena: contrasena,
         nombre: nombre.trim(),
         apellido: apellido.trim(),
-        telefono: telefono?.trim(),
+        telefono: telefono.trim(),
       );
 
       if (respuesta.user == null) {
@@ -102,25 +114,17 @@ class AuthController {
 
       return null;
     } on AuthApiException catch (e) {
-      print('Error de Supabase Auth: ${e.code} - ${e.message}');
-
-      if (e.code == 'user_already_exists') {
-        return 'Ya existe una cuenta asociada a este correo';
-      }
-
-      if (e.code == 'email_exists') {
-        return 'Ya existe una cuenta asociada a este correo';
+      if (e.code == 'user_already_exists' || e.code == 'email_exists') {
+        return 'Ya existe una cuenta asociada a este usuario/celular';
       }
 
       if (e.code == 'over_email_send_rate_limit') {
         return 'Se realizaron demasiados intentos. Espera unos segundos e inténtalo nuevamente.';
       }
 
-      return 'No se pudo crear la cuenta';
+      return 'No se pudo crear la cuenta: ${e.message}';
     } catch (e) {
-      print('Error al registrar usuario: $e');
-
-      return 'No se pudo completar el registro';
+      return 'No se pudo completar el registro: ${e.toString().replaceFirst('Exception: ', '')}';
     }
   }
 

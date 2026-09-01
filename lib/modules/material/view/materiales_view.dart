@@ -3,17 +3,20 @@ import 'package:flutter/material.dart';
 import '../../../models/material_model.dart';
 import '../controller/material_controller.dart';
 import '../../solicitud/controller/solicitud_controller.dart';
+import '../../solicitud/controller/solicitud_obrero_controller.dart';
 
 class MaterialesView extends StatefulWidget {
   final int idObra;
   final int idPiso;
   final int idUsuario;
+  final int idRol; // 1: Obrero, 2: Técnico
 
   const MaterialesView({
     super.key,
     required this.idObra,
     required this.idPiso,
     required this.idUsuario,
+    this.idRol = 1,
   });
 
   @override
@@ -26,6 +29,7 @@ class _MaterialesViewState extends State<MaterialesView> {
   final List<Map<String, dynamic>> _solicitud = [];
 
   final SolicitudController _solicitudController = SolicitudController();
+  final SolicitudObreroController _solicitudObreroController = SolicitudObreroController();
 
   bool _enviandoSolicitud = false;
 
@@ -178,11 +182,21 @@ class _MaterialesViewState extends State<MaterialesView> {
     });
 
     try {
-      await _solicitudController.crearSolicitud(
-        idPiso: widget.idPiso,
-        idUsuario: widget.idUsuario,
-        materiales: _solicitud,
-      );
+      if (widget.idRol == 2) {
+        // TÉCNICO: Crea directamente la solicitud oficial para Compras
+        await _solicitudController.crearSolicitud(
+          idPiso: widget.idPiso,
+          idUsuario: widget.idUsuario,
+          materiales: _solicitud,
+        );
+      } else {
+        // OBRERO: Pasa a revisión del rol Técnico
+        await _solicitudObreroController.crearSolicitudObrero(
+          idPiso: widget.idPiso,
+          idUsuario: widget.idUsuario,
+          materiales: _solicitud,
+        );
+      }
 
       if (!mounted) return;
 
@@ -191,9 +205,15 @@ class _MaterialesViewState extends State<MaterialesView> {
         _enviandoSolicitud = false;
       });
 
+      final String mensajeExito = widget.idRol == 2
+          ? 'Solicitud enviada directamente a Compras.'
+          : 'Solicitud enviada al Técnico para su revisión.';
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Solicitud enviada correctamente.')),
+        SnackBar(content: Text(mensajeExito)),
       );
+
+      Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
 

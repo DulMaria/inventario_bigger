@@ -9,6 +9,7 @@ import 'seleccionar_rol_view.dart';
 
 // IMPORTA TUS HOMES
 import '../../usuario/view/obrero_home_view.dart';
+import '../../tecnico/view/tecnico_home_view.dart';
 import '../../obra/view/gerente_home_view.dart';
 import '../../auth/controller/auth_controller.dart';
 
@@ -229,7 +230,14 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
       // TÉCNICO
       // ========================================================
       case 2:
-        _mostrarMensaje('Rol Técnico detectado. Falta conectar su Home.');
+        if (!mounted) return;
+        await Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                TecnicoHomeView(idObra: idObra, idUsuario: idUsuario),
+          ),
+        );
         break;
 
       // ========================================================

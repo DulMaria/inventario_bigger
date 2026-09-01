@@ -19,6 +19,23 @@ class PisoModel {
     required this.estado,
   });
 
+  String get etiquetaNivel {
+    final nombreValido = nombre != null &&
+        nombre!.trim().isNotEmpty &&
+        !nombre!.toLowerCase().startsWith('piso') &&
+        !nombre!.toLowerCase().startsWith('sótano') &&
+        !nombre!.toLowerCase().startsWith('sotano') &&
+        !nombre!.toLowerCase().startsWith('terraza');
+
+    if (tipoPiso == 'SOTANO') {
+      return 'Sótano ${numeroPiso.abs()}${nombreValido ? ' ($nombre)' : ''}';
+    }
+    if (tipoPiso == 'TERRAZA') {
+      return 'Terraza (Nivel $numeroPiso)${nombreValido ? ' ($nombre)' : ''}';
+    }
+    return 'Piso $numeroPiso${nombreValido ? ' ($nombre)' : ''}';
+  }
+
   factory PisoModel.fromMap(Map<String, dynamic> map) {
     return PisoModel(
       idPiso: map['id_piso'] as int,

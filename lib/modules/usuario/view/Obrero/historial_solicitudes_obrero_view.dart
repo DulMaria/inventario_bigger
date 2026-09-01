@@ -171,8 +171,7 @@ class _HistorialSolicitudesObreroViewState
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      sol.piso?.nombre ??
-                                          'Piso (Nivel ${sol.piso?.numeroPiso ?? ''})',
+                                      sol.piso?.etiquetaNivel ?? 'Piso',
                                       style: const TextStyle(
                                         fontSize: 17,
                                         fontWeight: FontWeight.bold,

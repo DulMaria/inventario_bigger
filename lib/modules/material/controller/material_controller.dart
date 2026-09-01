@@ -24,6 +24,14 @@ class MaterialController {
     }
   }
 
+  Future<List<MaterialModel>> buscarSugerencias(String query) async {
+    try {
+      return await _service.buscarSugerencias(query);
+    } catch (e) {
+      return [];
+    }
+  }
+
   Future<MaterialModel> crearMaterial(String nombre) async {
     if (nombre.trim().isEmpty) {
       throw Exception('Ingresa el nombre del material');

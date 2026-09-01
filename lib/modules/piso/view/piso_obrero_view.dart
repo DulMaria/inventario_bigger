@@ -55,18 +55,20 @@ class _PisosObraViewState extends State<PisosObraView> {
     }
   }
 
-  String _textoTipo(String tipo, int numero) {
-    if (tipo == 'TERRAZA') return 'Terraza • Nivel $numero';
-    if (tipo == 'SOTANO') return 'Sótano • Nivel $numero';
-    return 'Piso / Dpto • Nivel $numero';
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4FAFE),
       appBar: AppBar(
-        title: Text(widget.idRol == 2 ? 'Solicitud Directa de Material' : 'Pisos de la obra'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          widget.idRol == 2
+              ? 'Solicitud Directa de Material'
+              : 'Pisos de la obra',
+        ),
         backgroundColor: const Color(0xFF2FA9E0),
         foregroundColor: Colors.white,
         centerTitle: true,
@@ -74,93 +76,136 @@ class _PisosObraViewState extends State<PisosObraView> {
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
           : _pisos.isEmpty
-          ? const Center(child: Text('No hay pisos registrados en esta obra'))
-          : RefreshIndicator(
-              onRefresh: _cargarPisos,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _pisos.length,
-                itemBuilder: (context, index) {
-                  final piso = _pisos[index];
-
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.apartment_outlined,
+                          size: 64,
+                          color: Color(0xFFB7C5CC),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'No hay pisos registrados en esta obra',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E2A32),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Aún no se han configurado niveles o pisos para esta obra.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Color(0xFF7C8A93)),
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.arrow_back),
+                          label: const Text('Volver al inicio'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2FA9E0),
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      leading: Container(
-                        width: 46,
-                        height: 46,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE1F3FC),
-                          borderRadius: BorderRadius.circular(12),
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _cargarPisos,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _pisos.length,
+                    itemBuilder: (context, index) {
+                      final piso = _pisos[index];
+
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(
-                          Icons.apartment,
-                          color: Color(0xFF2FA9E0),
-                        ),
-                      ),
-                      title: Text(
-                        piso.nombre ?? 'Sin nombre',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
-                      ),
-                      subtitle: Text(
-                        _textoTipo(piso.tipoPiso, piso.numeroPiso),
-                        style: const TextStyle(color: Color(0xFF7C8A93)),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          leading: Container(
+                            width: 46,
+                            height: 46,
                             decoration: BoxDecoration(
                               color: const Color(0xFFE1F3FC),
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Text(
-                              piso.estadoObra,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF1D7FAE),
+                            child: const Icon(
+                              Icons.apartment,
+                              color: Color(0xFF2FA9E0),
+                            ),
+                          ),
+                          title: Text(
+                            piso.etiquetaNivel,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Estado: ${piso.estadoObra}',
+                            style: const TextStyle(color: Color(0xFF7C8A93)),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE1F3FC),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  piso.tipoPiso,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF1D7FAE),
+                                  ),
+                                ),
                               ),
-                            ),
+                              const SizedBox(width: 8),
+                              const Icon(
+                                Icons.arrow_forward_ios,
+                                size: 16,
+                                color: Color(0xFF7C8A93),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFF7C8A93)),
-                        ],
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => MaterialesView(
-                              idObra: widget.idObra,
-                              idPiso: piso.idPiso,
-                              idUsuario: widget.idUsuario,
-                              idRol: widget.idRol,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MaterialesView(
+                                  idObra: widget.idObra,
+                                  idPiso: piso.idPiso,
+                                  idUsuario: widget.idUsuario,
+                                  idRol: widget.idRol,
+                                  piso: piso,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
     );
   }
 }
-

@@ -131,8 +131,7 @@ class _SolicitudesObrerosViewState extends State<SolicitudesObrerosView> {
                           ? '${sol.usuario!.nombre} ${sol.usuario!.apellido}'
                           : 'Obrero #${sol.idUsuario}';
 
-                      final piso = sol.piso?.nombre ??
-                          'Piso (Nivel ${sol.piso?.numeroPiso ?? ''})';
+                      final piso = sol.piso?.etiquetaNivel ?? 'Piso';
 
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),

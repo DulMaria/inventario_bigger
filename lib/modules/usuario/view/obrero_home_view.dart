@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:inventario_bigger/modules/piso/view/piso_obrero_view.dart'
     show PisosObraView;
 import 'Obrero/historial_solicitudes_obrero_view.dart';
+import '../../solicitud_acceso/view/seleccionar_obra_view.dart';
 
 class ObreroHomeView extends StatefulWidget {
   final int idObra;
@@ -38,6 +39,16 @@ class _ObreroHomeViewState extends State<ObreroHomeView> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4FAFE),
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Cambiar de obra',
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const SeleccionarObraView()),
+            );
+          },
+        ),
         title: const Text('Inicio'),
         backgroundColor: const Color(0xFF2FA9E0),
         foregroundColor: Colors.white,

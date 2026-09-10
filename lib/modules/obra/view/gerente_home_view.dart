@@ -5,14 +5,17 @@ import '../../solicitud_acceso/view/seleccionar_obra_view.dart';
 
 import '../../auth/controller/auth_controller.dart';
 import '../../auth/view/login_view.dart';
+import 'proformas_gerente_view.dart';
 
 class GerenteHomeView extends StatelessWidget {
   final int? idObra;
+  final int? idUsuario;
   final String? nombreObra;
 
   const GerenteHomeView({
     super.key,
     this.idObra,
+    this.idUsuario,
     this.nombreObra,
   });
 
@@ -184,61 +187,32 @@ class GerenteHomeView extends StatelessWidget {
                     color: Colors.amber.shade800,
                   ),
                 ),
-                title: Row(
-                  children: [
-                    const Text(
-                      'Proformas Llegadas',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.amber.shade100,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        'Próximamente',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amber.shade900,
-                        ),
-                      ),
-                    ),
-                  ],
+                title: const Text(
+                  'Proformas Llegadas',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
                 subtitle: const Text(
-                  'Revisión y aprobación de proformas y cotizaciones enviadas por compras.',
+                  'Revisión y autorización de cotizaciones y proformas enviadas por compras.',
                   style: TextStyle(color: Color(0xFF7C8A93)),
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: const Row(
-                        children: [
-                          Icon(Icons.info_outline, color: Color(0xFF2FA9E0)),
-                          SizedBox(width: 8),
-                          Text('Módulo en desarrollo'),
-                        ],
+                onTap: () async {
+                  if (idObra == null) return;
+                  final authCtrl = AuthController();
+                  final userActualId = idUsuario ?? await authCtrl.obtenerIdUsuario() ?? 0;
+
+                  if (!context.mounted) return;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ProformasGerenteView(
+                        idObra: idObra!,
+                        idUsuarioGerente: userActualId,
+                        nombreObra: nombreObra,
                       ),
-                      content: const Text(
-                        'Aquí podrás visualizar y aprobar las proformas y cotizaciones que te envíe el encargado de compras.',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          child: const Text('Entendido'),
-                        ),
-                      ],
                     ),
                   );
                 },

@@ -10,6 +10,7 @@ import '../../solicitud_acceso/view/solicitudes_acceso_view.dart';  // ✅ NUEVA
 import '../../../models/obra_model.dart';
 import '../../auth/controller/auth_controller.dart';
 import '../../auth/view/login_view.dart';
+import 'admin_proformas_view.dart';
 
 class AdminPage extends StatelessWidget {
   const AdminPage({super.key});
@@ -27,7 +28,8 @@ class AdminPage extends StatelessWidget {
             'Obras',
             'Pisos',
             'Usuarios',
-            'Solicitudes',
+            'Solicitudes de Acceso',
+            'Proformas y Cotizaciones',
           ];
           return Text(titles[controller.selectedIndex.value]);
         }),
@@ -224,10 +226,19 @@ class AdminPage extends StatelessWidget {
                 ),
                 _buildDrawerItem(
                   icon: Icons.pending_actions,
-                  title: 'Solicitudes',
+                  title: 'Solicitudes de Acceso',
                   isSelected: controller.selectedIndex.value == 4,
                   onTap: () {
                     controller.cambiarVista(4);
+                    Get.back();
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.receipt_long,
+                  title: 'Proformas y Cotizaciones',
+                  isSelected: controller.selectedIndex.value == 5,
+                  onTap: () {
+                    controller.cambiarVista(5);
                     Get.back();
                   },
                 ),
@@ -296,8 +307,11 @@ class AdminPage extends StatelessWidget {
         // ✅ VISTA DE USUARIOS (propia del admin)
         return _buildUsuariosView(controller);
       case 4:
-        // ✅ REUTILIZAR VISTA DE SOLICITUDES
-        return const SolicitudesAccesoView();  // ✅ VISTA REUTILIZADA
+        // ✅ REUTILIZAR VISTA DE SOLICITUDES DE ACCESO
+        return const SolicitudesAccesoView();
+      case 5:
+        // ✅ PROFORMAS Y COTIZACIONES (GLOBAL)
+        return const AdminProformasView();
       default:
         return _buildDashboard(controller);
     }
@@ -478,7 +492,7 @@ class AdminPage extends StatelessWidget {
                     itemCount: controller.solicitudesRecientes.length > 5
                         ? 5
                         : controller.solicitudesRecientes.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    separatorBuilder: (_, _) => const Divider(height: 1),
                     itemBuilder: (context, index) {
                       final solicitud = controller.solicitudesRecientes[index];
                       final estado = solicitud['estado'] ?? 'PENDIENTE';

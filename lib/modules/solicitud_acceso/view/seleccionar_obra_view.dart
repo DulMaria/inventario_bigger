@@ -11,6 +11,7 @@ import 'seleccionar_rol_view.dart';
 import '../../usuario/view/obrero_home_view.dart';
 import '../../tecnico/view/tecnico_home_view.dart';
 import '../../obra/view/gerente_home_view.dart';
+import '../../compras/view/compras_home_view.dart';
 import '../../administrador/view/admin_page.dart';
 import '../../auth/controller/auth_controller.dart';
 import '../../auth/view/login_view.dart';
@@ -246,11 +247,13 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
       // GERENTE
       // ========================================================
       case 3:
+        if (!mounted) return;
         await Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (_) => GerenteHomeView(
               idObra: idObra,
+              idUsuario: idUsuario,
               nombreObra: _obraSeleccionada?.nombre,
             ),
           ),
@@ -261,7 +264,17 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
       // COMPRAS
       // ========================================================
       case 4:
-        _mostrarMensaje('Rol Compras detectado. Falta conectar su Home.');
+        if (!mounted) return;
+        await Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ComprasHomeView(
+              idObra: idObra,
+              idUsuario: idUsuario,
+              nombreObra: _obraSeleccionada?.nombre,
+            ),
+          ),
+        );
         break;
 
       // ========================================================

@@ -42,6 +42,10 @@ dependencies:
   geocoding: ^4.0.0
   geolocator: ^14.0.3
   http: ^1.6.0
+  image_picker: ^1.1.2
+  excel: ^4.0.6
+  path_provider: ^2.1.5
+  open_filex: ^4.7.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

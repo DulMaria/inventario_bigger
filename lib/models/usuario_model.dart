@@ -7,6 +7,8 @@ class UsuarioModel {
   final String? telefono;
   final bool estado;
 
+  String get nombreCompleto => '$nombre $apellido'.trim();
+
   UsuarioModel({
     required this.idUsuario,
     required this.idAuth,

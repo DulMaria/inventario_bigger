@@ -19,6 +19,14 @@ class ComprasController {
     return await _service.obtenerSolicitudesAprobadas(idObra);
   }
 
+  Future<List<SolicitudModel>> obtenerSolicitudesCompradas(int idObra) async {
+    return await _service.obtenerSolicitudesCompradas(idObra);
+  }
+
+  Future<SolicitudModel?> obtenerSolicitudPorId(int idSolicitud) async {
+    return await _service.obtenerSolicitudPorId(idSolicitud);
+  }
+
   Future<List<SolicitudModel>> obtenerTodasLasSolicitudesAdmin({int? idObraFiltro}) async {
     return await _service.obtenerTodasLasSolicitudesAdmin(idObraFiltro: idObraFiltro);
   }
@@ -58,21 +66,25 @@ class ComprasController {
     required int idCotizacion,
     required int idUsuarioGerente,
     String? observacionGerente,
+    String? rutaImagenGanadora,
   }) async {
     await _service.autorizarCotizacion(
       idSolicitud: idSolicitud,
       idCotizacion: idCotizacion,
       idUsuarioGerente: idUsuarioGerente,
       observacionGerente: observacionGerente,
+      rutaImagenGanadora: rutaImagenGanadora,
     );
   }
 
   Future<void> marcarComoComprado({
     required int idSolicitud,
+    int? idUsuarioCompras,
     String? observacion,
   }) async {
     await _service.marcarComoComprado(
       idSolicitud: idSolicitud,
+      idUsuarioCompras: idUsuarioCompras,
       observacion: observacion,
     );
   }

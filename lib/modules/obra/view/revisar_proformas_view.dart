@@ -1,5 +1,5 @@
-// lib/modules/obra/view/revisar_proformas_view.dart
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../../../models/cotizacion_model.dart';
 import '../../../models/solicitud_model.dart';
@@ -42,14 +42,62 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
     });
 
     try {
-      final cotizaciones = await _comprasController.obtenerCotizacionesPorSolicitud(
+      final cotizDb = await _comprasController.obtenerCotizacionesPorSolicitud(
         widget.solicitud.idSolicitud,
       );
+      final solFresh = await _comprasController.obtenerSolicitudPorId(
+        widget.solicitud.idSolicitud,
+      );
+
+      final solUso = solFresh ?? widget.solicitud;
+      final listaFinal = <CotizacionModel>[];
+      final urlsUsadas = <String>{};
+
+      // 1. Agregar de la tabla cotizaciones DB
+      for (final cot in cotizDb) {
+        if (cot.imagenUrl != null && cot.imagenUrl!.isNotEmpty) {
+          listaFinal.add(cot);
+          urlsUsadas.add(cot.imagenUrl!);
+        }
+      }
+
+      // 2. Extraer de observacion (ej. [PROFORMAS: url1|||url2] o legacy con comas)
+      final obsTexto = solUso.observacion ?? widget.solicitud.observacion;
+      if (obsTexto != null && obsTexto.contains('[PROFORMAS:')) {
+        try {
+          final urls = _extraerUrlsProformas(obsTexto);
+          for (final url in urls) {
+            if (!urlsUsadas.contains(url)) {
+              urlsUsadas.add(url);
+              listaFinal.add(CotizacionModel(
+                idSolicitud: widget.solicitud.idSolicitud,
+                idUsuario: 0,
+                imagenUrl: url,
+                estado: solUso.estado == 'APROBADA' ? 'AUTORIZADA' : 'PENDIENTE',
+              ));
+            }
+          }
+        } catch (_) {}
+      }
+
+      // 3. Extraer de detalles (rutaImagen)
+      final detallesUso = [...solUso.detalles, ...widget.solicitud.detalles];
+      for (final d in detallesUso) {
+        if (d.rutaImagen != null && d.rutaImagen!.isNotEmpty && !urlsUsadas.contains(d.rutaImagen)) {
+          urlsUsadas.add(d.rutaImagen!);
+          listaFinal.add(CotizacionModel(
+            idSolicitud: widget.solicitud.idSolicitud,
+            idUsuario: 0,
+            imagenUrl: d.rutaImagen,
+            estado: solUso.estado == 'APROBADA' ? 'AUTORIZADA' : 'PENDIENTE',
+          ));
+        }
+      }
 
       if (!mounted) return;
 
       setState(() {
-        _cotizaciones = cotizaciones;
+        _cotizaciones = listaFinal;
         _cargando = false;
       });
     } catch (e) {
@@ -63,6 +111,69 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
     }
   }
 
+  List<String> _extraerUrlsProformas(String obsTexto) {
+    if (!obsTexto.contains('[PROFORMAS:')) return [];
+    final startIdx = obsTexto.indexOf('[PROFORMAS:') + '[PROFORMAS:'.length;
+    final endIdx = obsTexto.indexOf(']', startIdx);
+    if (endIdx <= startIdx) return [];
+
+    final contenido = obsTexto.substring(startIdx, endIdx).trim();
+    if (contenido.isEmpty) return [];
+
+    // Prioridad 1: Separador nuevo '|||'
+    if (contenido.contains('|||')) {
+      return contenido
+          .split('|||')
+          .map((u) => u.trim())
+          .where((u) => u.isNotEmpty)
+          .toList();
+    }
+
+    // Prioridad 2: Expresión regular para Data URIs base64 o URLs HTTP(S) en texto legacy
+    final urls = <String>[];
+    final regex = RegExp(
+      r'(data:image\/[a-zA-Z0-9+\-.]+;base64,[A-Za-z0-9+/=\s]+|https?:\/\/[^\s,\]]+)',
+    );
+    final matches = regex.allMatches(contenido);
+    for (final match in matches) {
+      final matchedStr = match.group(0)?.trim();
+      if (matchedStr != null && matchedStr.isNotEmpty) {
+        urls.add(matchedStr);
+      }
+    }
+
+    if (urls.isNotEmpty) return urls;
+
+    // Fallback: Separar por comas si no coincide el regex
+    return contenido
+        .split(',')
+        .map((u) => u.trim())
+        .where((u) => u.isNotEmpty)
+        .toList();
+  }
+
+  Uint8List? _tryDecodeBase64(String raw) {
+    try {
+      String cleanData = raw.trim();
+      if (cleanData.isEmpty) return null;
+
+      if (cleanData.contains(',')) {
+        cleanData = cleanData.substring(cleanData.indexOf(',') + 1);
+      } else if (cleanData.startsWith('data:image')) {
+        final headerEnd = cleanData.indexOf(';base64');
+        if (headerEnd != -1) {
+          cleanData = cleanData.substring(headerEnd + 7);
+        }
+      }
+
+      cleanData = cleanData.replaceAll(RegExp(r'\s+'), '');
+      if (cleanData.isEmpty) return null;
+      return base64Decode(cleanData);
+    } catch (_) {
+      return null;
+    }
+  }
+
   void _verImagenCompleta(String? imagenUrl, String titulo) {
     if (imagenUrl == null || imagenUrl.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -73,8 +184,34 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
 
     Widget imageWidget;
     if (imagenUrl.startsWith('data:image')) {
-      final base64Data = imagenUrl.split(',').last;
-      imageWidget = Image.memory(base64Decode(base64Data), fit: BoxFit.contain);
+      final bytes = _tryDecodeBase64(imagenUrl);
+      if (bytes != null && bytes.isNotEmpty) {
+        imageWidget = Image.memory(
+          bytes,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) => const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.broken_image, color: Colors.white70, size: 64),
+                SizedBox(height: 12),
+                Text('No se pudo cargar la imagen', style: TextStyle(color: Colors.white70)),
+              ],
+            ),
+          ),
+        );
+      } else {
+        imageWidget = const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.broken_image, color: Colors.white70, size: 64),
+              SizedBox(height: 12),
+              Text('Formato de imagen no válido', style: TextStyle(color: Colors.white70)),
+            ],
+          ),
+        );
+      }
     } else {
       imageWidget = Image.network(
         imagenUrl,
@@ -209,6 +346,7 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
         observacionGerente: observacionController.text.trim().isNotEmpty
             ? observacionController.text.trim()
             : 'Proforma #${index + 1} autorizada por ${widget.esAdmin ? "Administrador" : "Gerente"}',
+        rutaImagenGanadora: cot.imagenUrl,
       );
 
       observacionController.dispose();
@@ -258,13 +396,30 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
     }
 
     if (imagenUrl.startsWith('data:image')) {
-      final base64Data = imagenUrl.split(',').last;
-      return Image.memory(
-        base64Decode(base64Data),
-        height: 180,
-        width: double.infinity,
-        fit: BoxFit.cover,
-      );
+      final bytes = _tryDecodeBase64(imagenUrl);
+      if (bytes != null && bytes.isNotEmpty) {
+        return Image.memory(
+          bytes,
+          height: 180,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Container(
+            height: 180,
+            color: Colors.grey.shade200,
+            child: const Center(
+              child: Icon(Icons.broken_image, color: Colors.grey, size: 40),
+            ),
+          ),
+        );
+      } else {
+        return Container(
+          height: 180,
+          color: Colors.grey.shade200,
+          child: const Center(
+            child: Icon(Icons.broken_image, color: Colors.grey, size: 40),
+          ),
+        );
+      }
     }
 
     return Image.network(

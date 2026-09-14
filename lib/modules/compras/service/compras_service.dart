@@ -1,13 +1,81 @@
-// lib/modules/compras/service/compras_service.dart
 import 'dart:convert';
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../models/cotizacion_model.dart';
 import '../../../models/solicitud_model.dart';
+import '../../../models/material_model.dart';
+import '../../../models/detalle_solicitud_model.dart';
 
 class ComprasService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
+  // ============================================================
+  // ENRIQUECER MATERIALES DE SOLICITUDES Y RECUPERAR DETALLES
+  // ============================================================
+  Future<List<SolicitudModel>> _enriquecerMateriales(List<SolicitudModel> lista) async {
+    if (lista.isEmpty) return lista;
+
+    Map<int, MaterialModel> mapaMateriales = {};
+    try {
+      final resMat = await _supabase.from('materiales').select();
+      final listaMat = (resMat as List)
+          .map((m) => MaterialModel.fromMap(m as Map<String, dynamic>))
+          .toList();
+      for (final m in listaMat) {
+        mapaMateriales[m.idMaterial] = m;
+      }
+    } catch (_) {}
+
+    final listaEnriquecida = <SolicitudModel>[];
+    for (final sol in lista) {
+      var detallesActuales = sol.detalles;
+
+      // Fallback de rescate: Si detalles vino vacío por RLS en join anidado, consultar detalle_solicitud directamente
+      if (detallesActuales.isEmpty) {
+        try {
+          final resDet = await _supabase
+              .from('detalle_solicitud')
+              .select('*, materiales(*)')
+              .eq('id_solicitud', sol.idSolicitud);
+
+          if ((resDet as List).isNotEmpty) {
+            detallesActuales = (resDet as List)
+                .map((d) => DetalleSolicitudModel.fromMap(Map<String, dynamic>.from(d)))
+                .toList();
+          }
+        } catch (_) {}
+      }
+
+      final nuevosDetalles = <DetalleSolicitudModel>[];
+      for (final det in detallesActuales) {
+        final idMat = det.material?.idMaterial ?? det.idMaterial;
+        final realMat = (idMat != null && mapaMateriales.containsKey(idMat))
+            ? mapaMateriales[idMat]
+            : det.material;
+
+        nuevosDetalles.add(DetalleSolicitudModel(
+          idDetalle: det.idDetalle,
+          solicitud: det.solicitud,
+          material: realMat ?? det.material,
+          cantidad: det.cantidad,
+          rutaImagen: det.rutaImagen,
+          idMaterial: idMat,
+        ));
+      }
+
+      listaEnriquecida.add(SolicitudModel(
+        idSolicitud: sol.idSolicitud,
+        piso: sol.piso,
+        usuario: sol.usuario,
+        fecha: sol.fecha,
+        estado: sol.estado,
+        observacion: sol.observacion,
+        detalles: nuevosDetalles,
+      ));
+    }
+
+    return listaEnriquecida;
+  }
 
   // ============================================================
   // OBTENER SOLICITUDES ENVIADAS A GERENTE (En espera de decisión)
@@ -32,12 +100,31 @@ class ComprasService {
         .map((s) => SolicitudModel.fromMap(s as Map<String, dynamic>))
         .toList();
 
-    // Filtramos aquellas que ya tienen ruta_imagen cargada o nota de revisión
-    return lista.where((s) {
-      final tieneFoto = s.detalles.any((d) => d.rutaImagen != null && d.rutaImagen!.isNotEmpty);
-      final tieneNota = s.observacion != null && s.observacion!.contains('[COTIZACIONES_ENVIADAS]');
-      return tieneFoto || tieneNota;
-    }).toList();
+    final listaEnviadas = <SolicitudModel>[];
+
+    for (final s in lista) {
+      final tieneFotoDetalles = s.detalles.any((d) => d.rutaImagen != null && d.rutaImagen!.isNotEmpty);
+      final tieneNotaObs = s.observacion != null &&
+          (s.observacion!.contains('[COTIZACIONES_ENVIADAS]') || s.observacion!.contains('[PROFORMAS:'));
+
+      bool tieneCotizDb = false;
+      if (!tieneFotoDetalles && !tieneNotaObs) {
+        try {
+          final resCotiz = await _supabase
+              .from('cotizaciones')
+              .select('id_cotizacion')
+              .eq('id_solicitud', s.idSolicitud)
+              .limit(1);
+          tieneCotizDb = (resCotiz as List).isNotEmpty;
+        } catch (_) {}
+      }
+
+      if (tieneFotoDetalles || tieneNotaObs || tieneCotizDb) {
+        listaEnviadas.add(s);
+      }
+    }
+
+    return await _enriquecerMateriales(listaEnviadas);
   }
 
   // ============================================================
@@ -63,12 +150,59 @@ class ComprasService {
         .map((s) => SolicitudModel.fromMap(s as Map<String, dynamic>))
         .toList();
 
-    // Filtramos aquellas que NO tienen cotizaciones subidas todavía
-    return lista.where((s) {
-      final tieneFoto = s.detalles.any((d) => d.rutaImagen != null && d.rutaImagen!.isNotEmpty);
-      final tieneNota = s.observacion != null && s.observacion!.contains('[COTIZACIONES_ENVIADAS]');
-      return !tieneFoto && !tieneNota;
-    }).toList();
+    final listaACotizar = <SolicitudModel>[];
+
+    for (final s in lista) {
+      final tieneFotoDetalles = s.detalles.any((d) => d.rutaImagen != null && d.rutaImagen!.isNotEmpty);
+      final tieneNotaObs = s.observacion != null &&
+          (s.observacion!.contains('[COTIZACIONES_ENVIADAS]') || s.observacion!.contains('[PROFORMAS:'));
+
+      bool tieneCotizDb = false;
+      if (!tieneFotoDetalles && !tieneNotaObs) {
+        try {
+          final resCotiz = await _supabase
+              .from('cotizaciones')
+              .select('id_cotizacion')
+              .eq('id_solicitud', s.idSolicitud)
+              .limit(1);
+          tieneCotizDb = (resCotiz as List).isNotEmpty;
+        } catch (_) {}
+      }
+
+      if (!tieneFotoDetalles && !tieneNotaObs && !tieneCotizDb) {
+        listaACotizar.add(s);
+      }
+    }
+
+    return await _enriquecerMateriales(listaACotizar);
+  }
+
+  // ============================================================
+  // OBTENER UNA SOLICITUD POR SU ID
+  // ============================================================
+  Future<SolicitudModel?> obtenerSolicitudPorId(int idSolicitud) async {
+    try {
+      final respuesta = await _supabase
+          .from('solicitudes')
+          .select('''
+            *,
+            pisos!inner(*),
+            usuarios(*),
+            detalle_solicitud(
+              *,
+              materiales(*)
+            )
+          ''')
+          .eq('id_solicitud', idSolicitud)
+          .maybeSingle();
+
+      if (respuesta != null) {
+        final sol = SolicitudModel.fromMap(Map<String, dynamic>.from(respuesta));
+        final listaEnriquecida = await _enriquecerMateriales([sol]);
+        return listaEnriquecida.isNotEmpty ? listaEnriquecida.first : sol;
+      }
+    } catch (_) {}
+    return null;
   }
 
   // ============================================================
@@ -90,9 +224,37 @@ class ComprasService {
         .eq('estado', 'APROBADA')
         .order('fecha', ascending: false);
 
-    return (respuesta as List)
+    final lista = (respuesta as List)
         .map((s) => SolicitudModel.fromMap(s as Map<String, dynamic>))
         .toList();
+
+    return await _enriquecerMateriales(lista);
+  }
+
+  // ============================================================
+  // OBTENER SOLICITUDES COMPRADAS / HISTORIAL
+  // ============================================================
+  Future<List<SolicitudModel>> obtenerSolicitudesCompradas(int idObra) async {
+    final respuesta = await _supabase
+        .from('solicitudes')
+        .select('''
+          *,
+          pisos!inner(*),
+          usuarios(*),
+          detalle_solicitud(
+            *,
+            materiales(*)
+          )
+        ''')
+        .eq('pisos.id_obra', idObra)
+        .eq('estado', 'COMPRADO')
+        .order('fecha', ascending: false);
+
+    final lista = (respuesta as List)
+        .map((s) => SolicitudModel.fromMap(s as Map<String, dynamic>))
+        .toList();
+
+    return await _enriquecerMateriales(lista);
   }
 
   // ============================================================
@@ -120,9 +282,11 @@ class ComprasService {
 
     final respuesta = await query.order('fecha', ascending: false);
 
-    return (respuesta as List)
+    final lista = (respuesta as List)
         .map((s) => SolicitudModel.fromMap(s as Map<String, dynamic>))
         .toList();
+
+    return await _enriquecerMateriales(lista);
   }
 
   // ============================================================
@@ -140,7 +304,7 @@ class ComprasService {
           .map((c) => CotizacionModel.fromMap(c as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      // Si la tabla cotizaciones aún no existe, retornamos lista vacía
+      // Si la tabla cotizaciones aún no existe o hay error, retornamos lista vacía
       return [];
     }
   }
@@ -191,6 +355,8 @@ class ComprasService {
       throw Exception('Debes registrar al menos una cotización.');
     }
 
+    final urlsFotos = cotizaciones.map((c) => c.imagenUrl).where((u) => u != null && u.isNotEmpty).toList();
+
     // 1. Guardar en la tabla cotizaciones (únicamente fotos de proformas)
     try {
       for (final cot in cotizaciones) {
@@ -202,32 +368,30 @@ class ComprasService {
         });
       }
     } catch (e) {
-      // ignore
+      // ignore si no existe la tabla
     }
 
-    // 2. Guardar la imagen en detalle_solicitud si aplica
-    if (imagenPrincipalProforma != null && imagenPrincipalProforma.isNotEmpty) {
+    // 2. Guardar las fotos en detalle_solicitud.ruta_imagen
+    final fotoPrincipal = imagenPrincipalProforma ?? (urlsFotos.isNotEmpty ? urlsFotos.first : null);
+    if (fotoPrincipal != null && fotoPrincipal.isNotEmpty) {
       try {
         await _supabase
             .from('detalle_solicitud')
-            .update({'ruta_imagen': imagenPrincipalProforma})
-            .eq('id_solicitud', idSolicitud);
-      } catch (_) {}
-    } else if (cotizaciones.isNotEmpty && cotizaciones.first.imagenUrl != null) {
-      try {
-        await _supabase
-            .from('detalle_solicitud')
-            .update({'ruta_imagen': cotizaciones.first.imagenUrl})
+            .update({'ruta_imagen': fotoPrincipal})
             .eq('id_solicitud', idSolicitud);
       } catch (_) {}
     }
 
-    // 3. Actualizar observacion de la solicitud manteniendo estado PENDIENTE
+    // 3. Guardar las fotos y nota en solicitudes.observacion manteniendo estado PENDIENTE
+    final observacionFotos = urlsFotos.isNotEmpty
+        ? '[COTIZACIONES_ENVIADAS] [PROFORMAS: ${urlsFotos.join("|||")}] Proformas enviadas a revisión'
+        : '[COTIZACIONES_ENVIADAS] Cotizaciones recibidas y enviadas a revisión del Gerente';
+
     await _supabase
         .from('solicitudes')
         .update({
           'estado': 'PENDIENTE',
-          'observacion': '[COTIZACIONES_ENVIADAS] Cotizaciones recibidas y enviadas a revisión del Gerente',
+          'observacion': observacionFotos,
         })
         .eq('id_solicitud', idSolicitud);
   }
@@ -240,30 +404,43 @@ class ComprasService {
     required int idCotizacion,
     required int idUsuarioGerente,
     String? observacionGerente,
+    String? rutaImagenGanadora,
   }) async {
-    // 1. Marcar la cotización seleccionada como 'SELECCIONADA' y las demás como 'RECHAZADA'
+    // 1. Marcar la cotización seleccionada como 'AUTORIZADA' y las demás como 'RECHAZADA'
     try {
       await _supabase
           .from('cotizaciones')
           .update({'estado': 'RECHAZADA'})
           .eq('id_solicitud', idSolicitud);
 
-      await _supabase
-          .from('cotizaciones')
-          .update({'estado': 'SELECCIONADA'})
-          .eq('id_cotizacion', idCotizacion);
+      if (idCotizacion != 0) {
+        await _supabase
+            .from('cotizaciones')
+            .update({'estado': 'AUTORIZADA'})
+            .eq('id_cotizacion', idCotizacion);
+      }
     } catch (_) {}
 
-    // 2. Actualizar estado de la solicitud a 'APROBADA'
+    // 2. Actualizar detalle_solicitud.ruta_imagen con la proforma ganadora
+    if (rutaImagenGanadora != null && rutaImagenGanadora.isNotEmpty) {
+      try {
+        await _supabase
+            .from('detalle_solicitud')
+            .update({'ruta_imagen': rutaImagenGanadora})
+            .eq('id_solicitud', idSolicitud);
+      } catch (_) {}
+    }
+
+    // 3. Actualizar estado de la solicitud a 'APROBADA'
     await _supabase
         .from('solicitudes')
         .update({
           'estado': 'APROBADA',
-          'observacion': observacionGerente ?? 'Cotización autorizada por Gerente',
+          'observacion': observacionGerente ?? 'Proforma autorizada por Gerente',
         })
         .eq('id_solicitud', idSolicitud);
 
-    // 3. Registrar en aprobaciones
+    // 4. Registrar en aprobaciones
     try {
       await _supabase.from('aprobaciones').insert({
         'id_solicitud': idSolicitud,
@@ -275,18 +452,34 @@ class ComprasService {
   }
 
   // ============================================================
-  // COMPRAS: MARCAR COMO COMPRADO
+  // COMPRAS: MARCAR COMO COMPRADO Y ENVIAR A ALMACÉN
   // ============================================================
   Future<void> marcarComoComprado({
     required int idSolicitud,
+    int? idUsuarioCompras,
     String? observacion,
   }) async {
+    final obsFinal = observacion != null && observacion.trim().isNotEmpty
+        ? '[COMPRADO] ${observacion.trim()}'
+        : '[COMPRADO] Materiales adquiridos por Compras y transferidos a Almacén';
+
     await _supabase
         .from('solicitudes')
         .update({
           'estado': 'COMPRADO',
-          'observacion': observacion ?? 'Materiales adquiridos por Compras',
+          'observacion': obsFinal,
         })
         .eq('id_solicitud', idSolicitud);
+
+    if (idUsuarioCompras != null && idUsuarioCompras != 0) {
+      try {
+        await _supabase.from('aprobaciones').insert({
+          'id_solicitud': idSolicitud,
+          'id_usuario': idUsuarioCompras,
+          'estado': 'COMPRADO',
+          'comentario': obsFinal,
+        });
+      } catch (_) {}
+    }
   }
 }

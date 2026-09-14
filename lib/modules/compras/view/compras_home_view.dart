@@ -32,6 +32,7 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
   bool _descargandoExcel = false;
   List<SolicitudModel> _solicitudesACotizar = [];
   List<SolicitudModel> _solicitudesAprobadas = [];
+  List<SolicitudModel> _solicitudesCompradas = [];
 
   @override
   void initState() {
@@ -44,11 +45,13 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
     try {
       final aCotizar = await _comprasController.obtenerSolicitudesACotizar(widget.idObra);
       final aprobadas = await _comprasController.obtenerSolicitudesAprobadas(widget.idObra);
+      final compradas = await _comprasController.obtenerSolicitudesCompradas(widget.idObra);
 
       if (!mounted) return;
       setState(() {
         _solicitudesACotizar = aCotizar;
         _solicitudesAprobadas = aprobadas;
+        _solicitudesCompradas = compradas;
         _cargando = false;
       });
     } catch (e) {
@@ -327,6 +330,37 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
                             colorGradiente: const Color(0xFF10B981),
                             badgeColor: Colors.green.shade50,
                             badgeTextColor: const Color(0xFF065F46),
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => PisosComprarView(
+                                    idObra: widget.idObra,
+                                    idUsuario: widget.idUsuario,
+                                    nombreObra: widget.nombreObra,
+                                  ),
+                                ),
+                              );
+                              _cargarDatos();
+                            },
+                          ),
+
+                          const SizedBox(height: 18),
+
+                          // ========================================================
+                          // BOTÓN 3: HISTORIAL DE COMPRAS
+                          // ========================================================
+                          _buildMenuCard(
+                            titulo: 'Historial de Compras',
+                            subtitulo:
+                                'Consulta el historial de todas las órdenes de compras efectuadas y finalizadas.',
+                            badgeTexto: '${_solicitudesCompradas.length} Compradas',
+                            badgeDetalle: 'Finalizadas',
+                            icono: Icons.history_edu_rounded,
+                            colorPrimario: const Color(0xFF4B5563),
+                            colorGradiente: const Color(0xFF6B7280),
+                            badgeColor: Colors.grey.shade100,
+                            badgeTextColor: const Color(0xFF374151),
                             onTap: () async {
                               await Navigator.push(
                                 context,

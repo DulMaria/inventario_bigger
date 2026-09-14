@@ -1,4 +1,5 @@
-// lib/modules/compras/view/detalle_piso_comprar_view.dart
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../../../models/cotizacion_model.dart';
 import '../../../models/solicitud_model.dart';
@@ -27,18 +28,21 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
   final ComprasController _comprasController = ComprasController();
 
   final Map<int, List<CotizacionModel>> _cotizacionesPorSolicitud = {};
+  late List<SolicitudModel> _solicitudesLocales;
   bool _cargandoCotizaciones = true;
+  bool _procesando = false;
 
   @override
   void initState() {
     super.initState();
+    _solicitudesLocales = List.from(widget.solicitudes);
     _cargarCotizaciones();
   }
 
   Future<void> _cargarCotizaciones() async {
     setState(() => _cargandoCotizaciones = true);
     try {
-      for (final sol in widget.solicitudes) {
+      for (final sol in _solicitudesLocales) {
         final cotiz = await _comprasController.obtenerCotizacionesPorSolicitud(sol.idSolicitud);
         _cotizacionesPorSolicitud[sol.idSolicitud] = cotiz;
       }
@@ -52,8 +56,101 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
     }
   }
 
+  Uint8List? _tryDecodeBase64(String raw) {
+    try {
+      String cleanData = raw.trim();
+      if (cleanData.isEmpty) return null;
+
+      if (cleanData.contains(',')) {
+        cleanData = cleanData.substring(cleanData.indexOf(',') + 1);
+      } else if (cleanData.startsWith('data:image')) {
+        final headerEnd = cleanData.indexOf(';base64');
+        if (headerEnd != -1) {
+          cleanData = cleanData.substring(headerEnd + 7);
+        }
+      }
+
+      cleanData = cleanData.replaceAll(RegExp(r'\s+'), '');
+      if (cleanData.isEmpty) return null;
+      return base64Decode(cleanData);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Widget _buildAdaptiveImage(String? url, {double? width, double? height, BoxFit fit = BoxFit.cover}) {
+    if (url == null || url.isEmpty) {
+      return Container(
+        width: width,
+        height: height ?? 140,
+        color: Colors.grey.shade200,
+        child: const Icon(Icons.image_not_supported, color: Colors.grey),
+      );
+    }
+
+    if (url.startsWith('data:image')) {
+      final bytes = _tryDecodeBase64(url);
+      if (bytes != null && bytes.isNotEmpty) {
+        return Image.memory(
+          bytes,
+          width: width,
+          height: height,
+          fit: fit,
+          errorBuilder: (context, error, stackTrace) => Container(
+            width: width,
+            height: height ?? 140,
+            color: Colors.grey.shade200,
+            child: const Icon(Icons.broken_image, color: Colors.grey),
+          ),
+        );
+      }
+    }
+
+    return Image.network(
+      url,
+      width: width,
+      height: height,
+      fit: fit,
+      loadingBuilder: (context, child, progress) {
+        if (progress == null) return child;
+        return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+      },
+      errorBuilder: (context, error, stackTrace) => Container(
+        width: width,
+        height: height ?? 140,
+        color: Colors.grey.shade200,
+        child: const Icon(Icons.broken_image, color: Colors.grey),
+      ),
+    );
+  }
+
   void _verImagenCompleta(String? url, String titulo) {
     if (url == null || url.isEmpty) return;
+
+    Widget imageWidget;
+    if (url.startsWith('data:image')) {
+      final bytes = _tryDecodeBase64(url);
+      if (bytes != null && bytes.isNotEmpty) {
+        imageWidget = Image.memory(bytes, fit: BoxFit.contain);
+      } else {
+        imageWidget = const Center(
+          child: Text('Imagen no disponible', style: TextStyle(color: Colors.white)),
+        );
+      }
+    } else {
+      imageWidget = Image.network(
+        url,
+        fit: BoxFit.contain,
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return const Center(child: CircularProgressIndicator(color: Colors.white));
+        },
+        errorBuilder: (context, error, stackTrace) => const Center(
+          child: Text('Error al cargar la imagen', style: TextStyle(color: Colors.white)),
+        ),
+      );
+    }
+
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
@@ -66,17 +163,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
               minScale: 0.5,
               maxScale: 4.0,
               child: Center(
-                child: Image.network(
-                  url,
-                  fit: BoxFit.contain,
-                  loadingBuilder: (context, child, progress) {
-                    if (progress == null) return child;
-                    return const Center(child: CircularProgressIndicator(color: Colors.white));
-                  },
-                  errorBuilder: (context, error, stackTrace) => const Center(
-                    child: Text('Error al cargar la imagen', style: TextStyle(color: Colors.white)),
-                  ),
-                ),
+                child: imageWidget,
               ),
             ),
             Positioned(
@@ -108,9 +195,209 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
     );
   }
 
+  // ============================================================
+  // COMPRAS: MODAL SEGURO DE CONFIRMACIÓN DE COMPRA Y ALMACÉN
+  // ============================================================
+  Future<void> _confirmarYMarcarComoComprado(SolicitudModel sol) async {
+    final observacionController = TextEditingController();
+    bool aceptoVerificacion = false;
+
+    final confirmar = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade100,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.verified, color: Colors.green.shade800, size: 28),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Confirmar Compra y Envío a Almacén',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.amber.shade300),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded, color: Colors.amber.shade900, size: 22),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '⚠️ Esta acción registrará la compra física de la Solicitud #${sol.idSolicitud} y transferirá su custodia al Almacén.',
+                          style: TextStyle(fontSize: 12, color: Colors.amber.shade900, height: 1.3),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'Materiales incluidos en esta compra:',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1B2A47)),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: sol.detalles.map((d) {
+                      final matNombre = d.material?.nombre ?? 'Material #${d.idMaterial}';
+                      final cant = d.cantidad;
+                      final unidad = 'unid.';
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Text(
+                          '• $matNombre: $cant $unidad',
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: observacionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nº Factura / Proveedor / Notas de Compra',
+                    hintText: 'Ej. Factura #F-1024, Proveedor Ferretero',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 12),
+                InkWell(
+                  onTap: () {
+                    setModalState(() {
+                      aceptoVerificacion = !aceptoVerificacion;
+                    });
+                  },
+                  child: Row(
+                    children: [
+                      Checkbox(
+                        value: aceptoVerificacion,
+                        onChanged: (val) {
+                          setModalState(() {
+                            aceptoVerificacion = val ?? false;
+                          });
+                        },
+                        activeColor: Colors.green.shade700,
+                      ),
+                      const Expanded(
+                        child: Text(
+                          'Confirmo que he adquirido los materiales físicamente.',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton.icon(
+              onPressed: aceptoVerificacion ? () => Navigator.pop(ctx, true) : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green.shade700,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: Colors.grey.shade300,
+              ),
+              icon: const Icon(Icons.check_circle, size: 18),
+              label: const Text('Confirmar Compra'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmar != true) {
+      observacionController.dispose();
+      return;
+    }
+
+    setState(() {
+      _procesando = true;
+    });
+
+    try {
+      final notas = observacionController.text.trim();
+      await _comprasController.marcarComoComprado(
+        idSolicitud: sol.idSolicitud,
+        idUsuarioCompras: widget.idUsuario,
+        observacion: notas.isNotEmpty ? notas : 'Materiales adquiridos por Compras y transferidos a Almacén',
+      );
+
+      observacionController.dispose();
+
+      if (!mounted) return;
+
+      setState(() {
+        _solicitudesLocales.removeWhere((s) => s.idSolicitud == sol.idSolicitud);
+        _procesando = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('✅ Solicitud #${sol.idSolicitud} marcada como COMPRADA. Transferida a Almacén.'),
+          backgroundColor: Colors.green.shade800,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+
+      if (_solicitudesLocales.isEmpty) {
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      observacionController.dispose();
+      if (!mounted) return;
+      setState(() {
+        _procesando = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al marcar como comprado: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final materialesConsolidados = ExcelExporter.consolidarMateriales(widget.solicitudes);
+    final materialesConsolidados = ExcelExporter.consolidarMateriales(_solicitudesLocales);
     final totalMaterialesSumados = materialesConsolidados.fold<int>(0, (sum, m) => sum + m.cantidadTotal);
 
     return Scaffold(
@@ -314,13 +601,38 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
                   child: CircularProgressIndicator(color: Color(0xFF1B2A47)),
                 ),
               )
+            else if (_solicitudesLocales.isEmpty)
+              Card(
+                elevation: 1,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      Icon(Icons.check_circle_outline, size: 64, color: Colors.green.shade600),
+                      const SizedBox(height: 12),
+                      const Text(
+                        '¡Todas las compras de este piso fueron completadas!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1B2A47)),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Los materiales ya fueron transferidos y guardados en Almacén.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                      ),
+                    ],
+                  ),
+                ),
+              )
             else
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: widget.solicitudes.length,
+                itemCount: _solicitudesLocales.length,
                 itemBuilder: (context, index) {
-                  final sol = widget.solicitudes[index];
+                  final sol = _solicitudesLocales[index];
                   final listaCotiz = _cotizacionesPorSolicitud[sol.idSolicitud] ?? [];
 
                   // Fotos con estado APROBADA o todas las disponibles si no hay desglose
@@ -410,15 +722,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
                                           ),
                                           child: ClipRRect(
                                             borderRadius: BorderRadius.circular(8),
-                                            child: Image.network(
-                                              imgUrl,
-                                              fit: BoxFit.cover,
-                                              loadingBuilder: (context, child, progress) {
-                                                if (progress == null) return child;
-                                                return const Center(child: CircularProgressIndicator(strokeWidth: 2));
-                                              },
-                                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
-                                            ),
+                                            child: _buildAdaptiveImage(imgUrl, width: 110, height: 140, fit: BoxFit.cover),
                                           ),
                                         ),
                                         Positioned(
@@ -503,6 +807,30 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
                                 ],
                               ),
                             ),
+
+                          const SizedBox(height: 16),
+
+                          // BOTÓN DE ACCIÓN SEGURO: MARCAR COMO COMPRADO Y ENVIAR A ALMACÉN
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton.icon(
+                              onPressed: _procesando ? null : () => _confirmarYMarcarComoComprado(sol),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green.shade700,
+                                foregroundColor: Colors.white,
+                                elevation: 2,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              icon: const Icon(Icons.verified_user, size: 20),
+                              label: const Text(
+                                'Confirmar Compra (Enviar a Almacén)',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),

@@ -12,6 +12,7 @@ import '../../usuario/view/obrero_home_view.dart';
 import '../../tecnico/view/tecnico_home_view.dart';
 import '../../obra/view/gerente_home_view.dart';
 import '../../compras/view/compras_home_view.dart';
+import '../../almacen/view/almacen_home_view.dart';
 import '../../administrador/view/admin_page.dart';
 import '../../auth/controller/auth_controller.dart';
 import '../../auth/view/login_view.dart';
@@ -281,7 +282,17 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
       // ALMACÉN
       // ========================================================
       case 5:
-        _mostrarMensaje('Rol Almacén detectado. Falta conectar su Home.');
+        if (!mounted) return;
+        await Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AlmacenHomeView(
+              idObra: idObra,
+              idUsuario: idUsuario,
+              nombreObra: _obraSeleccionada?.nombre,
+            ),
+          ),
+        );
         break;
 
       // ========================================================

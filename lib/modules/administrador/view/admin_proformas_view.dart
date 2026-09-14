@@ -77,14 +77,16 @@ class _AdminProformasViewState extends State<AdminProformasView>
       .where((s) =>
           s.estado == 'PENDIENTE' &&
           !s.detalles.any((d) => d.rutaImagen != null && d.rutaImagen!.isNotEmpty) &&
-          !(s.observacion?.contains('[COTIZACIONES_ENVIADAS]') ?? false))
+          !(s.observacion?.contains('[COTIZACIONES_ENVIADAS]') ?? false) &&
+          !(s.observacion?.contains('[PROFORMAS:') ?? false))
       .toList();
 
   List<SolicitudModel> get _solicitudesEnviadas => _todasLasSolicitudes
       .where((s) =>
           s.estado == 'PENDIENTE' &&
           (s.detalles.any((d) => d.rutaImagen != null && d.rutaImagen!.isNotEmpty) ||
-              (s.observacion?.contains('[COTIZACIONES_ENVIADAS]') ?? false)))
+              (s.observacion?.contains('[COTIZACIONES_ENVIADAS]') ?? false) ||
+              (s.observacion?.contains('[PROFORMAS:') ?? false)))
       .toList();
 
   List<SolicitudModel> get _solicitudesAprobadas => _todasLasSolicitudes

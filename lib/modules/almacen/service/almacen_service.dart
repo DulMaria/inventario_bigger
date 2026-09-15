@@ -114,6 +114,66 @@ class AlmacenService {
   }
 
   // ============================================================
+  // OBTENER MATERIALES DISPONIBLES EN ALMACÉN GLOBAL (ADMIN)
+  // ============================================================
+  Future<List<SolicitudModel>> obtenerTodosMaterialesEnAlmacenAdmin({int? idObraFiltro}) async {
+    dynamic query = _supabase.from('solicitudes').select('''
+          *,
+          pisos!inner(
+            *,
+            obras(*)
+          ),
+          usuarios(*),
+          detalle_solicitud(
+            *,
+            materiales(*)
+          )
+        ''').eq('estado', 'COMPRADO');
+
+    if (idObraFiltro != null) {
+      query = query.eq('pisos.id_obra', idObraFiltro);
+    }
+
+    final respuesta = await query.order('fecha', ascending: false);
+
+    final lista = (respuesta as List)
+        .map((s) => SolicitudModel.fromMap(s as Map<String, dynamic>))
+        .toList();
+
+    return await _enriquecerMateriales(lista);
+  }
+
+  // ============================================================
+  // OBTENER HISTORIAL DE ENTREGAS GLOBAL (ADMIN)
+  // ============================================================
+  Future<List<SolicitudModel>> obtenerTodosMaterialesEntregadosAdmin({int? idObraFiltro}) async {
+    dynamic query = _supabase.from('solicitudes').select('''
+          *,
+          pisos!inner(
+            *,
+            obras(*)
+          ),
+          usuarios(*),
+          detalle_solicitud(
+            *,
+            materiales(*)
+          )
+        ''').eq('estado', 'ENTREGADO');
+
+    if (idObraFiltro != null) {
+      query = query.eq('pisos.id_obra', idObraFiltro);
+    }
+
+    final respuesta = await query.order('fecha', ascending: false);
+
+    final lista = (respuesta as List)
+        .map((s) => SolicitudModel.fromMap(s as Map<String, dynamic>))
+        .toList();
+
+    return await _enriquecerMateriales(lista);
+  }
+
+  // ============================================================
   // MARCAR SOLICITUD COMO ENTREGADA A OBRERO / DESPACHADA
   // ============================================================
   Future<void> marcarComoEntregado({

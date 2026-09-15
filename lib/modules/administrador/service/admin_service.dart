@@ -73,56 +73,171 @@ class AdminService {
           .select('*')
           .order('nombre', ascending: true);
 
-      final roles = await getRoles();
-      final Map<int, String> rolesMap = {
-        for (var r in roles)
-          if (r['id_rol'] != null) r['id_rol'] as int: r['nombre'].toString()
-      };
+      // 1. Mapa de Roles
+      final Map<int, String> rolesMap = {};
+      try {
+        final roles = await _supabase.from('roles').select('id_rol, nombre');
+        for (var r in (roles as List)) {
+          if (r['id_rol'] != null) {
+            final id = (r['id_rol'] as num).toInt();
+            rolesMap[id] = r['nombre']?.toString() ?? 'Rol #$id';
+          }
+        }
+      } catch (_) {}
 
-      final obras = await getObras();
-      final Map<int, String> obrasMap = {
-        for (var o in obras)
-          if (o['id_obra'] != null) o['id_obra'] as int: o['nombre'].toString()
-      };
+      // 2. Mapa de Obras
+      final Map<int, String> obrasMap = {};
+      try {
+        final obras = await _supabase.from('obras').select('id_obra, nombre');
+        for (var o in (obras as List)) {
+          if (o['id_obra'] != null) {
+            final id = (o['id_obra'] as num).toInt();
+            obrasMap[id] = o['nombre']?.toString() ?? 'Obra #$id';
+          }
+        }
+      } catch (_) {}
+
+      // 3. Mapeo de usuario_obra por id_usuario
+      final Map<int, List<Map<String, dynamic>>> usuarioObrasMap = {};
+      try {
+        final uoRes = await _supabase.from('usuario_obra').select('*');
+        for (var item in (uoRes as List)) {
+          final uMap = Map<String, dynamic>.from(item);
+          final idUser = uMap['id_usuario'] != null ? (uMap['id_usuario'] as num).toInt() : null;
+          if (idUser != null) {
+            usuarioObrasMap.putIfAbsent(idUser, () => []).add(uMap);
+          }
+        }
+      } catch (_) {}
+
+      // 4. Mapeo de solicitudes_acceso APROBADAS como respaldo por id_usuario
+      final Map<int, List<Map<String, dynamic>>> solAprobadasMap = {};
+      try {
+        final solRes = await _supabase
+            .from('solicitudes_acceso')
+            .select('*')
+            .eq('estado', 'APROBADA');
+        for (var item in (solRes as List)) {
+          final sMap = Map<String, dynamic>.from(item);
+          final idUser = sMap['id_usuario'] != null ? (sMap['id_usuario'] as num).toInt() : null;
+          if (idUser != null) {
+            solAprobadasMap.putIfAbsent(idUser, () => []).add(sMap);
+          }
+        }
+      } catch (_) {}
 
       List<Map<String, dynamic>> usuariosConRol = [];
 
-      for (var usuario in usuarios) {
-        final idUsuario = usuario['id_usuario'] as int;
+      for (var u in (usuarios as List)) {
+        final usuario = Map<String, dynamic>.from(u);
+        final idUsuario = (usuario['id_usuario'] as num).toInt();
 
-        final relaciones = await _supabase
-            .from('usuario_obra')
-            .select('id_rol, id_obra')
-            .eq('id_usuario', idUsuario)
-            .eq('estado', true);
+        final relaciones = usuarioObrasMap[idUsuario] ?? [];
+        final solAprobadas = solAprobadasMap[idUsuario] ?? [];
 
-        String? rol;
+        String? rolPrincipal;
         List<String> obrasList = [];
+        List<Map<String, dynamic>> obrasDetalladas = [];
+        final Set<int> obrasProcesadas = {};
 
+        // A. Procesar registros de usuario_obra
         for (var rel in relaciones) {
-          final idRol = rel['id_rol'] as int?;
-          if (idRol != null) {
-            rol ??= rolesMap[idRol];
+          final idRol = rel['id_rol'] != null ? (rel['id_rol'] as num).toInt() : null;
+          final nombreRol = idRol != null ? (rolesMap[idRol] ?? 'Sin rol') : 'Sin rol';
+
+          if (idRol != null && rolPrincipal == null) {
+            rolPrincipal = nombreRol;
           }
 
-          final idObra = rel['id_obra'] as int?;
-          if (idObra != null && obrasMap.containsKey(idObra)) {
-            obrasList.add(obrasMap[idObra]!);
+          final idObra = rel['id_obra'] != null ? (rel['id_obra'] as num).toInt() : null;
+          final nombreObra = idObra != null ? (obrasMap[idObra] ?? 'Obra #$idObra') : 'Obra Desconocida';
+          final estadoRel = rel['estado'] == true;
+
+          if (idObra != null) {
+            obrasProcesadas.add(idObra);
+            if (estadoRel) {
+              obrasList.add(nombreObra);
+            }
+
+            obrasDetalladas.add({
+              'id_obra': idObra,
+              'nombre_obra': nombreObra,
+              'id_rol': idRol,
+              'nombre_rol': nombreRol,
+              'estado': estadoRel,
+            });
+          }
+        }
+
+        // B. Procesar respaldo de solicitudes_acceso APROBADAS
+        for (var sol in solAprobadas) {
+          final idObra = sol['id_obra'] != null ? (sol['id_obra'] as num).toInt() : null;
+          if (idObra != null && !obrasProcesadas.contains(idObra)) {
+            final idRol = sol['id_rol_aprobado'] != null
+                ? (sol['id_rol_aprobado'] as num).toInt()
+                : (sol['id_rol_solicitado'] != null ? (sol['id_rol_solicitado'] as num).toInt() : null);
+
+            final nombreRol = idRol != null ? (rolesMap[idRol] ?? 'Sin rol') : 'Sin rol';
+            final nombreObra = obrasMap[idObra] ?? 'Obra #$idObra';
+
+            if (idRol != null && rolPrincipal == null) {
+              rolPrincipal = nombreRol;
+            }
+
+            obrasProcesadas.add(idObra);
+            obrasList.add(nombreObra);
+
+            obrasDetalladas.add({
+              'id_obra': idObra,
+              'nombre_obra': nombreObra,
+              'id_rol': idRol,
+              'nombre_rol': nombreRol,
+              'estado': true,
+            });
           }
         }
 
         usuariosConRol.add({
           ...usuario,
-          'rol': rol ?? 'Sin rol',
+          'rol': rolPrincipal ?? 'Sin rol',
           'obras': obrasList,
+          'obras_detalladas': obrasDetalladas,
+          'estado': usuario['estado'] ?? true,
         });
       }
 
       return usuariosConRol;
     } catch (e) {
-      print('Error al obtener usuarios: $e');
       return [];
     }
+  }
+
+  // ============================================================
+  // CAMBIAR ESTADO DE USUARIO EN UNA OBRA ESPECÍFICA
+  // ============================================================
+  Future<void> cambiarEstadoUsuarioObra({
+    required int idUsuario,
+    required int idObra,
+    required bool estado,
+  }) async {
+    await _supabase
+        .from('usuario_obra')
+        .update({'estado': estado})
+        .eq('id_usuario', idUsuario)
+        .eq('id_obra', idObra);
+  }
+
+  // ============================================================
+  // CAMBIAR ESTADO DE USUARIO A NIVEL GLOBAL
+  // ============================================================
+  Future<void> cambiarEstadoUsuarioGlobal({
+    required int idUsuario,
+    required bool estado,
+  }) async {
+    await _supabase
+        .from('usuarios')
+        .update({'estado': estado})
+        .eq('id_usuario', idUsuario);
   }
 
   // ============================================================

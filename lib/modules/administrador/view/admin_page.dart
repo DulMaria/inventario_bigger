@@ -6,11 +6,13 @@ import '../controller/admin_controller.dart';
 // ✅ IMPORTAR VISTAS EXISTENTES
 import '../../obra/view/obra_view.dart';
 import '../../piso/view/pisos_view.dart';
-import '../../solicitud_acceso/view/solicitudes_acceso_view.dart';  // ✅ NUEVA IMPORTACIÓN
+import '../../solicitud_acceso/view/solicitudes_acceso_view.dart';
 import '../../../models/obra_model.dart';
 import '../../auth/controller/auth_controller.dart';
 import '../../auth/view/login_view.dart';
 import 'admin_proformas_view.dart';
+import 'admin_almacen_view.dart';
+import 'perfil_usuario_view.dart';
 
 class AdminPage extends StatelessWidget {
   const AdminPage({super.key});
@@ -19,86 +21,172 @@ class AdminPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final AdminController controller = Get.put(AdminController());
 
-    return Scaffold(
-      drawer: _buildDrawer(context, controller),
-      appBar: AppBar(
-        title: Obx(() {
-          final titles = [
-            'Dashboard',
-            'Obras',
-            'Pisos',
-            'Usuarios',
-            'Solicitudes de Acceso',
-            'Proformas y Cotizaciones',
-          ];
-          return Text(titles[controller.selectedIndex.value]);
-        }),
-        backgroundColor: Colors.blue[700],
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: controller.refreshDashboard,
-            tooltip: 'Refrescar',
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWebLayout = constraints.maxWidth >= 900;
+
+        if (isWebLayout) {
+          return Scaffold(
+            backgroundColor: const Color(0xFFF4F6F9),
+            body: Row(
+              children: [
+                // PERSISTENT SIDEBAR FOR WEB/DESKTOP
+                SizedBox(
+                  width: 280,
+                  child: _buildDrawerContent(context, controller, isWeb: true),
+                ),
+                const VerticalDivider(width: 1, thickness: 1),
+                // MAIN CONTENT AREA FOR WEB
+                Expanded(
+                  child: Scaffold(
+                    backgroundColor: const Color(0xFFF4F6F9),
+                    appBar: AppBar(
+                      title: Obx(() {
+                        final titles = [
+                          'Dashboard',
+                          'Obras',
+                          'Pisos',
+                          'Usuarios y Accesos por Obra',
+                          'Solicitudes de Acceso',
+                          'Proformas y Cotizaciones',
+                          'Almacén y Stock (Global)',
+                          'Mi Perfil',
+                        ];
+                        return Text(
+                          controller.selectedIndex.value < titles.length
+                              ? titles[controller.selectedIndex.value]
+                              : 'Administrador',
+                        );
+                      }),
+                      backgroundColor: Colors.blue[700],
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      actions: [
+                        IconButton(
+                          icon: const Icon(Icons.refresh),
+                          onPressed: controller.refreshDashboard,
+                          tooltip: 'Refrescar',
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.person),
+                          onPressed: () => controller.cambiarVista(7),
+                          tooltip: 'Mi Perfil',
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.logout),
+                          onPressed: () => _cerrarSesion(context),
+                          tooltip: 'Cerrar sesión',
+                        ),
+                      ],
+                    ),
+                    body: Obx(() {
+                      if (controller.isLoading.value) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (controller.errorMessage.value.isNotEmpty) {
+                        return _buildErrorState(controller);
+                      }
+                      return _buildBody(context, controller, isWebLayout: true);
+                    }),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // MOBILE LAYOUT
+        return Scaffold(
+          backgroundColor: const Color(0xFFF4F6F9),
+          drawer: Drawer(child: _buildDrawerContent(context, controller, isWeb: false)),
+          appBar: AppBar(
+            title: Obx(() {
+              final titles = [
+                'Dashboard',
+                'Obras',
+                'Pisos',
+                'Usuarios y Accesos por Obra',
+                'Solicitudes de Acceso',
+                'Proformas y Cotizaciones',
+                'Almacén y Stock (Global)',
+                'Mi Perfil',
+              ];
+              return Text(
+                controller.selectedIndex.value < titles.length
+                    ? titles[controller.selectedIndex.value]
+                    : 'Administrador',
+              );
+            }),
+            backgroundColor: Colors.blue[700],
+            foregroundColor: Colors.white,
+            elevation: 0,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: controller.refreshDashboard,
+                tooltip: 'Refrescar',
+              ),
+              IconButton(
+                icon: const Icon(Icons.person),
+                onPressed: () => controller.cambiarVista(7),
+                tooltip: 'Mi Perfil',
+              ),
+              IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed: () => _cerrarSesion(context),
+                tooltip: 'Cerrar sesión',
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _cerrarSesion(context),
-            tooltip: 'Cerrar sesión',
+          body: Obx(() {
+            if (controller.isLoading.value) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (controller.errorMessage.value.isNotEmpty) {
+              return _buildErrorState(controller);
+            }
+            return _buildBody(context, controller, isWebLayout: false);
+          }),
+        );
+      },
+    );
+  }
+
+  Widget _buildErrorState(AdminController controller) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+          const SizedBox(height: 16),
+          Text(
+            controller.errorMessage.value,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 16),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: controller.refreshDashboard,
+            child: const Text('Reintentar'),
           ),
         ],
       ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Cargando datos...'),
-              ],
-            ),
-          );
-        }
-
-        if (controller.errorMessage.value.isNotEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
-                const SizedBox(height: 16),
-                Text(
-                  controller.errorMessage.value,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: controller.refreshDashboard,
-                  child: const Text('Reintentar'),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return _buildBody(context, controller);
-      }),
     );
   }
 
   // ============================================================
-  // DRAWER - MENÚ LATERAL CON PERFIL
+  // DRAWER / SIDEBAR CONTENT
   // ============================================================
-  Widget _buildDrawer(BuildContext context, AdminController controller) {
-    return Drawer(
-      child: Column(
-        children: [
-          // Header - Perfil del Administrador
-          Container(
+  Widget _buildDrawerContent(BuildContext context, AdminController controller, {required bool isWeb}) {
+    return Column(
+      children: [
+        // Header - Perfil del Administrador
+        InkWell(
+          onTap: () {
+            controller.cambiarVista(7);
+            if (!isWeb) Navigator.pop(context);
+          },
+          child: Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -109,11 +197,11 @@ class AdminPage extends StatelessWidget {
             child: Column(
               children: [
                 const CircleAvatar(
-                  radius: 40,
+                  radius: 36,
                   backgroundColor: Colors.white,
                   child: Icon(
                     Icons.admin_panel_settings,
-                    size: 40,
+                    size: 36,
                     color: Colors.blue,
                   ),
                 ),
@@ -122,9 +210,10 @@ class AdminPage extends StatelessWidget {
                   controller.adminNombre.value.isNotEmpty
                       ? controller.adminNombre.value
                       : 'Administrador',
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 )),
@@ -134,126 +223,115 @@ class AdminPage extends StatelessWidget {
                       : 'Administrador',
                   style: const TextStyle(
                     color: Colors.white70,
-                    fontSize: 13,
+                    fontSize: 12,
                   ),
                 )),
                 const SizedBox(height: 8),
-                Obx(() {
-                  if (controller.adminTelefono.value.isEmpty) return const SizedBox();
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '📱 ${controller.adminTelefono.value}',
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
-                    ),
-                  );
-                }),
-                const SizedBox(height: 4),
-                Obx(() {
-                  if (controller.adminCorreo.value.isEmpty) return const SizedBox();
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '✉️ ${controller.adminCorreo.value}',
-                      style: const TextStyle(color: Colors.white70, fontSize: 11),
-                    ),
-                  );
-                }),
-                const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.green[400]!.withOpacity(0.3),
+                    color: Colors.green[400]!.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.green[400]!),
                   ),
                   child: const Text(
-                    '🟢 Acceso Total',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    '🟢 Acceso Total (Global)',
+                    style: TextStyle(color: Colors.white, fontSize: 11),
                   ),
                 ),
               ],
             ),
           ),
-          // Menú
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              children: [
-                _buildDrawerItem(
-                  icon: Icons.dashboard,
-                  title: 'Dashboard',
-                  isSelected: controller.selectedIndex.value == 0,
-                  onTap: () {
-                    controller.cambiarVista(0);
-                    Get.back();
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.construction,
-                  title: 'Obras',
-                  isSelected: controller.selectedIndex.value == 1,
-                  onTap: () {
-                    controller.cambiarVista(1);
-                    Get.back();
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.layers,
-                  title: 'Pisos',
-                  isSelected: controller.selectedIndex.value == 2,
-                  onTap: () {
-                    controller.cambiarVista(2);
-                    Get.back();
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.people,
-                  title: 'Usuarios',
-                  isSelected: controller.selectedIndex.value == 3,
-                  onTap: () {
-                    controller.cambiarVista(3);
-                    Get.back();
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.pending_actions,
-                  title: 'Solicitudes de Acceso',
-                  isSelected: controller.selectedIndex.value == 4,
-                  onTap: () {
-                    controller.cambiarVista(4);
-                    Get.back();
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.receipt_long,
-                  title: 'Proformas y Cotizaciones',
-                  isSelected: controller.selectedIndex.value == 5,
-                  onTap: () {
-                    controller.cambiarVista(5);
-                    Get.back();
-                  },
-                ),
-                const Divider(),
-                _buildDrawerItem(
-                  icon: Icons.logout,
-                  title: 'Cerrar Sesión',
-                  color: Colors.red,
-                  onTap: () => _cerrarSesion(context),
-                ),
-              ],
-            ),
+        ),
+        // Menú
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            children: [
+              _buildDrawerItem(
+                icon: Icons.dashboard,
+                title: 'Dashboard',
+                isSelected: controller.selectedIndex.value == 0,
+                onTap: () {
+                  controller.cambiarVista(0);
+                  if (!isWeb) Navigator.pop(context);
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.construction,
+                title: 'Obras',
+                isSelected: controller.selectedIndex.value == 1,
+                onTap: () {
+                  controller.cambiarVista(1);
+                  if (!isWeb) Navigator.pop(context);
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.layers,
+                title: 'Pisos',
+                isSelected: controller.selectedIndex.value == 2,
+                onTap: () {
+                  controller.cambiarVista(2);
+                  if (!isWeb) Navigator.pop(context);
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.people_alt_outlined,
+                title: 'Usuarios y Accesos',
+                isSelected: controller.selectedIndex.value == 3,
+                onTap: () {
+                  controller.cambiarVista(3);
+                  if (!isWeb) Navigator.pop(context);
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.assignment_turned_in,
+                title: 'Solicitudes de Acceso',
+                isSelected: controller.selectedIndex.value == 4,
+                onTap: () {
+                  controller.cambiarVista(4);
+                  if (!isWeb) Navigator.pop(context);
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.receipt_long,
+                title: 'Proformas / Cotizaciones',
+                isSelected: controller.selectedIndex.value == 5,
+                onTap: () {
+                  controller.cambiarVista(5);
+                  if (!isWeb) Navigator.pop(context);
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.warehouse_rounded,
+                title: 'Almacén y Stock (Global)',
+                isSelected: controller.selectedIndex.value == 6,
+                onTap: () {
+                  controller.cambiarVista(6);
+                  if (!isWeb) Navigator.pop(context);
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.person_outline,
+                title: 'Mi Perfil',
+                isSelected: controller.selectedIndex.value == 7,
+                onTap: () {
+                  controller.cambiarVista(7);
+                  if (!isWeb) Navigator.pop(context);
+                },
+              ),
+              const Divider(),
+              _buildDrawerItem(
+                icon: Icons.logout,
+                title: 'Cerrar Sesión',
+                color: Colors.red,
+                isSelected: false,
+                onTap: () => _cerrarSesion(context),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -293,27 +371,26 @@ class AdminPage extends StatelessWidget {
   // ============================================================
   // BODY - Cambia según el índice seleccionado
   // ============================================================
-  Widget _buildBody(BuildContext context, AdminController controller) {
+  Widget _buildBody(BuildContext context, AdminController controller, {required bool isWebLayout}) {
     switch (controller.selectedIndex.value) {
       case 0:
-        return _buildDashboard(controller);
+        return _buildDashboard(controller, isWebLayout: isWebLayout);
       case 1:
-        // ✅ REUTILIZAR VISTA DE OBRAS
         return const ObrasView();
       case 2:
-        // ✅ REUTILIZAR VISTA DE PISOS
         return _buildPisosSelector(controller);
       case 3:
-        // ✅ VISTA DE USUARIOS (propia del admin)
-        return _buildUsuariosView(controller);
+        return _buildUsuariosView(context, controller, isWebLayout: isWebLayout);
       case 4:
-        // ✅ REUTILIZAR VISTA DE SOLICITUDES DE ACCESO
         return const SolicitudesAccesoView();
       case 5:
-        // ✅ PROFORMAS Y COTIZACIONES (GLOBAL)
         return const AdminProformasView();
+      case 6:
+        return const AdminAlmacenView();
+      case 7:
+        return const PerfilUsuarioView();
       default:
-        return _buildDashboard(controller);
+        return _buildDashboard(controller, isWebLayout: isWebLayout);
     }
   }
 
@@ -395,76 +472,226 @@ class AdminPage extends StatelessWidget {
   }
 
   // ============================================================
-  // 1. DASHBOARD
+  // 1. DASHBOARD RESPONSIVO MEJORADO
   // ============================================================
-  Widget _buildDashboard(AdminController controller) {
+  Widget _buildDashboard(AdminController controller, {required bool isWebLayout}) {
+    final now = DateTime.now();
+    final fechaStr = '${now.day}/${now.month}/${now.year}';
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Banner de Bienvenida
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue.shade800, Colors.indigo.shade900],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.blue.shade900.withValues(alpha: 0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Obx(() => Text(
+                        '👋 ¡Bienvenido de nuevo, ${controller.adminNombre.value.isNotEmpty ? controller.adminNombre.value : "Administrador"}!',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      )),
+                      const SizedBox(height: 6),
+                      Text(
+                        '📅 $fechaStr • Supervisión Global de Obras, Cotizaciones y Almacén en Tiempo Real',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.analytics_outlined, color: Colors.white, size: 32),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Sección de Atajos Rápidos
           const Text(
-            'Dashboard',
+            'Acciones Rápidas',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Color(0xFF1E2A32),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Resumen general del sistema',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
+          const SizedBox(height: 10),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildQuickActionTile(
+                  icon: Icons.construction,
+                  label: 'Obras y Pisos',
+                  color: Colors.blue,
+                  onTap: () => controller.cambiarVista(1),
+                ),
+                const SizedBox(width: 10),
+                _buildQuickActionTile(
+                  icon: Icons.people_alt,
+                  label: 'Usuarios y Accesos',
+                  color: Colors.green,
+                  onTap: () => controller.cambiarVista(3),
+                ),
+                const SizedBox(width: 10),
+                _buildQuickActionTile(
+                  icon: Icons.receipt_long,
+                  label: 'Proformas y Cotizar',
+                  color: Colors.amber.shade800,
+                  onTap: () => controller.cambiarVista(5),
+                ),
+                const SizedBox(width: 10),
+                _buildQuickActionTile(
+                  icon: Icons.warehouse_rounded,
+                  label: 'Almacén Global',
+                  color: Colors.purple,
+                  onTap: () => controller.cambiarVista(6),
+                ),
+                const SizedBox(width: 10),
+                _buildQuickActionTile(
+                  icon: Icons.person,
+                  label: 'Mi Perfil',
+                  color: Colors.teal,
+                  onTap: () => controller.cambiarVista(7),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 24),
 
-          // Tarjetas de estadísticas
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  title: 'Obras',
-                  value: controller.totalObras.value.toString(),
-                  icon: Icons.construction,
-                  color: Colors.blue,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  title: 'Usuarios',
-                  value: controller.totalUsuarios.value.toString(),
-                  icon: Icons.people,
-                  color: Colors.green,
-                ),
-              ),
-            ],
+          const SizedBox(height: 20),
+
+          const Text(
+            'Métricas Globales',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E2A32),
+            ),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  title: 'Materiales',
-                  value: controller.totalMateriales.value.toString(),
-                  icon: Icons.inventory,
-                  color: Colors.orange,
+
+          // Tarjetas de estadísticas (Grid responsivo)
+          if (isWebLayout)
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    title: 'Obras Registradas',
+                    value: controller.totalObras.value.toString(),
+                    icon: Icons.construction,
+                    color: Colors.blue,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  title: 'Solicitudes Pendientes',
-                  value: controller.solicitudesPendientes.value.toString(),
-                  icon: Icons.pending_actions,
-                  color: Colors.red,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    title: 'Usuarios Totales',
+                    value: controller.totalUsuarios.value.toString(),
+                    icon: Icons.people,
+                    color: Colors.green,
+                  ),
                 ),
-              ),
-            ],
-          ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    title: 'Materiales en Catálogo',
+                    value: controller.totalMateriales.value.toString(),
+                    icon: Icons.inventory,
+                    color: Colors.orange,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    title: 'Solicitudes Pendientes',
+                    value: controller.solicitudesPendientes.value.toString(),
+                    icon: Icons.pending_actions,
+                    color: Colors.red,
+                  ),
+                ),
+              ],
+            )
+          else ...[
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    title: 'Obras Registradas',
+                    value: controller.totalObras.value.toString(),
+                    icon: Icons.construction,
+                    color: Colors.blue,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    title: 'Usuarios Totales',
+                    value: controller.totalUsuarios.value.toString(),
+                    icon: Icons.people,
+                    color: Colors.green,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    title: 'Materiales Catálogo',
+                    value: controller.totalMateriales.value.toString(),
+                    icon: Icons.inventory,
+                    color: Colors.orange,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    title: 'Solicitudes Pendientes',
+                    value: controller.solicitudesPendientes.value.toString(),
+                    icon: Icons.pending_actions,
+                    color: Colors.red,
+                  ),
+                ),
+              ],
+            ),
+          ],
+
           const SizedBox(height: 24),
 
           // Solicitudes Recientes
@@ -486,6 +713,7 @@ class AdminPage extends StatelessWidget {
                 const SizedBox(height: 12),
                 Card(
                   elevation: 2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   child: ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -528,7 +756,7 @@ class AdminPage extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: _getEstadoColor(estado).withOpacity(0.1),
+                            color: _getEstadoColor(estado).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -553,120 +781,380 @@ class AdminPage extends StatelessWidget {
   }
 
   // ============================================================
-  // 2. USUARIOS - Vista completa
+  // 2. USUARIOS Y ACCESOS POR OBRA (NUEVA VISTA RESPONSIVA)
   // ============================================================
-  Widget _buildUsuariosView(AdminController controller) {
+  Widget _buildUsuariosView(BuildContext context, AdminController controller, {required bool isWebLayout}) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header
           Row(
             children: [
-              const Text(
-                'Usuarios',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E2A32),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Gestión de Usuarios y Accesos por Obra',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E2A32),
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Inhabilita o habilita el acceso de los usuarios por renuncia o cambio de obra.',
+                      style: TextStyle(fontSize: 13, color: Colors.grey),
+                    ),
+                  ],
                 ),
               ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              Obx(() => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.blue.shade200),
                 ),
-                child: Obx(() => Text(
-                  'Total: ${controller.usuarios.length}',
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                )),
-              ),
+                child: Text(
+                  'Total: ${controller.usuarios.length} usuarios',
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade800, fontSize: 13),
+                ),
+              )),
             ],
           ),
           const SizedBox(height: 16),
+
+          // Filters Bar (Search + Dropdown Obras + Dropdown Estado)
+          Card(
+            elevation: 1,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  // Search Box
+                  SizedBox(
+                    width: isWebLayout ? 280 : double.infinity,
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Buscar por nombre, correo...',
+                        prefixIcon: const Icon(Icons.search, size: 20),
+                        isDense: true,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      ),
+                      onChanged: (val) => controller.busquedaUsuario.value = val,
+                    ),
+                  ),
+
+                  // Obra Filter Dropdown
+                  Obx(() {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade400),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: DropdownButton<int?>(
+                        value: controller.obraFiltro.value,
+                        underline: const SizedBox(),
+                        hint: const Text('Todas las Obras', style: TextStyle(fontSize: 13)),
+                        items: [
+                          const DropdownMenuItem<int?>(
+                            value: null,
+                            child: Text('Todas las Obras', style: TextStyle(fontSize: 13)),
+                          ),
+                          ...controller.obras.map((o) {
+                            return DropdownMenuItem<int?>(
+                              value: o['id_obra'] as int?,
+                              child: Text(o['nombre'].toString(), style: const TextStyle(fontSize: 13)),
+                            );
+                          }),
+                        ],
+                        onChanged: (val) => controller.obraFiltro.value = val,
+                      ),
+                    );
+                  }),
+
+                  // Estado Filter Dropdown
+                  Obx(() {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade400),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: DropdownButton<String>(
+                        value: controller.estadoFiltro.value,
+                        underline: const SizedBox(),
+                        items: const [
+                          DropdownMenuItem(value: 'TODOS', child: Text('Todos los Estados', style: TextStyle(fontSize: 13))),
+                          DropdownMenuItem(value: 'ACTIVOS', child: Text('🟢 Solo Activos', style: TextStyle(fontSize: 13))),
+                          DropdownMenuItem(value: 'INHABILITADOS', child: Text('🔴 Solo Inhabilitados', style: TextStyle(fontSize: 13))),
+                        ],
+                        onChanged: (val) {
+                          if (val != null) controller.estadoFiltro.value = val;
+                        },
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // User Cards / List
           Expanded(
             child: Obx(() {
-              if (controller.usuarios.isEmpty) {
+              final query = controller.busquedaUsuario.value.toLowerCase().trim();
+              final idObraFiltro = controller.obraFiltro.value;
+              final estadoFiltro = controller.estadoFiltro.value;
+
+              final listaFiltrada = controller.usuarios.where((u) {
+                final nombre = '${u['nombre'] ?? ''} ${u['apellido'] ?? ''}'.toLowerCase();
+                final correo = (u['correo'] ?? '').toString().toLowerCase();
+                final telefono = (u['telefono'] ?? '').toString().toLowerCase();
+                final matchQuery = query.isEmpty ||
+                    nombre.contains(query) ||
+                    correo.contains(query) ||
+                    telefono.contains(query);
+
+                if (!matchQuery) return false;
+
+                final esActivoGlobal = u['estado'] == true;
+                if (estadoFiltro == 'ACTIVOS' && !esActivoGlobal) return false;
+                if (estadoFiltro == 'INHABILITADOS' && esActivoGlobal) return false;
+
+                if (idObraFiltro != null) {
+                  final obrasDet = (u['obras_detalladas'] as List? ?? []);
+                  final tieneObra = obrasDet.any((o) => o['id_obra'] == idObraFiltro);
+                  if (!tieneObra) return false;
+                }
+
+                return true;
+              }).toList();
+
+              if (listaFiltrada.isEmpty) {
                 return const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.people, size: 64, color: Colors.grey),
-                      SizedBox(height: 16),
-                      Text('No hay usuarios registrados'),
+                      Icon(Icons.person_off_outlined, size: 64, color: Colors.grey),
+                      SizedBox(height: 12),
+                      Text('No se encontraron usuarios con los filtros seleccionados', style: TextStyle(color: Colors.grey)),
                     ],
                   ),
                 );
               }
+
               return ListView.builder(
-                itemCount: controller.usuarios.length,
+                itemCount: listaFiltrada.length,
                 itemBuilder: (context, index) {
-                  final usuario = controller.usuarios[index];
-                  final esAdmin = usuario['rol'] == 'administrador' ||
-                                  usuario['rol'] == 'admin';
-                  final obras = usuario['obras'] as List? ?? [];
+                  final u = listaFiltrada[index];
+                  final idUsuario = u['id_usuario'] as int;
+                  final nombreCompleto = '${u['nombre'] ?? ''} ${u['apellido'] ?? ''}'.trim();
+                  final esAdmin = u['rol'] == 'administrador' || u['rol'] == 'admin';
+                  final esActivoGlobal = u['estado'] == true;
+                  final obrasDetalladas = (u['obras_detalladas'] as List? ?? [])
+                      .cast<Map<String, dynamic>>();
 
                   return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: esAdmin ? Colors.green : Colors.blue,
-                        child: Text(
-                          (usuario['nombre']?[0] ?? 'U').toUpperCase(),
-                          style: const TextStyle(color: Colors.white),
-                        ),
+                    elevation: 2,
+                    margin: const EdgeInsets.only(bottom: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      side: BorderSide(
+                        color: esActivoGlobal ? Colors.grey.shade300 : Colors.red.shade300,
+                        width: esActivoGlobal ? 1 : 1.5,
                       ),
-                      title: Text(
-                        '${usuario['nombre'] ?? ''} ${usuario['apellido'] ?? ''}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Column(
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(usuario['telefono'] ?? 'Sin teléfono'),
-                          if (usuario['correo'] != null && usuario['correo'].isNotEmpty)
-                            Text(
-                              usuario['correo'],
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          Text(
-                            'Rol: ${usuario['rol'] ?? 'Sin rol'}',
-                            style: TextStyle(
-                              color: esAdmin ? Colors.green : Colors.blue,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          // Header User Info
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CircleAvatar(
+                                radius: 22,
+                                backgroundColor: !esActivoGlobal
+                                    ? Colors.red.shade400
+                                    : (esAdmin ? Colors.green.shade600 : Colors.blue.shade600),
+                                child: Text(
+                                  (u['nombre']?[0] ?? 'U').toUpperCase(),
+                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      nombreCompleto,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: esActivoGlobal ? const Color(0xFF1E2A32) : Colors.red.shade900,
+                                        decoration: esActivoGlobal ? null : TextDecoration.lineThrough,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '✉️ ${u['correo'] ?? 'Sin correo'} • 📱 ${u['telefono'] ?? 'Sin teléfono'}',
+                                      style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Status Badges & Global Action
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: esActivoGlobal ? Colors.green.shade50 : Colors.red.shade50,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: esActivoGlobal ? Colors.green.shade300 : Colors.red.shade300,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      esActivoGlobal ? '🟢 HABILITADO' : '🔴 INHABILITADO',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: esActivoGlobal ? Colors.green.shade800 : Colors.red.shade800,
+                                      ),
+                                    ),
+                                  ),
+                                  if (!esAdmin) ...[
+                                    const SizedBox(height: 6),
+                                    InkWell(
+                                      onTap: () => _confirmarCambioEstadoGlobal(
+                                        context,
+                                        controller,
+                                        idUsuario: idUsuario,
+                                        nombreUsuario: nombreCompleto,
+                                        estadoActual: esActivoGlobal,
+                                      ),
+                                      child: Text(
+                                        esActivoGlobal ? 'Inhabilitar Global' : 'Reactivar Global',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: esActivoGlobal ? Colors.red.shade700 : Colors.green.shade700,
+                                          fontWeight: FontWeight.bold,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ],
                           ),
-                          if (obras.isNotEmpty)
-                            Text(
-                              'Obras: ${obras.join(', ')}',
-                              style: const TextStyle(fontSize: 12),
+
+                          const SizedBox(height: 14),
+                          const Divider(height: 1),
+                          const SizedBox(height: 10),
+
+                          // Obras vinculadas y sus estados
+                          const Text(
+                            'Acceso y Estado por Obra:',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF1E2A32)),
+                          ),
+                          const SizedBox(height: 8),
+
+                          if (obrasDetalladas.isEmpty)
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text('Sin obras vinculadas', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                            )
+                          else
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: obrasDetalladas.map((obDet) {
+                                final idObra = obDet['id_obra'] as int;
+                                final nombreObra = obDet['nombre_obra'] as String;
+                                final nombreRol = obDet['nombre_rol'] as String;
+                                final esActivoObra = obDet['estado'] == true;
+
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: esActivoObra ? Colors.blue.shade50 : Colors.orange.shade50,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: esActivoObra ? Colors.blue.shade200 : Colors.orange.shade300,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        esActivoObra ? Icons.business : Icons.block,
+                                        size: 16,
+                                        color: esActivoObra ? Colors.blue.shade800 : Colors.orange.shade900,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        '$nombreObra ($nombreRol)',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: esActivoObra ? Colors.blue.shade900 : Colors.orange.shade900,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      InkWell(
+                                        onTap: () => _confirmarCambioEstadoObra(
+                                          context,
+                                          controller,
+                                          idUsuario: idUsuario,
+                                          idObra: idObra,
+                                          nombreObra: nombreObra,
+                                          nombreUsuario: nombreCompleto,
+                                          estadoActualObra: esActivoObra,
+                                        ),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: esActivoObra ? Colors.red.shade100 : Colors.green.shade100,
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            esActivoObra ? 'Inhabilitar' : 'Habilitar',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: esActivoObra ? Colors.red.shade900 : Colors.green.shade900,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
                             ),
                         ],
                       ),
-                      isThreeLine: true,
-                      trailing: esAdmin
-                          ? Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text(
-                                'Admin',
-                                style: TextStyle(
-                                  color: Colors.green,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            )
-                          : const SizedBox(),
                     ),
                   );
                 },
@@ -676,6 +1164,92 @@ class AdminPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // ============================================================
+  // DIÁLOGOS DE CONFIRMACIÓN DE INHABILITACIÓN
+  // ============================================================
+  Future<void> _confirmarCambioEstadoObra(
+    BuildContext context,
+    AdminController controller, {
+    required int idUsuario,
+    required int idObra,
+    required String nombreObra,
+    required String nombreUsuario,
+    required bool estadoActualObra,
+  }) async {
+    final nuevoEstado = !estadoActualObra;
+    final accion = nuevoEstado ? 'habilitar' : 'inhabilitar por renuncia/salida';
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: Text(nuevoEstado ? 'Habilitar en Obra' : 'Inhabilitar en Obra'),
+        content: Text(
+          '¿Estás seguro de que deseas $accion al usuario "$nombreUsuario" en la obra "$nombreObra"?',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: nuevoEstado ? Colors.green : Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(nuevoEstado ? 'Sí, Habilitar' : 'Sí, Inhabilitar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      controller.cambiarEstadoUsuarioObra(
+        idUsuario: idUsuario,
+        idObra: idObra,
+        estado: nuevoEstado,
+        nombreObra: nombreObra,
+      );
+    }
+  }
+
+  Future<void> _confirmarCambioEstadoGlobal(
+    BuildContext context,
+    AdminController controller, {
+    required int idUsuario,
+    required String nombreUsuario,
+    required bool estadoActual,
+  }) async {
+    final nuevoEstado = !estadoActual;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: Text(nuevoEstado ? 'Habilitar Usuario Global' : 'Inhabilitar Usuario Global'),
+        content: Text(
+          '¿Estás seguro de que deseas ${nuevoEstado ? "habilitar" : "inhabilitar totalmente"} al usuario "$nombreUsuario"?',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: nuevoEstado ? Colors.green : Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(nuevoEstado ? 'Sí, Habilitar' : 'Sí, Inhabilitar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      controller.cambiarEstadoUsuarioGlobal(
+        idUsuario: idUsuario,
+        estado: nuevoEstado,
+        nombreUsuario: nombreUsuario,
+      );
+    }
   }
 
   // ============================================================
@@ -700,7 +1274,7 @@ class AdminPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(icon, color: color, size: 20),
@@ -731,6 +1305,52 @@ class AdminPage extends StatelessWidget {
     );
   }
 
+  Widget _buildQuickActionTile({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircleAvatar(
+              radius: 14,
+              backgroundColor: color.withValues(alpha: 0.12),
+              child: Icon(icon, size: 16, color: color),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade800,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ============================================================
   // UTILIDADES
   // ============================================================
@@ -749,47 +1369,9 @@ class AdminPage extends StatelessWidget {
     }
   }
 
-  // ============================================================
-  // CERRAR SESIÓN
-  // ============================================================
-  Future<void> _cerrarSesion(BuildContext context) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cerrar sesión'),
-        content: const Text('¿Estás seguro de que deseas cerrar sesión?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Cerrar sesión',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      try {
-        final authController = AuthController();
-        await authController.cerrarSesion();
-
-        if (context.mounted) {
-          Get.delete<AdminController>();
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const LoginView()),
-            (route) => false,
-          );
-        }
-      } catch (e) {
-        // Manejar error silenciosamente
-      }
-    }
+  void _cerrarSesion(BuildContext context) {
+    final AuthController authController = Get.find<AuthController>();
+    authController.cerrarSesion();
+    Get.offAll(() => const LoginView());
   }
 }

@@ -31,6 +31,13 @@ class AdminController extends GetxController {
   var roles = <Map<String, dynamic>>[].obs;
 
   // ============================================================
+  // FILTROS DE USUARIOS
+  // ============================================================
+  var busquedaUsuario = ''.obs;
+  var obraFiltro = RxnInt(); // null = todas
+  var estadoFiltro = 'TODOS'.obs; // TODOS, ACTIVOS, INHABILITADOS
+
+  // ============================================================
   // DATOS DEL ADMIN (PERFIL)
   // ============================================================
   var adminNombre = ''.obs;
@@ -274,6 +281,82 @@ class AdminController extends GetxController {
       Get.snackbar(
         'Error',
         'No se pudo aprobar la solicitud: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // ============================================================
+  // ACCIONES - INHABILITAR / HABILITAR USUARIO EN OBRA
+  // ============================================================
+  Future<void> cambiarEstadoUsuarioObra({
+    required int idUsuario,
+    required int idObra,
+    required bool estado,
+    required String nombreObra,
+  }) async {
+    try {
+      isLoading.value = true;
+      await _adminService.cambiarEstadoUsuarioObra(
+        idUsuario: idUsuario,
+        idObra: idObra,
+        estado: estado,
+      );
+      await cargarUsuarios();
+      Get.snackbar(
+        'Acceso Actualizado',
+        estado
+            ? '✅ Acceso habilitado en $nombreObra'
+            : '🔴 Usuario inhabilitado en $nombreObra',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: estado ? Colors.green.shade700 : Colors.orange.shade800,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'No se pudo cambiar el estado en la obra: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // ============================================================
+  // ACCIONES - INHABILITAR / HABILITAR USUARIO GLOBALMENTE
+  // ============================================================
+  Future<void> cambiarEstadoUsuarioGlobal({
+    required int idUsuario,
+    required bool estado,
+    required String nombreUsuario,
+  }) async {
+    try {
+      isLoading.value = true;
+      await _adminService.cambiarEstadoUsuarioGlobal(
+        idUsuario: idUsuario,
+        estado: estado,
+      );
+      await cargarUsuarios();
+      Get.snackbar(
+        'Usuario Actualizado',
+        estado
+            ? '✅ Usuario $nombreUsuario habilitado globalmente'
+            : '🔴 Usuario $nombreUsuario inhabilitado globalmente',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: estado ? Colors.green.shade700 : Colors.red.shade700,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'No se pudo cambiar el estado del usuario: $e',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,

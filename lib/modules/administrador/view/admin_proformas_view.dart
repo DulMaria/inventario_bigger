@@ -4,6 +4,7 @@ import '../../../models/obra_model.dart';
 import '../../../models/solicitud_model.dart';
 import '../../compras/controller/compras_controller.dart';
 import '../../obra/controller/obra_controller.dart';
+import '../../compras/view/detalle_cotizar_view.dart';
 import '../../obra/view/revisar_proformas_view.dart';
 import '../../auth/controller/auth_controller.dart';
 
@@ -101,16 +102,20 @@ class _AdminProformasViewState extends State<AdminProformasView>
 
     Color badgeColor;
     String badgeText;
+    String actionText;
 
     if (tipoTab == 0) {
       badgeColor = Colors.orange;
       badgeText = 'A Cotizar';
+      actionText = 'Subir fotos de proformas y cotizar ➔';
     } else if (tipoTab == 1) {
       badgeColor = Colors.blue;
       badgeText = 'En Revisión';
+      actionText = 'Revisar proformas enviadas ➔';
     } else {
       badgeColor = Colors.green;
       badgeText = 'Autorizada';
+      actionText = 'Ver proforma autorizada ➔';
     }
 
     return Card(
@@ -120,17 +125,33 @@ class _AdminProformasViewState extends State<AdminProformasView>
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: () async {
-          final res = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => RevisarProformasView(
-                solicitud: s,
-                idUsuarioGerente: _idAdmin,
-                nombreObra: obraNombre,
-                esAdmin: true,
+          dynamic res;
+          if (tipoTab == 0) {
+            // Abrir vista para subir fotos de proformas como Administrador
+            res = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => DetalleCotizarView(
+                  solicitud: s,
+                  idUsuarioCompras: _idAdmin,
+                  nombreObra: obraNombre,
+                ),
               ),
-            ),
-          );
+            );
+          } else {
+            // Abrir revisión de proformas
+            res = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => RevisarProformasView(
+                  solicitud: s,
+                  idUsuarioGerente: _idAdmin,
+                  nombreObra: obraNombre,
+                  esAdmin: true,
+                ),
+              ),
+            );
+          }
           if (res == true) {
             _cargarDatos();
           }
@@ -203,11 +224,11 @@ class _AdminProformasViewState extends State<AdminProformasView>
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    'Ver detalle y proformas ➔',
+                    actionText,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blue.shade700,
+                      color: badgeColor,
                     ),
                   ),
                 ],

@@ -25,6 +25,7 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
 
   List<SolicitudModel> _solicitudesEnviadas = [];
   List<SolicitudModel> _solicitudesAprobadas = [];
+  List<SolicitudModel> _solicitudesCompradas = [];
   bool _cargando = true;
 
   @override
@@ -41,12 +42,14 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
     try {
       final enviadas = await _comprasController.obtenerSolicitudesEnviadasAGerente(widget.idObra);
       final aprobadas = await _comprasController.obtenerSolicitudesAprobadas(widget.idObra);
+      final compradas = await _comprasController.obtenerSolicitudesCompradas(widget.idObra);
 
       if (!mounted) return;
 
       setState(() {
         _solicitudesEnviadas = enviadas;
         _solicitudesAprobadas = aprobadas;
+        _solicitudesCompradas = compradas;
         _cargando = false;
       });
     } catch (e) {
@@ -60,10 +63,36 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
     }
   }
 
-  Widget _buildCard(SolicitudModel s, bool esPendiente) {
+  Widget _buildCard(SolicitudModel s, int estadoTipo) {
     final pisoNombre = s.piso?.nombre ?? (s.piso != null ? 'Piso #${s.piso!.idPiso}' : 'Piso');
     final fecha = '${s.fecha.day}/${s.fecha.month}/${s.fecha.year}';
     final totalItems = s.detalles.length;
+
+    Color badgeBg;
+    Color badgeFg;
+    IconData iconData;
+    String badgeText;
+    String actionText;
+
+    if (estadoTipo == 0) {
+      badgeBg = Colors.amber.shade100;
+      badgeFg = Colors.amber.shade900;
+      iconData = Icons.pending_actions;
+      badgeText = 'Pendiente Decisión';
+      actionText = 'Revisar fotos de proformas y autorizar ➔';
+    } else if (estadoTipo == 1) {
+      badgeBg = Colors.green.shade100;
+      badgeFg = Colors.green.shade900;
+      iconData = Icons.verified;
+      badgeText = 'Autorizada / A Comprar';
+      actionText = 'Ver proforma autorizada ➔';
+    } else {
+      badgeBg = Colors.blue.shade100;
+      badgeFg = Colors.blue.shade900;
+      iconData = Icons.shopping_bag_outlined;
+      badgeText = 'Comprado / En Almacén';
+      actionText = 'Ver proforma y compra realizada ➔';
+    }
 
     return Card(
       margin: const EdgeInsets.only(bottom: 14),
@@ -97,10 +126,10 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
                   Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: esPendiente ? Colors.amber.shade50 : Colors.green.shade50,
+                        backgroundColor: badgeBg,
                         child: Icon(
-                          esPendiente ? Icons.pending_actions : Icons.verified,
-                          color: esPendiente ? Colors.amber.shade800 : Colors.green.shade700,
+                          iconData,
+                          color: badgeFg,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -122,15 +151,15 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: esPendiente ? Colors.amber.shade100 : Colors.green.shade100,
+                      color: badgeBg,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      esPendiente ? 'Pendiente Decisión' : 'Autorizada',
+                      badgeText,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: esPendiente ? Colors.amber.shade900 : Colors.green.shade900,
+                        color: badgeFg,
                       ),
                     ),
                   ),
@@ -140,7 +169,7 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('📦 $totalItems materiales a comprar', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                  Text('📦 $totalItems materiales', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
                   Text('📅 $fecha', style: const TextStyle(fontSize: 12, color: Color(0xFF7C8A93))),
                 ],
               ),
@@ -149,11 +178,11 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    esPendiente ? 'Revisar fotos de proformas y autorizar ➔' : 'Ver proforma autorizada ➔',
+                    actionText,
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
-                      color: esPendiente ? const Color(0xFF2FA9E0) : Colors.green.shade700,
+                      color: badgeFg,
                     ),
                   ),
                 ],
@@ -168,7 +197,7 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         backgroundColor: const Color(0xFFF4FAFE),
         appBar: AppBar(
@@ -194,7 +223,11 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
               ),
               Tab(
                 icon: const Icon(Icons.check_circle_outline),
-                text: 'Autorizadas (${_solicitudesAprobadas.length})',
+                text: 'A Comprar (${_solicitudesAprobadas.length})',
+              ),
+              Tab(
+                icon: const Icon(Icons.shopping_bag_outlined),
+                text: 'Comprados (${_solicitudesCompradas.length})',
               ),
             ],
           ),
@@ -236,11 +269,11 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
                           child: ListView.builder(
                             padding: const EdgeInsets.all(16),
                             itemCount: _solicitudesEnviadas.length,
-                            itemBuilder: (_, index) => _buildCard(_solicitudesEnviadas[index], true),
+                            itemBuilder: (_, index) => _buildCard(_solicitudesEnviadas[index], 0),
                           ),
                         ),
 
-                  // Tab 2: Autorizadas
+                  // Tab 2: Autorizadas / A comprar
                   _solicitudesAprobadas.isEmpty
                       ? RefreshIndicator(
                           onRefresh: _cargarDatos,
@@ -268,7 +301,39 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
                           child: ListView.builder(
                             padding: const EdgeInsets.all(16),
                             itemCount: _solicitudesAprobadas.length,
-                            itemBuilder: (_, index) => _buildCard(_solicitudesAprobadas[index], false),
+                            itemBuilder: (_, index) => _buildCard(_solicitudesAprobadas[index], 1),
+                          ),
+                        ),
+
+                  // Tab 3: Comprados / En almacén
+                  _solicitudesCompradas.isEmpty
+                      ? RefreshIndicator(
+                          onRefresh: _cargarDatos,
+                          child: ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            children: const [
+                              SizedBox(height: 120),
+                              Center(
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.shopping_bag_outlined, size: 64, color: Color(0xFFB7C5CC)),
+                                    SizedBox(height: 16),
+                                    Text(
+                                      'No hay compras registradas en Almacén',
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF1E2A32)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: _cargarDatos,
+                          child: ListView.builder(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: _solicitudesCompradas.length,
+                            itemBuilder: (_, index) => _buildCard(_solicitudesCompradas[index], 2),
                           ),
                         ),
                 ],

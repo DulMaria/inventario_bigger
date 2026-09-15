@@ -13,6 +13,14 @@ class AlmacenController {
     return await _service.obtenerMaterialesEntregados(idObra);
   }
 
+  Future<List<SolicitudModel>> obtenerTodosMaterialesEnAlmacenAdmin({int? idObraFiltro}) async {
+    return await _service.obtenerTodosMaterialesEnAlmacenAdmin(idObraFiltro: idObraFiltro);
+  }
+
+  Future<List<SolicitudModel>> obtenerTodosMaterialesEntregadosAdmin({int? idObraFiltro}) async {
+    return await _service.obtenerTodosMaterialesEntregadosAdmin(idObraFiltro: idObraFiltro);
+  }
+
   Future<void> marcarComoEntregado({
     required int idSolicitud,
     int? idUsuarioAlmacen,

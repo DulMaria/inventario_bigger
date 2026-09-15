@@ -359,11 +359,13 @@ class ComprasService {
 
     // 1. Guardar en la tabla cotizaciones (únicamente fotos de proformas)
     try {
+      int idx = 0;
       for (final cot in cotizaciones) {
+        idx++;
         await _supabase.from('cotizaciones').insert({
           'id_solicitud': idSolicitud,
-          'id_usuario': idUsuarioCompras,
-          'imagen_url': cot.imagenUrl,
+          'numero_proforma': idx,
+          'ruta_imagen': cot.imagenUrl,
           'estado': 'PENDIENTE',
         });
       }
@@ -413,11 +415,45 @@ class ComprasService {
           .update({'estado': 'RECHAZADA'})
           .eq('id_solicitud', idSolicitud);
 
+      bool actualizada = false;
+
       if (idCotizacion != 0) {
         await _supabase
             .from('cotizaciones')
-            .update({'estado': 'AUTORIZADA'})
+            .update({
+              'estado': 'AUTORIZADA',
+              'id_usuario_autorizador': idUsuarioGerente,
+              'comentario_autorizacion': observacionGerente,
+              if (rutaImagenGanadora != null && rutaImagenGanadora.isNotEmpty)
+                'ruta_imagen': rutaImagenGanadora,
+            })
             .eq('id_cotizacion', idCotizacion);
+        actualizada = true;
+      } else if (rutaImagenGanadora != null && rutaImagenGanadora.isNotEmpty) {
+        final res = await _supabase
+            .from('cotizaciones')
+            .update({
+              'estado': 'AUTORIZADA',
+              'id_usuario_autorizador': idUsuarioGerente,
+              'comentario_autorizacion': observacionGerente,
+            })
+            .eq('id_solicitud', idSolicitud)
+            .eq('ruta_imagen', rutaImagenGanadora)
+            .select();
+        if ((res as List).isNotEmpty) {
+          actualizada = true;
+        }
+      }
+
+      if (!actualizada) {
+        await _supabase.from('cotizaciones').insert({
+          'id_solicitud': idSolicitud,
+          'numero_proforma': 1,
+          'ruta_imagen': rutaImagenGanadora,
+          'estado': 'AUTORIZADA',
+          'id_usuario_autorizador': idUsuarioGerente,
+          'comentario_autorizacion': observacionGerente,
+        });
       }
     } catch (_) {}
 

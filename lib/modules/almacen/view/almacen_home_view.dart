@@ -24,20 +24,6 @@ class AlmacenHomeView extends StatefulWidget {
   State<AlmacenHomeView> createState() => _AlmacenHomeViewState();
 }
 
-class _MaterialStockItem {
-  final int idMaterial;
-  final String nombre;
-  final String codigo;
-  int cantidadTotal;
-
-  _MaterialStockItem({
-    required this.idMaterial,
-    required this.nombre,
-    required this.codigo,
-    required this.cantidadTotal,
-  });
-}
-
 class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProviderStateMixin {
   final AlmacenController _almacenController = AlmacenController();
   final AuthController _authController = AuthController();
@@ -52,7 +38,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _cargarDatos();
   }
 
@@ -81,33 +67,6 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
         SnackBar(content: Text('Error al cargar datos de Almacén: $e'), backgroundColor: Colors.red),
       );
     }
-  }
-
-  // ============================================================
-  // CÁLCULO DE STOCK CONSOLIDADO EN ALMACÉN
-  // ============================================================
-  List<_MaterialStockItem> get _stockConsolidado {
-    final mapa = <int, _MaterialStockItem>{};
-    for (final sol in _solicitudesEnAlmacen) {
-      for (final det in sol.detalles) {
-        final matId = det.material?.idMaterial ?? det.idMaterial ?? 0;
-        final nombre = det.material?.nombre ?? 'Material #$matId';
-        final codigo = det.material?.codigo ?? '-';
-        final cant = det.cantidad;
-
-        if (mapa.containsKey(matId)) {
-          mapa[matId]!.cantidadTotal += cant;
-        } else {
-          mapa[matId] = _MaterialStockItem(
-            idMaterial: matId,
-            nombre: nombre,
-            codigo: codigo,
-            cantidadTotal: cant,
-          );
-        }
-      }
-    }
-    return mapa.values.toList();
   }
 
   // ============================================================
@@ -535,19 +494,11 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
             ),
             Tab(
               icon: Badge(
-                label: Text('${_stockConsolidado.length}'),
-                backgroundColor: Colors.blue.shade700,
-                child: const Icon(Icons.bar_chart_rounded),
-              ),
-              text: 'Stock Global',
-            ),
-            Tab(
-              icon: Badge(
                 label: Text('${_solicitudesEntregadas.length}'),
                 backgroundColor: Colors.grey.shade600,
                 child: const Icon(Icons.history_outlined),
               ),
-              text: 'Historial',
+              text: 'Historial de Entregas',
             ),
           ],
         ),
@@ -558,7 +509,6 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
               controller: _tabController,
               children: [
                 _buildTabEnAlmacen(),
-                _buildTabStockConsolidado(),
                 _buildTabHistorial(),
               ],
             ),
@@ -787,57 +737,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
   }
 
   // ============================================================
-  // TAB 2: STOCK CONSOLIDADO EN ALMACÉN
-  // ============================================================
-  Widget _buildTabStockConsolidado() {
-    final stock = _stockConsolidado;
-    if (stock.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32),
-          child: Text(
-            'No hay materiales acumulados en stock actualmente.',
-            style: TextStyle(color: Colors.grey),
-          ),
-        ),
-      );
-    }
-
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      itemCount: stock.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 8),
-      itemBuilder: (context, index) {
-        final item = stock[index];
-        return Card(
-          elevation: 1,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: Colors.green.shade100,
-              child: Icon(Icons.inventory, color: Colors.green.shade800, size: 20),
-            ),
-            title: Text(item.nombre, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-            subtitle: item.codigo != '-' ? Text('Cód: ${item.codigo}') : null,
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.green.shade700,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                '${item.cantidadTotal} unid.',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // ============================================================
-  // TAB 3: HISTORIAL DE ENTREGAS (ESTADO: ENTREGADO)
+  // TAB 2: HISTORIAL DE ENTREGAS (ESTADO: ENTREGADO)
   // ============================================================
   Widget _buildTabHistorial() {
     if (_solicitudesEntregadas.isEmpty) {

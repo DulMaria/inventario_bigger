@@ -49,7 +49,7 @@ class AdminPage extends StatelessWidget {
                           'Usuarios y Accesos por Obra',
                           'Solicitudes de Acceso',
                           'Proformas y Cotizaciones',
-                          'Almacén y Stock (Global)',
+                          'Almacén (Global)',
                           'Mi Perfil',
                         ];
                         return Text(
@@ -108,7 +108,7 @@ class AdminPage extends StatelessWidget {
                 'Usuarios y Accesos por Obra',
                 'Solicitudes de Acceso',
                 'Proformas y Cotizaciones',
-                'Almacén y Stock (Global)',
+                'Almacén (Global)',
                 'Mi Perfil',
               ];
               return Text(
@@ -304,7 +304,7 @@ class AdminPage extends StatelessWidget {
               ),
               _buildDrawerItem(
                 icon: Icons.warehouse_rounded,
-                title: 'Almacén y Stock (Global)',
+                title: 'Almacén (Global)',
                 isSelected: controller.selectedIndex.value == 6,
                 onTap: () {
                   controller.cambiarVista(6);
@@ -1369,9 +1369,44 @@ class AdminPage extends StatelessWidget {
     }
   }
 
-  void _cerrarSesion(BuildContext context) {
-    final AuthController authController = Get.find<AuthController>();
-    authController.cerrarSesion();
-    Get.offAll(() => const LoginView());
+  Future<void> _cerrarSesion(BuildContext context) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.logout, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Cerrar sesión'),
+          ],
+        ),
+        content: const Text('¿Estás seguro de que deseas cerrar tu sesión?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Cerrar sesión'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true) {
+      final authController = AuthController();
+      await authController.cerrarSesion();
+      if (!context.mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginView()),
+        (route) => false,
+      );
+    }
   }
 }

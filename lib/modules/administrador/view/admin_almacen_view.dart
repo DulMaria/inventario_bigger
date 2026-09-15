@@ -7,20 +7,6 @@ import '../../../models/solicitud_model.dart';
 import '../../almacen/controller/almacen_controller.dart';
 import '../../obra/controller/obra_controller.dart';
 
-class _MaterialStockItem {
-  final int idMaterial;
-  final String nombre;
-  final String codigo;
-  int cantidadTotal;
-
-  _MaterialStockItem({
-    required this.idMaterial,
-    required this.nombre,
-    required this.codigo,
-    required this.cantidadTotal,
-  });
-}
-
 class AdminAlmacenView extends StatefulWidget {
   const AdminAlmacenView({super.key});
 
@@ -45,7 +31,7 @@ class _AdminAlmacenViewState extends State<AdminAlmacenView>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _cargarDatos();
   }
 
@@ -82,30 +68,6 @@ class _AdminAlmacenViewState extends State<AdminAlmacenView>
         SnackBar(content: Text('Error al cargar Almacén: $e')),
       );
     }
-  }
-
-  List<_MaterialStockItem> get _stockConsolidado {
-    final mapa = <int, _MaterialStockItem>{};
-    for (final sol in _solicitudesEnAlmacen) {
-      for (final det in sol.detalles) {
-        final matId = det.material?.idMaterial ?? det.idMaterial ?? 0;
-        final nombre = det.material?.nombre ?? 'Material #$matId';
-        final codigo = det.material?.codigo ?? '-';
-        final cant = det.cantidad;
-
-        if (mapa.containsKey(matId)) {
-          mapa[matId]!.cantidadTotal += cant;
-        } else {
-          mapa[matId] = _MaterialStockItem(
-            idMaterial: matId,
-            nombre: nombre,
-            codigo: codigo,
-            cantidadTotal: cant,
-          );
-        }
-      }
-    }
-    return mapa.values.toList();
   }
 
   Uint8List? _tryDecodeBase64(String raw) {
@@ -322,12 +284,10 @@ class _AdminAlmacenViewState extends State<AdminAlmacenView>
 
   @override
   Widget build(BuildContext context) {
-    final stockList = _stockConsolidado;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF4FAFE),
       appBar: AppBar(
-        title: const Text('Almacén y Stock (Global)'),
+        title: const Text('Almacén (Global)'),
         backgroundColor: Colors.blue[700],
         foregroundColor: Colors.white,
         centerTitle: true,
@@ -344,10 +304,6 @@ class _AdminAlmacenViewState extends State<AdminAlmacenView>
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           tabs: [
-            Tab(
-              icon: const Icon(Icons.inventory_2_outlined),
-              text: 'Stock (${stockList.length})',
-            ),
             Tab(
               icon: const Icon(Icons.warehouse_rounded),
               text: 'En Almacén (${_solicitudesEnAlmacen.length})',
@@ -411,64 +367,7 @@ class _AdminAlmacenViewState extends State<AdminAlmacenView>
                 : TabBarView(
                     controller: _tabController,
                     children: [
-                      // TAB 1: STOCK CONSOLIDADO
-                      stockList.isEmpty
-                          ? RefreshIndicator(
-                              onRefresh: _cargarDatos,
-                              child: ListView(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                children: const [
-                                  SizedBox(height: 120),
-                                  Center(
-                                    child: Column(
-                                      children: [
-                                        Icon(Icons.inbox_outlined, size: 64, color: Color(0xFFB7C5CC)),
-                                        SizedBox(height: 16),
-                                        Text('No hay materiales registrados en Almacén',
-                                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : RefreshIndicator(
-                              onRefresh: _cargarDatos,
-                              child: ListView.builder(
-                                padding: const EdgeInsets.all(16),
-                                itemCount: stockList.length,
-                                itemBuilder: (context, index) {
-                                  final item = stockList[index];
-                                  return Card(
-                                    margin: const EdgeInsets.only(bottom: 10),
-                                    child: ListTile(
-                                      leading: CircleAvatar(
-                                        backgroundColor: Colors.teal.shade50,
-                                        child: Icon(Icons.category, color: Colors.teal.shade700),
-                                      ),
-                                      title: Text(item.nombre, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                      subtitle: Text('Código: ${item.codigo}'),
-                                      trailing: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: Colors.teal.shade100,
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Text(
-                                          'Stock: ${item.cantidadTotal}',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.teal.shade900,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-
-                      // TAB 2: EN ALMACÉN
+                      // TAB 1: EN ALMACÉN
                       _solicitudesEnAlmacen.isEmpty
                           ? RefreshIndicator(
                               onRefresh: _cargarDatos,
@@ -498,7 +397,7 @@ class _AdminAlmacenViewState extends State<AdminAlmacenView>
                               ),
                             ),
 
-                      // TAB 3: ENTREGADOS
+                      // TAB 2: ENTREGADOS
                       _solicitudesEntregadas.isEmpty
                           ? RefreshIndicator(
                               onRefresh: _cargarDatos,

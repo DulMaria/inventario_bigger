@@ -3,6 +3,7 @@ import 'dart:math';
 
 import '../controller/auth_controller.dart';
 import 'registro_view.dart';
+import 'recuperar_contrasena_view.dart';
 import '../../../modules/solicitud_acceso/view/seleccionar_obra_view.dart';
 import '../../../modules/administrador/view/admin_page.dart';
 
@@ -415,17 +416,7 @@ class _LoginViewState extends State<LoginView>
               ),
             ),
 
-            // ====================================================
-            // CAMBIO DE TEMA
-            // ====================================================
-            Positioned(
-              top: 20,
-              right: 20,
-              child: _ThemeToggleButton(
-                isDarkMode: _isDarkMode,
-                onToggle: _toggleTheme,
-              ),
-            ),
+
 
             // ====================================================
             // CONTENIDO
@@ -619,17 +610,19 @@ class _LoginViewState extends State<LoginView>
                                     // RECUPERAR CONTRASEÑA
                                     TextButton(
                                       onPressed: () {
-                                        _mostrarMensaje(
-                                          'Función en desarrollo\n'
-                                          'Pronto podrás recuperar tu contraseña',
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => RecuperarContrasenaView(
+                                              telefonoInicial: _identificadorController.text,
+                                            ),
+                                          ),
                                         );
                                       },
-                                      child: Text(
+                                      child: const Text(
                                         '¿Olvidaste tu contraseña?',
                                         style: TextStyle(
-                                          color: _isDarkMode
-                                              ? _ByggerColors.azulClaro
-                                              : _ByggerColors.azulMedio,
+                                          color: _ByggerColors.azulMedio,
                                           fontSize: 13,
                                           fontWeight: FontWeight.w500,
                                         ),

@@ -65,14 +65,14 @@ class AuthController {
     required String nombre,
     required String apellido,
     required String telefono,
+    required String preguntaSeguridad,
+    required String respuestaSeguridad,
   }) async {
-    if (nombre.trim().isEmpty) {
-      return 'Ingresa tu nombre';
-    }
-
-    if (apellido.trim().isEmpty) {
-      return 'Ingresa tu apellido';
-    }
+    if (nombre.trim().isEmpty) return 'Ingresa tu nombre';
+    if (apellido.trim().isEmpty) return 'Ingresa tu apellido';
+    if (telefono.trim().isEmpty) return 'Ingresa tu número de celular';
+    if (preguntaSeguridad.trim().isEmpty) return 'Selecciona una pregunta de seguridad';
+    if (respuestaSeguridad.trim().isEmpty) return 'Escribe tu respuesta de seguridad';
 
     if (telefono.trim().isEmpty) {
       return 'Ingresa tu número de celular';
@@ -112,6 +112,8 @@ class AuthController {
         nombre: nombre.trim(),
         apellido: apellido.trim(),
         telefono: telefono.trim(),
+        preguntaSeguridad: preguntaSeguridad.trim(),
+        respuestaSeguridad: respuestaSeguridad.trim(),
       );
 
       if (respuesta.user == null) {
@@ -188,6 +190,46 @@ class AuthController {
     } catch (e) {
       print('Error al obtener datos del usuario: $e');
       return null;
+    }
+  }
+
+  // ============================================================
+  // RECUPERAR CONTRASEÑA (PREGUNTAS DE SEGURIDAD)
+  // ============================================================
+  
+  Future<String?> obtenerPreguntaSeguridad(String telefono) async {
+    try {
+      if (telefono.trim().isEmpty) return null;
+      return await _authService.obtenerPreguntaSeguridad(telefono);
+    } catch (e) {
+      print('Error al obtener pregunta: $e');
+      return null;
+    }
+  }
+
+  Future<String?> recuperarContrasenaPorPregunta({
+    required String telefono,
+    required String respuesta,
+    required String nuevaContrasena,
+  }) async {
+    try {
+      if (respuesta.trim().isEmpty) return 'Ingresa tu respuesta de seguridad';
+      if (nuevaContrasena.length < 6) return 'La contraseña debe tener mínimo 6 caracteres';
+      
+      final exito = await _authService.recuperarContrasenaPorPregunta(
+        telefono: telefono,
+        respuesta: respuesta,
+        nuevaContrasena: nuevaContrasena,
+      );
+
+      if (exito) {
+        return null; // Todo bien
+      } else {
+        return 'Respuesta incorrecta. Inténtalo de nuevo.';
+      }
+    } catch (e) {
+      print('Error al recuperar contraseña: $e');
+      return 'No se pudo actualizar la contraseña. Revisa tu conexión.';
     }
   }
 }

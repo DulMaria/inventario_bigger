@@ -109,6 +109,8 @@ class AuthService {
     required String contrasena,
     required String nombre,
     required String apellido,
+    required String preguntaSeguridad,
+    required String respuestaSeguridad,
     String? correo,
   }) async {
     final telLimpio = telefono.trim();
@@ -116,20 +118,36 @@ class AuthService {
         ? correo.trim()
         : '$telLimpio@bygger.local';
 
+    final userData = {
+      'nombre': nombre,
+      'apellido': apellido,
+      'telefono': telLimpio,
+      'correo': emailFinal,
+      'pregunta_seguridad': preguntaSeguridad,
+      'respuesta_seguridad': respuestaSeguridad,
+    };
+
     // Intentar registro con phone o con identificador único de teléfono
     try {
       final respuesta = await _supabase.auth.signUp(
         phone: telLimpio,
         password: contrasena,
-        data: {
-          'nombre': nombre,
-          'apellido': apellido,
-          'telefono': telLimpio,
-          'correo': emailFinal,
-        },
+        data: userData,
       );
 
       if (respuesta.user != null) {
+        // Esperar 2 segundos para dar tiempo al Trigger de Supabase a crear la fila
+        await Future.delayed(const Duration(seconds: 2));
+        
+        try {
+          await _supabase.rpc('guardar_pregunta_seguridad', params: {
+            'p_id_auth': respuesta.user!.id,
+            'p_pregunta': preguntaSeguridad,
+            'p_respuesta': respuestaSeguridad,
+          });
+        } catch (e) {
+          print('Nota: Error en RPC al guardar seguridad: $e');
+        }
         return respuesta;
       }
     } catch (_) {
@@ -139,12 +157,21 @@ class AuthService {
     final respuesta = await _supabase.auth.signUp(
       email: emailFinal,
       password: contrasena,
-      data: {
-        'nombre': nombre,
-        'apellido': apellido,
-        'telefono': telLimpio,
-      },
+      data: userData,
     );
+
+    if (respuesta.user != null) {
+      await Future.delayed(const Duration(seconds: 2));
+      try {
+        await _supabase.rpc('guardar_pregunta_seguridad', params: {
+          'p_id_auth': respuesta.user!.id,
+          'p_pregunta': preguntaSeguridad,
+          'p_respuesta': respuestaSeguridad,
+        });
+      } catch (e) {
+        print('Nota: Error en RPC al guardar seguridad: $e');
+      }
+    }
 
     if (respuesta.user == null) {
       throw Exception('No se pudo crear la cuenta');
@@ -401,6 +428,52 @@ class AuthService {
     } catch (e) {
       print('Error al obtener datos del usuario: $e');
       return null;
+    }
+  }
+
+  // ============================================================
+  // RECUPERAR CONTRASEÑA (PREGUNTA DE SEGURIDAD)
+  // ============================================================
+  
+  /// Obtiene la pregunta de seguridad de un usuario por su teléfono
+  Future<String?> obtenerPreguntaSeguridad(String telefono) async {
+    final telLimpio = telefono.trim();
+    try {
+      final respuesta = await _supabase
+          .from('usuarios')
+          .select('pregunta_seguridad')
+          .eq('telefono', telLimpio)
+          .maybeSingle();
+      
+      if (respuesta != null && respuesta['pregunta_seguridad'] != null) {
+        return respuesta['pregunta_seguridad'] as String;
+      }
+      return null;
+    } catch (e) {
+      print('Error al obtener pregunta de seguridad: $e');
+      return null;
+    }
+  }
+
+  /// Verifica la respuesta y cambia la contraseña usando la función RPC
+  Future<bool> recuperarContrasenaPorPregunta({
+    required String telefono,
+    required String respuesta,
+    required String nuevaContrasena,
+  }) async {
+    try {
+      final resultado = await _supabase.rpc(
+        'recuperar_contrasena_seguridad',
+        params: {
+          'p_telefono': telefono.trim(),
+          'p_respuesta': respuesta.trim(),
+          'p_nueva_contrasena': nuevaContrasena,
+        },
+      );
+      return resultado == true;
+    } catch (e) {
+      print('Error en RPC recuperar_contrasena_seguridad: $e');
+      return false;
     }
   }
 }

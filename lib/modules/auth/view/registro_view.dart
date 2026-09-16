@@ -17,6 +17,8 @@ class _RegistroViewState extends State<RegistroView> {
   final _telefonoController = TextEditingController();
   final _contrasenaController = TextEditingController();
   final _confirmarContrasenaController = TextEditingController();
+  final _respuestaController = TextEditingController();
+  final _preguntaPersonalizadaController = TextEditingController();
 
   final AuthController _authController = AuthController();
 
@@ -24,9 +26,51 @@ class _RegistroViewState extends State<RegistroView> {
   bool _ocultarContrasena = true;
   bool _ocultarConfirmacion = true;
 
+  String? _preguntaSeleccionada;
+  final List<String> _opcionesPreguntas = [
+    '¿Cuál fue el nombre de tu primera mascota?',
+    '¿En qué ciudad nació tu madre?',
+    '¿Cuál es el nombre de tu colegio primario?',
+    '¿Cuál es tu color favorito?',
+    '¿Cuál es tu comida favorita?',
+    'Escribir mi propia pregunta...'
+  ];
+
+  @override
+  void dispose() {
+    _nombreController.dispose();
+    _apellidoController.dispose();
+    _correoController.dispose();
+    _telefonoController.dispose();
+    _contrasenaController.dispose();
+    _confirmarContrasenaController.dispose();
+    _respuestaController.dispose();
+    _preguntaPersonalizadaController.dispose();
+    super.dispose();
+  }
+
   Future<void> _registrar() async {
     if (!_formKey.currentState!.validate()) {
       return;
+    }
+
+    if (_preguntaSeleccionada == null) {
+      _mostrarMensaje('Por favor, selecciona una pregunta de seguridad');
+      return;
+    }
+
+    String preguntaFinal = _preguntaSeleccionada!;
+    
+    // Si elige escribir su propia pregunta, la procesamos
+    if (_preguntaSeleccionada == 'Escribir mi propia pregunta...') {
+      final custom = _preguntaPersonalizadaController.text.trim();
+      if (custom.isEmpty) {
+        _mostrarMensaje('Por favor, escribe tu propia pregunta');
+        return;
+      }
+      // Quitamos signos existentes para evitar dobles, y envolvemos en ¿ ?
+      final textoLimpio = custom.replaceAll('¿', '').replaceAll('?', '').trim();
+      preguntaFinal = '¿$textoLimpio?';
     }
 
     setState(() {
@@ -42,6 +86,8 @@ class _RegistroViewState extends State<RegistroView> {
       nombre: _nombreController.text,
       apellido: _apellidoController.text,
       telefono: telefono,
+      preguntaSeguridad: preguntaFinal,
+      respuestaSeguridad: _respuestaController.text,
     );
 
     if (!mounted) {
@@ -74,16 +120,6 @@ class _RegistroViewState extends State<RegistroView> {
     );
   }
 
-  @override
-  void dispose() {
-    _nombreController.dispose();
-    _apellidoController.dispose();
-    _correoController.dispose();
-    _telefonoController.dispose();
-    _contrasenaController.dispose();
-    _confirmarContrasenaController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -249,6 +285,73 @@ class _RegistroViewState extends State<RegistroView> {
                       return 'Las contraseñas no coinciden';
                     }
 
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                // Selector de Pregunta de Seguridad
+                DropdownButtonFormField<String>(
+                  value: _preguntaSeleccionada,
+                  isExpanded: true,
+                  hint: const Text('Pregunta de Seguridad'),
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.security, color: Color(0xFF2FA9E0)),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFF6FC6EE)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFF2FA9E0), width: 1.8),
+                    ),
+                  ),
+                  items: _opcionesPreguntas.map((String pregunta) {
+                    return DropdownMenuItem<String>(
+                      value: pregunta,
+                      child: Text(pregunta, overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList(),
+                  onChanged: (String? nuevoValor) {
+                    setState(() {
+                      _preguntaSeleccionada = nuevoValor;
+                    });
+                  },
+                ),
+
+                if (_preguntaSeleccionada == 'Escribir mi propia pregunta...') ...[
+                  const SizedBox(height: 16),
+                  _campo(
+                    controller: _preguntaPersonalizadaController,
+                    label: 'Escribe tu pregunta secreta',
+                    icon: Icons.edit_note,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Ingresa tu pregunta';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+
+                const SizedBox(height: 16),
+
+                // Respuesta de Seguridad
+                _campo(
+                  controller: _respuestaController,
+                  label: 'Tu respuesta secreta',
+                  icon: Icons.question_answer_outlined,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Ingresa tu respuesta';
+                    }
                     return null;
                   },
                 ),

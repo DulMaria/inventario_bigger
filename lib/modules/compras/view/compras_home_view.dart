@@ -1,6 +1,7 @@
 // lib/modules/compras/view/compras_home_view.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../../administrador/view/perfil_usuario_view.dart';
 import '../../../models/solicitud_model.dart';
 import '../../auth/view/login_view.dart';
 import '../../solicitud_acceso/view/seleccionar_obra_view.dart';
@@ -160,6 +161,42 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
+      drawer: Drawer(
+        backgroundColor: const Color(0xFFE1F5FE),
+        child: Column(
+          children: [
+            const UserAccountsDrawerHeader(
+              decoration: BoxDecoration(color: Color(0xFF6FC6EE)),
+              accountName: Text('Panel de Usuario', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E2A32))),
+              accountEmail: Text('Opciones', style: TextStyle(color: Color(0xFF1E2A32))),
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person, color: Color(0xFF2FA9E0), size: 40),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person, color: Color(0xFF1E2A32)),
+              title: const Text('Mi Perfil', style: TextStyle(color: Color(0xFF1E2A32), fontWeight: FontWeight.bold)),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const PerfilUsuarioView()));
+              },
+            ),
+            const Spacer(),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text('Cerrar Sesion', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              onTap: () {
+                Navigator.pop(context);
+                _cerrarSesion();
+              },
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+
       body: _cargando
           ? const Center(child: CircularProgressIndicator(color: Color(0xFF1B2A47)))
           : RefreshIndicator(

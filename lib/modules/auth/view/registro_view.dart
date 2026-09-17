@@ -201,6 +201,12 @@ class _RegistroViewState extends State<RegistroView> {
                             if (value == null || value.trim().isEmpty) {
                               return 'Ingresa tu nombre';
                             }
+                            if (RegExp(r'(.)\1{3,}').hasMatch(value)) {
+                              return 'No se permiten caracteres repetidos (ej. kkkk)';
+                            }
+                            if (RegExp(r'[^a-zA-Z0-9\sñÑáéíóúÁÉÍÓÚ]').hasMatch(value)) {
+                              return 'No se permiten caracteres especiales';
+                            }
                             return null;
                           },
                         ),
@@ -214,6 +220,12 @@ class _RegistroViewState extends State<RegistroView> {
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return 'Ingresa tu apellido';
+                            }
+                            if (RegExp(r'(.)\1{3,}').hasMatch(value)) {
+                              return 'No se permiten caracteres repetidos (ej. kkkk)';
+                            }
+                            if (RegExp(r'[^a-zA-Z0-9\sñÑáéíóúÁÉÍÓÚ]').hasMatch(value)) {
+                              return 'No se permiten caracteres especiales';
                             }
                             return null;
                           },
@@ -281,11 +293,12 @@ class _RegistroViewState extends State<RegistroView> {
                             if (value == null || value.isEmpty) {
                               return 'Ingresa una contraseña';
                             }
-
                             if (value.length < 6) {
                               return 'Mínimo 6 caracteres';
                             }
-
+                            if (value.length > 8) {
+                              return 'Máximo 8 caracteres';
+                            }
                             return null;
                           },
                         ),

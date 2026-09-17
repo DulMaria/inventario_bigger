@@ -591,19 +591,6 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4FAFE),
-      appBar: AppBar(
-        title: Text(titulo),
-        centerTitle: true,
-        backgroundColor: const Color(0xFF2FA9E0),
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refrescar',
-            onPressed: _cargarDatos,
-          ),
-        ],
-      ),
       body: Column(
         children: [
           // Selector de Obra para Administrador (cuando widget.idObra es null)

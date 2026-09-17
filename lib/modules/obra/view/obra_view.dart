@@ -99,9 +99,6 @@ class _ObrasViewState extends State<ObrasView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Obras'),
-      ),
 
       // Crear obra
       floatingActionButton: FloatingActionButton(

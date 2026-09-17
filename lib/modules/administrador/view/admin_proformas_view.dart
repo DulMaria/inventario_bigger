@@ -283,39 +283,6 @@ class _AdminProformasViewState extends State<AdminProformasView>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4FAFE),
-      appBar: AppBar(
-        title: const Text('Cotizaciones y Proformas (Global)'),
-        backgroundColor: Colors.blue[700],
-        foregroundColor: Colors.white,
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refrescar',
-            onPressed: _cargarDatos,
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          tabs: [
-            Tab(
-              icon: const Icon(Icons.request_quote),
-              text: 'A Cotizar (${_solicitudesACotizar.length})',
-            ),
-            Tab(
-              icon: const Icon(Icons.hourglass_top),
-              text: 'En Revisión (${_solicitudesEnviadas.length})',
-            ),
-            Tab(
-              icon: const Icon(Icons.check_circle_outline),
-              text: 'Autorizadas (${_solicitudesAprobadas.length})',
-            ),
-          ],
-        ),
-      ),
       body: Column(
         children: [
           // Selector de Obra

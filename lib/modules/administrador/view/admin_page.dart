@@ -14,6 +14,16 @@ import 'admin_proformas_view.dart';
 import 'admin_almacen_view.dart';
 import 'perfil_usuario_view.dart';
 
+class _ByggerColors {
+  static const Color azulClaro = Color(0xFF6FC6EE);
+  static const Color azulMedio = Color(0xFF2FA9E0);
+  static const Color azulOscuro = Color(0xFF1D7FAE);
+  static const Color textoOscuro = Color(0xFF1E2A32);
+  static const Color textoGris = Color(0xFF7C8A93);
+  static const Color fondoClaro = Color(0xFFF4FAFE);
+  static const Color celesteBebe = Color(0xFFE1F5FE);
+}
+
 class AdminPage extends StatelessWidget {
   const AdminPage({super.key});
 
@@ -27,7 +37,7 @@ class AdminPage extends StatelessWidget {
 
         if (isWebLayout) {
           return Scaffold(
-            backgroundColor: const Color(0xFFF4F6F9),
+            backgroundColor: _ByggerColors.fondoClaro,
             body: Row(
               children: [
                 // PERSISTENT SIDEBAR FOR WEB/DESKTOP
@@ -39,7 +49,7 @@ class AdminPage extends StatelessWidget {
                 // MAIN CONTENT AREA FOR WEB
                 Expanded(
                   child: Scaffold(
-                    backgroundColor: const Color(0xFFF4F6F9),
+                    backgroundColor: _ByggerColors.fondoClaro,
                     appBar: AppBar(
                       title: Obx(() {
                         final titles = [
@@ -58,7 +68,7 @@ class AdminPage extends StatelessWidget {
                               : 'Administrador',
                         );
                       }),
-                      backgroundColor: Colors.blue[700],
+                      backgroundColor: _ByggerColors.azulMedio,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       actions: [
@@ -97,8 +107,11 @@ class AdminPage extends StatelessWidget {
 
         // MOBILE LAYOUT
         return Scaffold(
-          backgroundColor: const Color(0xFFF4F6F9),
-          drawer: Drawer(child: _buildDrawerContent(context, controller, isWeb: false)),
+          backgroundColor: _ByggerColors.fondoClaro,
+          drawer: Drawer(
+            backgroundColor: _ByggerColors.celesteBebe,
+            child: _buildDrawerContent(context, controller, isWeb: false),
+          ),
           appBar: AppBar(
             title: Obx(() {
               final titles = [
@@ -117,7 +130,7 @@ class AdminPage extends StatelessWidget {
                     : 'Administrador',
               );
             }),
-            backgroundColor: Colors.blue[700],
+            backgroundColor: _ByggerColors.azulMedio,
             foregroundColor: Colors.white,
             elevation: 0,
             actions: [
@@ -177,7 +190,11 @@ class AdminPage extends StatelessWidget {
   // ============================================================
   // DRAWER / SIDEBAR CONTENT
   // ============================================================
-  Widget _buildDrawerContent(BuildContext context, AdminController controller, {required bool isWeb}) {
+  Widget _buildDrawerContent(
+    BuildContext context,
+    AdminController controller, {
+    required bool isWeb,
+  }) {
     return Column(
       children: [
         // Header - Perfil del Administrador
@@ -191,7 +208,7 @@ class AdminPage extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.blue[700]!, Colors.blue[900]!],
+                colors: [_ByggerColors.azulMedio, _ByggerColors.azulMedio],
               ),
             ),
             child: Column(
@@ -202,33 +219,37 @@ class AdminPage extends StatelessWidget {
                   child: Icon(
                     Icons.admin_panel_settings,
                     size: 36,
-                    color: Colors.blue,
+                    color: _ByggerColors.azulMedio,
                   ),
                 ),
                 const SizedBox(height: 10),
-                Obx(() => Text(
-                  controller.adminNombre.value.isNotEmpty
-                      ? controller.adminNombre.value
-                      : 'Administrador',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                Obx(
+                  () => Text(
+                    controller.adminNombre.value.isNotEmpty
+                        ? controller.adminNombre.value
+                        : 'Administrador',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                )),
-                Obx(() => Text(
-                  controller.adminRol.value.isNotEmpty
-                      ? controller.adminRol.value
-                      : 'Administrador',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
+                ),
+                Obx(
+                  () => Text(
+                    controller.adminRol.value.isNotEmpty
+                        ? controller.adminRol.value
+                        : 'Administrador',
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
                   ),
-                )),
+                ),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.green[400]!.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(12),
@@ -345,12 +366,16 @@ class AdminPage extends StatelessWidget {
     return ListTile(
       leading: Icon(
         icon,
-        color: color ?? (isSelected ? Colors.blue : Colors.blueGrey[600]),
+        color:
+            color ??
+            (isSelected ? _ByggerColors.azulMedio : _ByggerColors.textoOscuro.withValues(alpha: 0.7)),
       ),
       title: Text(
         title,
         style: TextStyle(
-          color: color ?? (isSelected ? Colors.blue : Colors.blueGrey[800]),
+          color:
+              color ??
+              (isSelected ? _ByggerColors.azulMedio : _ByggerColors.textoOscuro.withValues(alpha: 0.7)),
           fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
         ),
       ),
@@ -359,7 +384,7 @@ class AdminPage extends StatelessWidget {
               width: 4,
               height: 24,
               decoration: BoxDecoration(
-                color: Colors.blue,
+                color: _ByggerColors.azulMedio,
                 borderRadius: BorderRadius.circular(2),
               ),
             )
@@ -371,27 +396,55 @@ class AdminPage extends StatelessWidget {
   // ============================================================
   // BODY - Cambia según el índice seleccionado
   // ============================================================
-  Widget _buildBody(BuildContext context, AdminController controller, {required bool isWebLayout}) {
-    switch (controller.selectedIndex.value) {
-      case 0:
-        return _buildDashboard(controller, isWebLayout: isWebLayout);
-      case 1:
-        return const ObrasView();
-      case 2:
-        return _buildPisosSelector(controller);
-      case 3:
-        return _buildUsuariosView(context, controller, isWebLayout: isWebLayout);
-      case 4:
-        return const SolicitudesAccesoView();
-      case 5:
-        return const AdminProformasView();
-      case 6:
-        return const AdminAlmacenView();
-      case 7:
-        return const PerfilUsuarioView();
-      default:
-        return _buildDashboard(controller, isWebLayout: isWebLayout);
-    }
+  Widget _buildBody(
+    BuildContext context,
+    AdminController controller, {
+    required bool isWebLayout,
+  }) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.02, 0.0),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
+        );
+      },
+      child: Builder(
+        key: ValueKey<int>(controller.selectedIndex.value),
+        builder: (context) {
+          switch (controller.selectedIndex.value) {
+            case 0:
+              return _buildDashboard(controller, isWebLayout: isWebLayout);
+            case 1:
+              return const ObrasView();
+            case 2:
+              return _buildPisosSelector(controller);
+            case 3:
+              return _buildUsuariosView(
+                context,
+                controller,
+                isWebLayout: isWebLayout,
+              );
+            case 4:
+              return const SolicitudesAccesoView();
+            case 5:
+              return const AdminProformasView();
+            case 6:
+              return const AdminAlmacenView();
+            case 7:
+              return const PerfilUsuarioView();
+            default:
+              return _buildDashboard(controller, isWebLayout: isWebLayout);
+          }
+        },
+      ),
+    );
   }
 
   // ============================================================
@@ -474,7 +527,10 @@ class AdminPage extends StatelessWidget {
   // ============================================================
   // 1. DASHBOARD RESPONSIVO MEJORADO
   // ============================================================
-  Widget _buildDashboard(AdminController controller, {required bool isWebLayout}) {
+  Widget _buildDashboard(
+    AdminController controller, {
+    required bool isWebLayout,
+  }) {
     final now = DateTime.now();
     final fechaStr = '${now.day}/${now.month}/${now.year}';
 
@@ -489,14 +545,19 @@ class AdminPage extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.blue.shade800, Colors.indigo.shade900],
+                colors: [
+                  _ByggerColors.azulOscuro,
+                  Colors.indigo.shade900,
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.blue.shade900.withValues(alpha: 0.3),
+                  color: _ByggerColors.textoOscuro.withValues(
+                    alpha: 0.3,
+                  ),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -508,14 +569,16 @@ class AdminPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Obx(() => Text(
-                        '👋 ¡Bienvenido de nuevo, ${controller.adminNombre.value.isNotEmpty ? controller.adminNombre.value : "Administrador"}!',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      Obx(
+                        () => Text(
+                          '👋 ¡Bienvenido de nuevo, ${controller.adminNombre.value.isNotEmpty ? controller.adminNombre.value : "Administrador"}!',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
-                      )),
+                      ),
                       const SizedBox(height: 6),
                       Text(
                         '📅 $fechaStr • Supervisión Global de Obras, Cotizaciones y Almacén en Tiempo Real',
@@ -533,7 +596,11 @@ class AdminPage extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.analytics_outlined, color: Colors.white, size: 32),
+                  child: const Icon(
+                    Icons.analytics_outlined,
+                    color: Colors.white,
+                    size: 32,
+                  ),
                 ),
               ],
             ),
@@ -558,7 +625,7 @@ class AdminPage extends StatelessWidget {
                 _buildQuickActionTile(
                   icon: Icons.construction,
                   label: 'Obras y Pisos',
-                  color: Colors.blue,
+                  color: _ByggerColors.azulMedio,
                   onTap: () => controller.cambiarVista(1),
                 ),
                 const SizedBox(width: 10),
@@ -614,7 +681,7 @@ class AdminPage extends StatelessWidget {
                     title: 'Obras Registradas',
                     value: controller.totalObras.value.toString(),
                     icon: Icons.construction,
-                    color: Colors.blue,
+                    color: _ByggerColors.azulMedio,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -654,7 +721,7 @@ class AdminPage extends StatelessWidget {
                     title: 'Obras Registradas',
                     value: controller.totalObras.value.toString(),
                     icon: Icons.construction,
-                    color: Colors.blue,
+                    color: _ByggerColors.azulMedio,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -713,7 +780,9 @@ class AdminPage extends StatelessWidget {
                 const SizedBox(height: 12),
                 Card(
                   elevation: 2,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -756,7 +825,9 @@ class AdminPage extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: _getEstadoColor(estado).withValues(alpha: 0.1),
+                            color: _getEstadoColor(
+                              estado,
+                            ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -783,7 +854,11 @@ class AdminPage extends StatelessWidget {
   // ============================================================
   // 2. USUARIOS Y ACCESOS POR OBRA (NUEVA VISTA RESPONSIVA)
   // ============================================================
-  Widget _buildUsuariosView(BuildContext context, AdminController controller, {required bool isWebLayout}) {
+  Widget _buildUsuariosView(
+    BuildContext context,
+    AdminController controller, {
+    required bool isWebLayout,
+  }) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -812,18 +887,27 @@ class AdminPage extends StatelessWidget {
                   ],
                 ),
               ),
-              Obx(() => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.blue.shade200),
+              Obx(
+                () => Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _ByggerColors.azulMedio.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: _ByggerColors.azulClaro),
+                  ),
+                  child: Text(
+                    'Total: ${controller.usuarios.length} usuarios',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _ByggerColors.azulOscuro,
+                      fontSize: 13,
+                    ),
+                  ),
                 ),
-                child: Text(
-                  'Total: ${controller.usuarios.length} usuarios',
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade800, fontSize: 13),
-                ),
-              )),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -831,7 +915,9 @@ class AdminPage extends StatelessWidget {
           // Filters Bar (Search + Dropdown Obras + Dropdown Estado)
           Card(
             elevation: 1,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Wrap(
@@ -847,10 +933,16 @@ class AdminPage extends StatelessWidget {
                         hintText: 'Buscar por nombre, correo...',
                         prefixIcon: const Icon(Icons.search, size: 20),
                         isDense: true,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                       ),
-                      onChanged: (val) => controller.busquedaUsuario.value = val,
+                      onChanged: (val) =>
+                          controller.busquedaUsuario.value = val,
                     ),
                   ),
 
@@ -865,16 +957,25 @@ class AdminPage extends StatelessWidget {
                       child: DropdownButton<int?>(
                         value: controller.obraFiltro.value,
                         underline: const SizedBox(),
-                        hint: const Text('Todas las Obras', style: TextStyle(fontSize: 13)),
+                        hint: const Text(
+                          'Todas las Obras',
+                          style: TextStyle(fontSize: 13),
+                        ),
                         items: [
                           const DropdownMenuItem<int?>(
                             value: null,
-                            child: Text('Todas las Obras', style: TextStyle(fontSize: 13)),
+                            child: Text(
+                              'Todas las Obras',
+                              style: TextStyle(fontSize: 13),
+                            ),
                           ),
                           ...controller.obras.map((o) {
                             return DropdownMenuItem<int?>(
                               value: o['id_obra'] as int?,
-                              child: Text(o['nombre'].toString(), style: const TextStyle(fontSize: 13)),
+                              child: Text(
+                                o['nombre'].toString(),
+                                style: const TextStyle(fontSize: 13),
+                              ),
                             );
                           }),
                         ],
@@ -895,9 +996,27 @@ class AdminPage extends StatelessWidget {
                         value: controller.estadoFiltro.value,
                         underline: const SizedBox(),
                         items: const [
-                          DropdownMenuItem(value: 'TODOS', child: Text('Todos los Estados', style: TextStyle(fontSize: 13))),
-                          DropdownMenuItem(value: 'ACTIVOS', child: Text('🟢 Solo Activos', style: TextStyle(fontSize: 13))),
-                          DropdownMenuItem(value: 'INHABILITADOS', child: Text('🔴 Solo Inhabilitados', style: TextStyle(fontSize: 13))),
+                          DropdownMenuItem(
+                            value: 'TODOS',
+                            child: Text(
+                              'Todos los Estados',
+                              style: TextStyle(fontSize: 13),
+                            ),
+                          ),
+                          DropdownMenuItem(
+                            value: 'ACTIVOS',
+                            child: Text(
+                              '🟢 Solo Activos',
+                              style: TextStyle(fontSize: 13),
+                            ),
+                          ),
+                          DropdownMenuItem(
+                            value: 'INHABILITADOS',
+                            child: Text(
+                              '🔴 Solo Inhabilitados',
+                              style: TextStyle(fontSize: 13),
+                            ),
+                          ),
                         ],
                         onChanged: (val) {
                           if (val != null) controller.estadoFiltro.value = val;
@@ -914,15 +1033,19 @@ class AdminPage extends StatelessWidget {
           // User Cards / List
           Expanded(
             child: Obx(() {
-              final query = controller.busquedaUsuario.value.toLowerCase().trim();
+              final query = controller.busquedaUsuario.value
+                  .toLowerCase()
+                  .trim();
               final idObraFiltro = controller.obraFiltro.value;
               final estadoFiltro = controller.estadoFiltro.value;
 
               final listaFiltrada = controller.usuarios.where((u) {
-                final nombre = '${u['nombre'] ?? ''} ${u['apellido'] ?? ''}'.toLowerCase();
+                final nombre = '${u['nombre'] ?? ''} ${u['apellido'] ?? ''}'
+                    .toLowerCase();
                 final correo = (u['correo'] ?? '').toString().toLowerCase();
                 final telefono = (u['telefono'] ?? '').toString().toLowerCase();
-                final matchQuery = query.isEmpty ||
+                final matchQuery =
+                    query.isEmpty ||
                     nombre.contains(query) ||
                     correo.contains(query) ||
                     telefono.contains(query);
@@ -931,11 +1054,14 @@ class AdminPage extends StatelessWidget {
 
                 final esActivoGlobal = u['estado'] == true;
                 if (estadoFiltro == 'ACTIVOS' && !esActivoGlobal) return false;
-                if (estadoFiltro == 'INHABILITADOS' && esActivoGlobal) return false;
+                if (estadoFiltro == 'INHABILITADOS' && esActivoGlobal)
+                  return false;
 
                 if (idObraFiltro != null) {
                   final obrasDet = (u['obras_detalladas'] as List? ?? []);
-                  final tieneObra = obrasDet.any((o) => o['id_obra'] == idObraFiltro);
+                  final tieneObra = obrasDet.any(
+                    (o) => o['id_obra'] == idObraFiltro,
+                  );
                   if (!tieneObra) return false;
                 }
 
@@ -947,9 +1073,16 @@ class AdminPage extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.person_off_outlined, size: 64, color: Colors.grey),
+                      Icon(
+                        Icons.person_off_outlined,
+                        size: 64,
+                        color: Colors.grey,
+                      ),
                       SizedBox(height: 12),
-                      Text('No se encontraron usuarios con los filtros seleccionados', style: TextStyle(color: Colors.grey)),
+                      Text(
+                        'No se encontraron usuarios con los filtros seleccionados',
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     ],
                   ),
                 );
@@ -960,8 +1093,10 @@ class AdminPage extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final u = listaFiltrada[index];
                   final idUsuario = u['id_usuario'] as int;
-                  final nombreCompleto = '${u['nombre'] ?? ''} ${u['apellido'] ?? ''}'.trim();
-                  final esAdmin = u['rol'] == 'administrador' || u['rol'] == 'admin';
+                  final nombreCompleto =
+                      '${u['nombre'] ?? ''} ${u['apellido'] ?? ''}'.trim();
+                  final esAdmin =
+                      u['rol'] == 'administrador' || u['rol'] == 'admin';
                   final esActivoGlobal = u['estado'] == true;
                   final obrasDetalladas = (u['obras_detalladas'] as List? ?? [])
                       .cast<Map<String, dynamic>>();
@@ -972,7 +1107,9 @@ class AdminPage extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                       side: BorderSide(
-                        color: esActivoGlobal ? Colors.grey.shade300 : Colors.red.shade300,
+                        color: esActivoGlobal
+                            ? Colors.grey.shade300
+                            : Colors.red.shade300,
                         width: esActivoGlobal ? 1 : 1.5,
                       ),
                     ),
@@ -989,10 +1126,15 @@ class AdminPage extends StatelessWidget {
                                 radius: 22,
                                 backgroundColor: !esActivoGlobal
                                     ? Colors.red.shade400
-                                    : (esAdmin ? Colors.green.shade600 : Colors.blue.shade600),
+                                    : (esAdmin
+                                          ? Colors.green.shade600
+                                          : _ByggerColors.azulMedio),
                                 child: Text(
                                   (u['nombre']?[0] ?? 'U').toUpperCase(),
-                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -1005,14 +1147,21 @@ class AdminPage extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: esActivoGlobal ? const Color(0xFF1E2A32) : Colors.red.shade900,
-                                        decoration: esActivoGlobal ? null : TextDecoration.lineThrough,
+                                        color: esActivoGlobal
+                                            ? const Color(0xFF1E2A32)
+                                            : Colors.red.shade900,
+                                        decoration: esActivoGlobal
+                                            ? null
+                                            : TextDecoration.lineThrough,
                                       ),
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
                                       '✉️ ${u['correo'] ?? 'Sin correo'} • 📱 ${u['telefono'] ?? 'Sin teléfono'}',
-                                      style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade700,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -1022,20 +1171,31 @@ class AdminPage extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: esActivoGlobal ? Colors.green.shade50 : Colors.red.shade50,
+                                      color: esActivoGlobal
+                                          ? Colors.green.shade50
+                                          : Colors.red.shade50,
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: esActivoGlobal ? Colors.green.shade300 : Colors.red.shade300,
+                                        color: esActivoGlobal
+                                            ? Colors.green.shade300
+                                            : Colors.red.shade300,
                                       ),
                                     ),
                                     child: Text(
-                                      esActivoGlobal ? '🟢 HABILITADO' : '🔴 INHABILITADO',
+                                      esActivoGlobal
+                                          ? '🟢 HABILITADO'
+                                          : '🔴 INHABILITADO',
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
-                                        color: esActivoGlobal ? Colors.green.shade800 : Colors.red.shade800,
+                                        color: esActivoGlobal
+                                            ? Colors.green.shade800
+                                            : Colors.red.shade800,
                                       ),
                                     ),
                                   ),
@@ -1050,10 +1210,14 @@ class AdminPage extends StatelessWidget {
                                         estadoActual: esActivoGlobal,
                                       ),
                                       child: Text(
-                                        esActivoGlobal ? 'Inhabilitar Global' : 'Reactivar Global',
+                                        esActivoGlobal
+                                            ? 'Inhabilitar Global'
+                                            : 'Reactivar Global',
                                         style: TextStyle(
                                           fontSize: 11,
-                                          color: esActivoGlobal ? Colors.red.shade700 : Colors.green.shade700,
+                                          color: esActivoGlobal
+                                              ? Colors.red.shade700
+                                              : Colors.green.shade700,
                                           fontWeight: FontWeight.bold,
                                           decoration: TextDecoration.underline,
                                         ),
@@ -1072,7 +1236,11 @@ class AdminPage extends StatelessWidget {
                           // Obras vinculadas y sus estados
                           const Text(
                             'Acceso y Estado por Obra:',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF1E2A32)),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E2A32),
+                            ),
                           ),
                           const SizedBox(height: 8),
 
@@ -1083,7 +1251,13 @@ class AdminPage extends StatelessWidget {
                                 color: Colors.grey.shade100,
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: const Text('Sin obras vinculadas', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                              child: const Text(
+                                'Sin obras vinculadas',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
                             )
                           else
                             Wrap(
@@ -1091,26 +1265,38 @@ class AdminPage extends StatelessWidget {
                               runSpacing: 8,
                               children: obrasDetalladas.map((obDet) {
                                 final idObra = obDet['id_obra'] as int;
-                                final nombreObra = obDet['nombre_obra'] as String;
+                                final nombreObra =
+                                    obDet['nombre_obra'] as String;
                                 final nombreRol = obDet['nombre_rol'] as String;
                                 final esActivoObra = obDet['estado'] == true;
 
                                 return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: esActivoObra ? Colors.blue.shade50 : Colors.orange.shade50,
+                                    color: esActivoObra
+                                        ? _ByggerColors.azulMedio.withValues(alpha: 0.05)
+                                        : Colors.orange.shade50,
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                      color: esActivoObra ? Colors.blue.shade200 : Colors.orange.shade300,
+                                      color: esActivoObra
+                                          ? _ByggerColors.azulClaro
+                                          : Colors.orange.shade300,
                                     ),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
-                                        esActivoObra ? Icons.business : Icons.block,
+                                        esActivoObra
+                                            ? Icons.business
+                                            : Icons.block,
                                         size: 16,
-                                        color: esActivoObra ? Colors.blue.shade800 : Colors.orange.shade900,
+                                        color: esActivoObra
+                                            ? _ByggerColors.azulOscuro
+                                            : Colors.orange.shade900,
                                       ),
                                       const SizedBox(width: 6),
                                       Text(
@@ -1118,7 +1304,9 @@ class AdminPage extends StatelessWidget {
                                         style: TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: esActivoObra ? Colors.blue.shade900 : Colors.orange.shade900,
+                                          color: esActivoObra
+                                              ? _ByggerColors.textoOscuro
+                                              : Colors.orange.shade900,
                                         ),
                                       ),
                                       const SizedBox(width: 8),
@@ -1133,17 +1321,28 @@ class AdminPage extends StatelessWidget {
                                           estadoActualObra: esActivoObra,
                                         ),
                                         child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
                                           decoration: BoxDecoration(
-                                            color: esActivoObra ? Colors.red.shade100 : Colors.green.shade100,
-                                            borderRadius: BorderRadius.circular(6),
+                                            color: esActivoObra
+                                                ? Colors.red.shade100
+                                                : Colors.green.shade100,
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
                                           ),
                                           child: Text(
-                                            esActivoObra ? 'Inhabilitar' : 'Habilitar',
+                                            esActivoObra
+                                                ? 'Inhabilitar'
+                                                : 'Habilitar',
                                             style: TextStyle(
                                               fontSize: 10,
                                               fontWeight: FontWeight.bold,
-                                              color: esActivoObra ? Colors.red.shade900 : Colors.green.shade900,
+                                              color: esActivoObra
+                                                  ? Colors.red.shade900
+                                                  : Colors.green.shade900,
                                             ),
                                           ),
                                         ),
@@ -1179,7 +1378,9 @@ class AdminPage extends StatelessWidget {
     required bool estadoActualObra,
   }) async {
     final nuevoEstado = !estadoActualObra;
-    final accion = nuevoEstado ? 'habilitar' : 'inhabilitar por renuncia/salida';
+    final accion = nuevoEstado
+        ? 'habilitar'
+        : 'inhabilitar por renuncia/salida';
 
     final confirm = await showDialog<bool>(
       context: context,
@@ -1190,7 +1391,10 @@ class AdminPage extends StatelessWidget {
           '¿Estás seguro de que deseas $accion al usuario "$nombreUsuario" en la obra "$nombreObra"?',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
@@ -1225,12 +1429,19 @@ class AdminPage extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: Text(nuevoEstado ? 'Habilitar Usuario Global' : 'Inhabilitar Usuario Global'),
+        title: Text(
+          nuevoEstado
+              ? 'Habilitar Usuario Global'
+              : 'Inhabilitar Usuario Global',
+        ),
         content: Text(
           '¿Estás seguro de que deseas ${nuevoEstado ? "habilitar" : "inhabilitar totalmente"} al usuario "$nombreUsuario"?',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(

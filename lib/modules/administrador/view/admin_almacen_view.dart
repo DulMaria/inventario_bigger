@@ -286,35 +286,6 @@ class _AdminAlmacenViewState extends State<AdminAlmacenView>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4FAFE),
-      appBar: AppBar(
-        title: const Text('Almacén (Global)'),
-        backgroundColor: Colors.blue[700],
-        foregroundColor: Colors.white,
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refrescar',
-            onPressed: _cargarDatos,
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          tabs: [
-            Tab(
-              icon: const Icon(Icons.warehouse_rounded),
-              text: 'En Almacén (${_solicitudesEnAlmacen.length})',
-            ),
-            Tab(
-              icon: const Icon(Icons.history),
-              text: 'Entregados (${_solicitudesEntregadas.length})',
-            ),
-          ],
-        ),
-      ),
       body: Column(
         children: [
           // Selector de Obra

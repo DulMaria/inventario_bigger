@@ -33,7 +33,7 @@ class _RegistroViewState extends State<RegistroView> {
     '¿Cuál es el nombre de tu colegio primario?',
     '¿Cuál es tu color favorito?',
     '¿Cuál es tu comida favorita?',
-    'Escribir mi propia pregunta...'
+    'Escribir mi propia pregunta...',
   ];
 
   @override
@@ -60,7 +60,7 @@ class _RegistroViewState extends State<RegistroView> {
     }
 
     String preguntaFinal = _preguntaSeleccionada!;
-    
+
     // Si elige escribir su propia pregunta, la procesamos
     if (_preguntaSeleccionada == 'Escribir mi propia pregunta...') {
       final custom = _preguntaPersonalizadaController.text.trim();
@@ -120,289 +120,390 @@ class _RegistroViewState extends State<RegistroView> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Crear cuenta'),
-        backgroundColor: const Color(0xFF2FA9E0),
+        title: const Text(
+          'Crear cuenta',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         foregroundColor: Colors.white,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 10),
-
-                const Text(
-                  'Crear una cuenta',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E2A32),
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                const Text(
-                  'Completa tus datos para registrarte',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: Color(0xFF7C8A93)),
-                ),
-
-                const SizedBox(height: 30),
-
-                _campo(
-                  controller: _nombreController,
-                  label: 'Nombre',
-                  icon: Icons.person_outline,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Ingresa tu nombre';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 16),
-
-                _campo(
-                  controller: _apellidoController,
-                  label: 'Apellido',
-                  icon: Icons.person_outline,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Ingresa tu apellido';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 16),
-
-                _campo(
-                  controller: _telefonoController,
-                  label: 'Número de celular',
-                  icon: Icons.phone_android_outlined,
-                  keyboardType: TextInputType.phone,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Ingresa tu número de celular';
-                    }
-                    if (value.trim().length < 7) {
-                      return 'El celular debe tener al menos 7 dígitos';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 16),
-
-                _campo(
-                  controller: _correoController,
-                  label: 'Correo electrónico (Opcional)',
-                  icon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value != null && value.trim().isNotEmpty) {
-                      final correoValido = RegExp(
-                        r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-                      );
-
-                      if (!correoValido.hasMatch(value.trim())) {
-                        return 'Ingresa un correo válido';
-                      }
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 16),
-
-                _campo(
-                  controller: _contrasenaController,
-                  label: 'Contraseña',
-                  icon: Icons.lock_outline,
-                  obscureText: _ocultarContrasena,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _ocultarContrasena
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _ocultarContrasena = !_ocultarContrasena;
-                      });
-                    },
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Ingresa una contraseña';
-                    }
-
-                    if (value.length < 6) {
-                      return 'Mínimo 6 caracteres';
-                    }
-
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 16),
-
-                _campo(
-                  controller: _confirmarContrasenaController,
-                  label: 'Confirmar contraseña',
-                  icon: Icons.lock_outline,
-                  obscureText: _ocultarConfirmacion,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _ocultarConfirmacion
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _ocultarConfirmacion = !_ocultarConfirmacion;
-                      });
-                    },
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Confirma tu contraseña';
-                    }
-
-                    if (value != _contrasenaController.text) {
-                      return 'Las contraseñas no coinciden';
-                    }
-
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 16),
-
-                // Selector de Pregunta de Seguridad
-                DropdownButtonFormField<String>(
-                  value: _preguntaSeleccionada,
-                  isExpanded: true,
-                  hint: const Text('Pregunta de Seguridad'),
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.security, color: Color(0xFF2FA9E0)),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFF6FC6EE)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFF2FA9E0), width: 1.8),
-                    ),
-                  ),
-                  items: _opcionesPreguntas.map((String pregunta) {
-                    return DropdownMenuItem<String>(
-                      value: pregunta,
-                      child: Text(pregunta, overflow: TextOverflow.ellipsis),
-                    );
-                  }).toList(),
-                  onChanged: (String? nuevoValor) {
-                    setState(() {
-                      _preguntaSeleccionada = nuevoValor;
-                    });
-                  },
-                ),
-
-                if (_preguntaSeleccionada == 'Escribir mi propia pregunta...') ...[
-                  const SizedBox(height: 16),
-                  _campo(
-                    controller: _preguntaPersonalizadaController,
-                    label: 'Escribe tu pregunta secreta',
-                    icon: Icons.edit_note,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Ingresa tu pregunta';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
-
-                const SizedBox(height: 16),
-
-                // Respuesta de Seguridad
-                _campo(
-                  controller: _respuestaController,
-                  label: 'Tu respuesta secreta',
-                  icon: Icons.question_answer_outlined,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Ingresa tu respuesta';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 28),
-
-                SizedBox(
-                  height: 54,
-                  child: ElevatedButton(
-                    onPressed: _cargando ? null : _registrar,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2FA9E0),
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: Colors.grey,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF2FA9E0), Color(0xFF6FC6EE), Color(0xFFF4FAFE)],
+            stops: [0.0, 0.35, 0.75],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 450),
+                child: Container(
+                  padding: const EdgeInsets.all(26),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1D7FAE).withValues(alpha: 0.18),
+                        blurRadius: 30,
+                        offset: const Offset(0, 16),
                       ),
-                    ),
-                    child: _cargando
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2.5,
+                    ],
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 10),
+
+                        const Text(
+                          'Crear una cuenta',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E2A32),
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        const Text(
+                          'Completa tus datos para registrarte',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF7C8A93),
+                          ),
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        _campo(
+                          controller: _nombreController,
+                          label: 'Nombre',
+                          icon: Icons.person_outline,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Ingresa tu nombre';
+                            }
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        _campo(
+                          controller: _apellidoController,
+                          label: 'Apellido',
+                          icon: Icons.person_outline,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Ingresa tu apellido';
+                            }
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        _campo(
+                          controller: _telefonoController,
+                          label: 'Número de celular',
+                          icon: Icons.phone_android_outlined,
+                          keyboardType: TextInputType.phone,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Ingresa tu número de celular';
+                            }
+                            if (value.trim().length < 7) {
+                              return 'El celular debe tener al menos 7 dígitos';
+                            }
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        _campo(
+                          controller: _correoController,
+                          label: 'Correo electrónico (Opcional)',
+                          icon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            if (value != null && value.trim().isNotEmpty) {
+                              final correoValido = RegExp(
+                                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                              );
+
+                              if (!correoValido.hasMatch(value.trim())) {
+                                return 'Ingresa un correo válido';
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        _campo(
+                          controller: _contrasenaController,
+                          label: 'Contraseña',
+                          icon: Icons.lock_outline,
+                          obscureText: _ocultarContrasena,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _ocultarContrasena
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
                             ),
-                          )
-                        : const Text(
-                            'Registrarse',
+                            onPressed: () {
+                              setState(() {
+                                _ocultarContrasena = !_ocultarContrasena;
+                              });
+                            },
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Ingresa una contraseña';
+                            }
+
+                            if (value.length < 6) {
+                              return 'Mínimo 6 caracteres';
+                            }
+
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        _campo(
+                          controller: _confirmarContrasenaController,
+                          label: 'Confirmar contraseña',
+                          icon: Icons.lock_outline,
+                          obscureText: _ocultarConfirmacion,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _ocultarConfirmacion
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _ocultarConfirmacion = !_ocultarConfirmacion;
+                              });
+                            },
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Confirma tu contraseña';
+                            }
+
+                            if (value != _contrasenaController.text) {
+                              return 'Las contraseñas no coinciden';
+                            }
+
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Selector de Pregunta de Seguridad
+                        DropdownButtonFormField<String>(
+                          value: _preguntaSeleccionada,
+                          isExpanded: true,
+                          icon: const Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: Color(0xFF2FA9E0),
+                          ),
+                          dropdownColor: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          elevation: 4,
+                          hint: const Text(
+                            'Selecciona o escribe una pregunta...',
                             style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF7C8A93),
+                              fontSize: 14,
                             ),
                           ),
+                          decoration: InputDecoration(
+                            prefixIcon: Container(
+                              margin: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF4FAFE),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.security_rounded,
+                                color: Color(0xFF2FA9E0),
+                                size: 20,
+                              ),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF6FC6EE),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF2FA9E0),
+                                width: 1.8,
+                              ),
+                            ),
+                          ),
+                          items: _opcionesPreguntas.map((String pregunta) {
+                            final bool esPersonalizada =
+                                pregunta == 'Escribir mi propia pregunta...';
+                            return DropdownMenuItem<String>(
+                              value: pregunta,
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    esPersonalizada
+                                        ? Icons.edit_note_rounded
+                                        : Icons.help_outline_rounded,
+                                    size: 20,
+                                    color: esPersonalizada
+                                        ? const Color(0xFF2FA9E0)
+                                        : const Color(0xFF7C8A93),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      pregunta,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: esPersonalizada
+                                            ? const Color(0xFF2FA9E0)
+                                            : const Color(0xFF1E2A32),
+                                        fontWeight: esPersonalizada
+                                            ? FontWeight.bold
+                                            : FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (String? nuevoValor) {
+                            setState(() {
+                              _preguntaSeleccionada = nuevoValor;
+                            });
+                          },
+                        ),
+
+                        if (_preguntaSeleccionada ==
+                            'Escribir mi propia pregunta...') ...[
+                          const SizedBox(height: 16),
+                          _campo(
+                            controller: _preguntaPersonalizadaController,
+                            label: 'Escribe tu pregunta secreta',
+                            icon: Icons.edit_note,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Ingresa tu pregunta';
+                              }
+                              return null;
+                            },
+                          ),
+                        ],
+
+                        const SizedBox(height: 16),
+
+                        // Respuesta de Seguridad
+                        _campo(
+                          controller: _respuestaController,
+                          label: 'Tu respuesta secreta',
+                          icon: Icons.question_answer_outlined,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Ingresa tu respuesta';
+                            }
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: 28),
+
+                        SizedBox(
+                          height: 54,
+                          child: ElevatedButton(
+                            onPressed: _cargando ? null : _registrar,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2FA9E0),
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: Colors.grey,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: _cargando
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Registrarse',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        TextButton(
+                          onPressed: _cargando
+                              ? null
+                              : () {
+                                  Navigator.pop(context);
+                                },
+                          child: const Text(
+                            '¿Ya tienes una cuenta? Inicia sesión',
+                            style: TextStyle(color: Color(0xFF2FA9E0)),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-
-                const SizedBox(height: 16),
-
-                TextButton(
-                  onPressed: _cargando
-                      ? null
-                      : () {
-                          Navigator.pop(context);
-                        },
-                  child: const Text(
-                    '¿Ya tienes una cuenta? Inicia sesión',
-                    style: TextStyle(color: Color(0xFF2FA9E0)),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),

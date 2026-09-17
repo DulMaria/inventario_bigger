@@ -15,14 +15,15 @@ class RecuperarContrasenaView extends StatefulWidget {
   const RecuperarContrasenaView({super.key, this.telefonoInicial = ''});
 
   @override
-  State<RecuperarContrasenaView> createState() => _RecuperarContrasenaViewState();
+  State<RecuperarContrasenaView> createState() =>
+      _RecuperarContrasenaViewState();
 }
 
 class _RecuperarContrasenaViewState extends State<RecuperarContrasenaView> {
   final _telefonoController = TextEditingController();
   final _respuestaController = TextEditingController();
   final _contrasenaController = TextEditingController();
-  
+
   final _authController = AuthController();
 
   bool _cargando = false;
@@ -72,7 +73,9 @@ class _RecuperarContrasenaViewState extends State<RecuperarContrasenaView> {
         _pasoActual = 2;
       });
     } else {
-      _mostrarMensaje('No se encontró cuenta con este número o no tiene pregunta de seguridad.');
+      _mostrarMensaje(
+        'No se encontró cuenta con este número o no tiene pregunta de seguridad.',
+      );
     }
   }
 
@@ -103,16 +106,28 @@ class _RecuperarContrasenaViewState extends State<RecuperarContrasenaView> {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: _ByggerColors.azulMedio,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
         onPressed: _cargando ? null : onPressed,
         child: _cargando
             ? const SizedBox(
                 width: 24,
                 height: 24,
-                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2.5,
+                ),
               )
-            : Text(texto, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+            : Text(
+                texto,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
       ),
     );
   }
@@ -120,108 +135,156 @@ class _RecuperarContrasenaViewState extends State<RecuperarContrasenaView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _ByggerColors.fondoClaro,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Recuperar Contraseña', style: TextStyle(color: _ByggerColors.textoOscuro)),
+        title: const Text(
+          'Recuperar Contraseña',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: _ByggerColors.textoOscuro),
+        foregroundColor: Colors.white,
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Container(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF2FA9E0), // _ByggerColors.azulMedio
+              Color(0xFF6FC6EE), // _ByggerColors.azulClaro
+              Color(0xFFF4FAFE), // _ByggerColors.fondoClaro
+            ],
+            stops: [0.0, 0.35, 0.75],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 10)),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.security, size: 64, color: _ByggerColors.azulMedio),
-                  const SizedBox(height: 16),
-                  
-                  if (_pasoActual == 1) ...[
-                    const Text(
-                      'Ingresa tu número de celular para buscar tu pregunta de seguridad.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: _ByggerColors.textoGris),
-                    ),
-                    const SizedBox(height: 24),
-                    TextField(
-                      controller: _telefonoController,
-                      keyboardType: TextInputType.phone,
-                      decoration: InputDecoration(
-                        labelText: 'Número de celular',
-                        prefixIcon: const Icon(Icons.phone_android),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1D7FAE).withValues(alpha: 0.18),
+                        blurRadius: 30,
+                        offset: const Offset(0, 16),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    _buildBoton('Buscar Cuenta', _buscarPregunta),
-                  ],
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.security,
+                        size: 64,
+                        color: _ByggerColors.azulMedio,
+                      ),
+                      const SizedBox(height: 16),
 
-                  if (_pasoActual == 2) ...[
-                    const Text(
-                      'Responde tu pregunta de seguridad para crear una nueva contraseña.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: _ByggerColors.textoGris),
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: _ByggerColors.fondoClaro,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: _ByggerColors.azulMedio.withValues(alpha: 0.3)),
-                      ),
-                      child: Text(
-                        _preguntaRecuperada ?? '',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    TextField(
-                      controller: _respuestaController,
-                      decoration: InputDecoration(
-                        labelText: 'Tu respuesta secreta',
-                        prefixIcon: const Icon(Icons.question_answer),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    TextField(
-                      controller: _contrasenaController,
-                      obscureText: _ocultarContrasena,
-                      decoration: InputDecoration(
-                        labelText: 'Nueva Contraseña',
-                        prefixIcon: const Icon(Icons.lock),
-                        suffixIcon: IconButton(
-                          icon: Icon(_ocultarContrasena ? Icons.visibility_off : Icons.visibility),
-                          onPressed: () => setState(() => _ocultarContrasena = !_ocultarContrasena),
+                      if (_pasoActual == 1) ...[
+                        const Text(
+                          'Ingresa tu número de celular para buscar tu pregunta de seguridad.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: _ByggerColors.textoGris),
                         ),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    _buildBoton('Cambiar Contraseña', _cambiarContrasena),
-                    TextButton(
-                      onPressed: () => setState(() => _pasoActual = 1),
-                      child: const Text('Volver atrás'),
-                    )
-                  ],
-                ],
+                        const SizedBox(height: 24),
+                        TextField(
+                          controller: _telefonoController,
+                          keyboardType: TextInputType.phone,
+                          decoration: InputDecoration(
+                            labelText: 'Número de celular',
+                            prefixIcon: const Icon(Icons.phone_android),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        _buildBoton('Buscar Cuenta', _buscarPregunta),
+                      ],
+
+                      if (_pasoActual == 2) ...[
+                        const Text(
+                          'Responde tu pregunta de seguridad para crear una nueva contraseña.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: _ByggerColors.textoGris),
+                        ),
+                        const SizedBox(height: 24),
+
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: _ByggerColors.fondoClaro,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: _ByggerColors.azulMedio.withValues(
+                                alpha: 0.3,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            _preguntaRecuperada ?? '',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        TextField(
+                          controller: _respuestaController,
+                          decoration: InputDecoration(
+                            labelText: 'Tu respuesta secreta',
+                            prefixIcon: const Icon(Icons.question_answer),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        TextField(
+                          controller: _contrasenaController,
+                          obscureText: _ocultarContrasena,
+                          decoration: InputDecoration(
+                            labelText: 'Nueva Contraseña',
+                            prefixIcon: const Icon(Icons.lock),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _ocultarContrasena
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                              onPressed: () => setState(
+                                () => _ocultarContrasena = !_ocultarContrasena,
+                              ),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        _buildBoton('Cambiar Contraseña', _cambiarContrasena),
+                        TextButton(
+                          onPressed: () => setState(() => _pasoActual = 1),
+                          child: const Text('Volver atrás'),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ),
             ),
           ),

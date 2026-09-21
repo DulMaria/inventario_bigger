@@ -8,12 +8,14 @@ class ProformasGerenteView extends StatefulWidget {
   final int idObra;
   final int idUsuarioGerente;
   final String? nombreObra;
+  final bool isEmbedded;
 
   const ProformasGerenteView({
     super.key,
     required this.idObra,
     required this.idUsuarioGerente,
     this.nombreObra,
+    this.isEmbedded = false,
   });
 
   @override
@@ -200,38 +202,68 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
       length: 3,
       child: Scaffold(
         backgroundColor: const Color(0xFFF4FAFE),
-        appBar: AppBar(
-          title: Text(widget.nombreObra != null ? 'Proformas - ${widget.nombreObra}' : 'Proformas de Materiales'),
-          backgroundColor: const Color(0xFF2FA9E0),
-          foregroundColor: Colors.white,
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              tooltip: 'Refrescar',
-              onPressed: _cargarDatos,
-            ),
-          ],
-          bottom: TabBar(
-            indicatorColor: Colors.white,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            tabs: [
-              Tab(
-                icon: const Icon(Icons.hourglass_empty),
-                text: 'Por Autorizar (${_solicitudesEnviadas.length})',
+        appBar: widget.isEmbedded 
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(kTextTabBarHeight),
+                child: AppBar(
+                  backgroundColor: const Color(0xFF2FA9E0),
+                  foregroundColor: Colors.white,
+                  automaticallyImplyLeading: false,
+                  elevation: 0,
+                  bottom: TabBar(
+                    indicatorColor: Colors.white,
+                    labelColor: Colors.white,
+                    unselectedLabelColor: Colors.white70,
+                    tabs: [
+                      Tab(
+                        icon: const Icon(Icons.hourglass_empty),
+                        text: 'Por Autorizar (${_solicitudesEnviadas.length})',
+                      ),
+                      Tab(
+                        icon: const Icon(Icons.check_circle_outline),
+                        text: 'A Comprar (${_solicitudesAprobadas.length})',
+                      ),
+                      Tab(
+                        icon: const Icon(Icons.shopping_bag_outlined),
+                        text: 'Comprados (${_solicitudesCompradas.length})',
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : AppBar(
+                title: Text(widget.nombreObra != null ? 'Proformas - ${widget.nombreObra}' : 'Proformas de Materiales'),
+                backgroundColor: const Color(0xFF2FA9E0),
+                foregroundColor: Colors.white,
+                centerTitle: true,
+                elevation: 0,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.refresh),
+                    tooltip: 'Refrescar',
+                    onPressed: _cargarDatos,
+                  ),
+                ],
+                bottom: TabBar(
+                  indicatorColor: Colors.white,
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white70,
+                  tabs: [
+                    Tab(
+                      icon: const Icon(Icons.hourglass_empty),
+                      text: 'Por Autorizar (${_solicitudesEnviadas.length})',
+                    ),
+                    Tab(
+                      icon: const Icon(Icons.check_circle_outline),
+                      text: 'A Comprar (${_solicitudesAprobadas.length})',
+                    ),
+                    Tab(
+                      icon: const Icon(Icons.shopping_bag_outlined),
+                      text: 'Comprados (${_solicitudesCompradas.length})',
+                    ),
+                  ],
+                ),
               ),
-              Tab(
-                icon: const Icon(Icons.check_circle_outline),
-                text: 'A Comprar (${_solicitudesAprobadas.length})',
-              ),
-              Tab(
-                icon: const Icon(Icons.shopping_bag_outlined),
-                text: 'Comprados (${_solicitudesCompradas.length})',
-              ),
-            ],
-          ),
-        ),
         body: _cargando
             ? const Center(child: CircularProgressIndicator())
             : TabBarView(

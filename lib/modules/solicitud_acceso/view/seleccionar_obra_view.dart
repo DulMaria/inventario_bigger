@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/custom_drawer.dart';
+import '../../administrador/view/perfil_usuario_view.dart';
 
 import '../../../models/obra_model.dart';
 import '../../../models/solicitud_acceso_model.dart';
@@ -433,6 +435,8 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4FAFE),
+      drawer: const CustomDrawer(),
+
 
       appBar: AppBar(
         title: const Text('Seleccionar obra'),

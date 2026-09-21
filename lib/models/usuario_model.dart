@@ -6,6 +6,8 @@ class UsuarioModel {
   final String correo;
   final String? telefono;
   final bool estado;
+  final String? pregunta;
+  final String? respuesta;
 
   String get nombreCompleto => '$nombre $apellido'.trim();
 
@@ -17,6 +19,8 @@ class UsuarioModel {
     required this.correo,
     this.telefono,
     required this.estado,
+    this.pregunta,
+    this.respuesta,
   });
 
   factory UsuarioModel.fromMap(Map<String, dynamic> map) {
@@ -28,6 +32,8 @@ class UsuarioModel {
       correo: map['correo'],
       telefono: map['telefono'],
       estado: map['estado'] ?? true,
+      pregunta: map['pregunta_seguridad'],
+      respuesta: map['respuesta_seguridad'],
     );
   }
 
@@ -40,6 +46,8 @@ class UsuarioModel {
       'correo': correo,
       'telefono': telefono,
       'estado': estado,
+      if (pregunta != null) 'pregunta_seguridad': pregunta,
+      if (respuesta != null) 'respuesta_seguridad': respuesta,
     };
   }
 }

@@ -1,3 +1,4 @@
+import '../../../models/usuario_model.dart';
 // lib/modules/auth/service/auth_service.dart
 import '../../../models/usuario_obra_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -299,9 +300,7 @@ class AuthService {
           .from('usuario_obra')
           .select('''
             id_rol,
-            roles (
-              nombre
-            )
+            roles (nombre)
           ''')
           .eq('id_usuario', idUsuario)
           .eq('estado', true);
@@ -356,13 +355,10 @@ class AuthService {
       final rol = await _supabase
           .from('usuario_obra')
           .select('''
-            roles (
-              nombre
-            )
+            roles (nombre)
           ''')
           .eq('id_usuario', idUsuario)
-          .eq('estado', true)
-          .maybeSingle();
+          .eq('estado', true).limit(1).maybeSingle();
 
       if (rol != null && rol['roles'] != null) {
         final rolData = rol['roles'] as Map;
@@ -379,7 +375,25 @@ class AuthService {
   // ============================================================
   // ✅ NUEVO: OBTENER DATOS COMPLETOS DEL USUARIO
   // ============================================================
-  Future<Map<String, dynamic>?> obtenerDatosUsuario() async {
+  
+  Future<UsuarioModel?> obtenerUsuarioActual() async {
+    final usuario = _supabase.auth.currentUser;
+    if (usuario == null) return null;
+    try {
+      final data = await _supabase
+          .from('usuarios')
+          .select('*')
+          .eq('id_auth', usuario.id)
+          .maybeSingle();
+      if (data != null) {
+        return UsuarioModel.fromMap(data);
+      }
+    } catch (e) {
+      print('Error al obtener UsuarioModel: ');
+    }
+    return null;
+  }
+Future<Map<String, dynamic>?> obtenerDatosUsuario() async {
     final usuario = _supabase.auth.currentUser;
     
     if (usuario == null) {
@@ -402,13 +416,10 @@ class AuthService {
       final rol = await _supabase
           .from('usuario_obra')
           .select('''
-            roles (
-              nombre
-            )
+            roles (nombre)
           ''')
           .eq('id_usuario', idUsuario)
-          .eq('estado', true)
-          .maybeSingle();
+          .eq('estado', true).limit(1).maybeSingle();
 
       String? nombreRol;
       if (rol != null && rol['roles'] != null) {

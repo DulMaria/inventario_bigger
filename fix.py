@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import codecs
+
+content = '''import 'package:flutter/material.dart';
 import '../../../core/widgets/custom_drawer.dart';
 import '../../administrador/view/perfil_usuario_view.dart';
 import '../../solicitud_acceso/view/solicitudes_acceso_view.dart';
 import '../../solicitud_acceso/view/seleccionar_obra_view.dart';
-import '../../auth/controller/auth_controller.dart';
-import '../../auth/view/login_view.dart';
 import 'proformas_gerente_view.dart';
 
 class GerenteHomeView extends StatefulWidget {
@@ -70,7 +70,7 @@ class _GerenteHomeViewState extends State<GerenteHomeView> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            widget.nombreObra != null ? 'Â¡Hola! Eres el Gerente de la obra "${widget.nombreObra}"' : 'Bienvenido, Gerente',
+            widget.nombreObra != null ? '¡Hola! Eres el Gerente de la obra "\"' : 'Bienvenido, Gerente',
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -79,7 +79,7 @@ class _GerenteHomeViewState extends State<GerenteHomeView> {
           ),
           const SizedBox(height: 6),
           const Text(
-            'Desde aquÃ­ puedes gestionar los accesos, revisar proformas llegadas y mÃ¡s.',
+            'Desde aquí puedes gestionar los accesos, revisar proformas llegadas y más.',
             style: TextStyle(fontSize: 15, color: Color(0xFF7C8A93)),
           ),
           const SizedBox(height: 25),
@@ -106,7 +106,7 @@ class _GerenteHomeViewState extends State<GerenteHomeView> {
               ),
               subtitle: Text(
                 widget.nombreObra != null
-                    ? 'Revisar y autorizar solicitudes para ${widget.nombreObra}'
+                    ? 'Revisar y autorizar solicitudes para \'
                     : 'Revisar y autorizar solicitudes de acceso a la obra',
                 style: const TextStyle(color: Color(0xFF7C8A93)),
               ),
@@ -138,7 +138,7 @@ class _GerenteHomeViewState extends State<GerenteHomeView> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               subtitle: const Text(
-                'RevisiÃ³n y autorizaciÃ³n de cotizaciones y proformas enviadas por compras.',
+                'Revisión y autorización de cotizaciones y proformas enviadas por compras.',
                 style: TextStyle(color: Color(0xFF7C8A93)),
               ),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
@@ -181,3 +181,6 @@ class _GerenteHomeViewState extends State<GerenteHomeView> {
     );
   }
 }
+'''
+with codecs.open('lib/modules/obra/view/gerente_home_view.dart', 'w', 'utf-8') as f:
+    f.write(content)

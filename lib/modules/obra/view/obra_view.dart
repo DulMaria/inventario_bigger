@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'usuarios_por_obra_view.dart';
+
 
 import '../controller/obra_controller.dart';
 import '../../../models/obra_model.dart';
@@ -146,13 +148,29 @@ class _ObrasViewState extends State<ObrasView> {
                           },
 
                           // Editar obra
-                          trailing: IconButton(
-                            icon: const Icon(
-                              Icons.edit,
-                            ),
-                            onPressed: () {
-                              _irAEditarObra(obra);
-                            },
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.people, color: Color(0xFF2FA9E0)),
+                                tooltip: 'Ver Usuarios',
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => UsuariosPorObraView(obra: obra),
+                                    ),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                tooltip: 'Editar Obra',
+                                onPressed: () {
+                                  _irAEditarObra(obra);
+                                },
+                              ),
+                            ],
                           ),
                         ),
                       );

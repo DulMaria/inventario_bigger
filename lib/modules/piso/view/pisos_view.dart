@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../obra/view/usuarios_por_obra_view.dart';
+
 
 import '../../../models/obra_model.dart';
 import '../../../models/piso_model.dart';
@@ -229,10 +231,24 @@ class _PisosViewState extends State<PisosView> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4FAFE),
       appBar: AppBar(
-        title: Text('Pisos - ${widget.obra.nombre}'),
+        title: Text('Pisos - '),
         backgroundColor: const Color(0xFF2FA9E0),
         foregroundColor: Colors.white,
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.people),
+            tooltip: 'Ver Usuarios',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => UsuariosPorObraView(obra: widget.obra),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _cargando ? null : _irACrearPiso,

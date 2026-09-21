@@ -7,11 +7,13 @@ import '../../obra/controller/obra_controller.dart';
 class SolicitudesAccesoView extends StatefulWidget {
   final int? idObra;
   final String? nombreObra;
+  final bool isEmbedded;
 
   const SolicitudesAccesoView({
     super.key,
     this.idObra,
     this.nombreObra,
+    this.isEmbedded = false,
   });
 
   @override
@@ -591,6 +593,14 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4FAFE),
+      appBar: widget.isEmbedded 
+          ? null 
+          : AppBar(
+              title: Text(titulo),
+              backgroundColor: const Color(0xFF2FA9E0),
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
       body: Column(
         children: [
           // Selector de Obra para Administrador (cuando widget.idObra es null)

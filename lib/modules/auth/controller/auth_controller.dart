@@ -1,3 +1,4 @@
+import '../../../models/usuario_model.dart';
 // lib/modules/auth/controller/auth_controller.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../service/auth_service.dart';
@@ -184,7 +185,11 @@ class AuthController {
   // ============================================================
   // ✅ NUEVO: OBTENER DATOS COMPLETOS DEL USUARIO
   // ============================================================
-  Future<Map<String, dynamic>?> obtenerDatosUsuario() async {
+  
+  Future<UsuarioModel?> obtenerUsuarioActual() async {
+    return await _authService.obtenerUsuarioActual();
+  }
+Future<Map<String, dynamic>?> obtenerDatosUsuario() async {
     try {
       return await _authService.obtenerDatosUsuario();
     } catch (e) {

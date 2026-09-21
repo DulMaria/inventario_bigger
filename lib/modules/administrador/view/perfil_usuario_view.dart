@@ -1,11 +1,12 @@
-// lib/modules/administrador/view/perfil_usuario_view.dart
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../auth/controller/auth_controller.dart';
 import '../../auth/view/login_view.dart';
 import '../controller/admin_controller.dart';
 
 class PerfilUsuarioView extends StatefulWidget {
-  const PerfilUsuarioView({super.key});
+  final bool isEmbedded;
+  const PerfilUsuarioView({super.key, this.isEmbedded = false});
 
   @override
   State<PerfilUsuarioView> createState() => _PerfilUsuarioViewState();
@@ -33,14 +34,30 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
     setState(() => _cargando = true);
     try {
       final userActualId = await _authController.obtenerIdUsuario();
-      final datosUser = await _authController.obtenerDatosUsuario();
+      final usuarioModel = await _authController.obtenerUsuarioActual();
       final rol = await _authController.obtenerRolUsuario();
 
-      final nombreCompleto = datosUser != null
-          ? '${datosUser['nombre'] ?? ''} ${datosUser['apellido'] ?? ''}'.trim()
-          : 'Usuario';
-      final correo = datosUser?['correo']?.toString() ?? '-';
-      final tel = datosUser?['telefono']?.toString() ?? '-';
+      String nombreCompleto = '';
+      if (usuarioModel != null) {
+        nombreCompleto = usuarioModel.nombreCompleto;
+      }
+
+      final user = Supabase.instance.client.auth.currentUser;
+      if (nombreCompleto.isEmpty && user != null) {
+        final meta = user.userMetadata;
+        if (meta != null) {
+          nombreCompleto = '${meta['nombre'] ?? ''} ${meta['apellido'] ?? ''}'.trim();
+        }
+      }
+      if (nombreCompleto.isEmpty && user != null && user.email != null) {
+        nombreCompleto = user.email!.split('@').first;
+      }
+      if (nombreCompleto.isEmpty) {
+        nombreCompleto = 'Usuario';
+      }
+
+      final correo = usuarioModel?.correo ?? '-';
+      final tel = usuarioModel?.telefono ?? '-';
 
       // Cargar mis obras asignadas si aplica
       await _adminController.cargarDashboard();
@@ -72,6 +89,7 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
   void _dialogoCambiarPassword() {
     final passNuevaController = TextEditingController();
     final passConfirmController = TextEditingController();
+    final formKeyPass = GlobalKey<FormState>();
     bool esOculto = true;
 
     showDialog(
@@ -92,36 +110,50 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
             ],
           ),
           content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: passNuevaController,
-                  obscureText: esOculto,
-                  decoration: InputDecoration(
-                    labelText: 'Nueva Contraseña',
-                    prefixIcon: const Icon(Icons.key),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        esOculto ? Icons.visibility : Icons.visibility_off,
+            child: Form(
+              key: formKeyPass,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: passNuevaController,
+                    obscureText: esOculto,
+                    maxLength: 8,
+                    decoration: InputDecoration(
+                      labelText: 'Nueva Contraseña',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          esOculto ? Icons.visibility : Icons.visibility_off,
+                        ),
+                        onPressed: () => setModalState(() => esOculto = !esOculto),
                       ),
-                      onPressed: () =>
-                          setModalState(() => esOculto = !esOculto),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    border: const OutlineInputBorder(),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) return 'Ingresa la contraseña';
+                      if (value.length > 8) return 'Máximo 8 caracteres';
+                      if (RegExp(r'(.)\\1{2,}').hasMatch(value)) return 'No caracteres repetidos 3+ veces';
+                      return null;
+                    },
                   ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: passConfirmController,
-                  obscureText: esOculto,
-                  decoration: const InputDecoration(
-                    labelText: 'Confirmar Nueva Contraseña',
-                    prefixIcon: Icon(Icons.key_outlined),
-                    border: OutlineInputBorder(),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: passConfirmController,
+                    obscureText: esOculto,
+                    maxLength: 8,
+                    decoration: InputDecoration(
+                      labelText: 'Confirmar Nueva Contraseña',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    validator: (value) {
+                      if (value != passNuevaController.text) return 'Las contraseñas no coinciden';
+                      return null;
+                    },
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           actions: [
@@ -131,44 +163,39 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
             ),
             ElevatedButton(
               onPressed: () async {
+                if (!formKeyPass.currentState!.validate()) return;
+                
                 final pass = passNuevaController.text.trim();
-                final confirm = passConfirmController.text.trim();
-
-                if (pass.isEmpty || pass.length < 6) {
+                
+                // Llamar al auth controller
+                try {
+                  await Supabase.instance.client.auth.updateUser(
+                    UserAttributes(password: pass),
+                  );
+                  if (!mounted) return;
+                  Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text(
-                        'La contraseña debe tener al menos 6 caracteres.',
-                      ),
+                      content: Text('Contraseña actualizada correctamente.'),
+                      backgroundColor: Colors.green,
                     ),
                   );
-                  return;
-                }
-
-                if (pass != confirm) {
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Las contraseñas no coinciden.'),
+                    SnackBar(
+                      content: Text('Error al cambiar contraseña: '),
+                      backgroundColor: Colors.red,
                     ),
                   );
-                  return;
                 }
-
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      '✅ Solicitud enviada. Tu contraseña será actualizada.',
-                    ),
-                    backgroundColor: Colors.green,
-                  ),
-                );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6FC6EE),
+                backgroundColor: const Color(0xFF2FA9E0),
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Actualizar'),
+              child: const Text('Guardar'),
             ),
           ],
         ),
@@ -272,6 +299,14 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4FAFE),
+      appBar: widget.isEmbedded 
+          ? null 
+          : AppBar(
+              title: const Text('Mi Perfil'),
+              backgroundColor: const Color(0xFF2FA9E0),
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(

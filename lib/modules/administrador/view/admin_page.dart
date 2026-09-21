@@ -432,13 +432,13 @@ class AdminPage extends StatelessWidget {
                 isWebLayout: isWebLayout,
               );
             case 4:
-              return const SolicitudesAccesoView();
+              return const SolicitudesAccesoView(isEmbedded: true);
             case 5:
               return const AdminProformasView();
             case 6:
               return const AdminAlmacenView();
             case 7:
-              return const PerfilUsuarioView();
+              return const PerfilUsuarioView(isEmbedded: true);
             default:
               return _buildDashboard(controller, isWebLayout: isWebLayout);
           }

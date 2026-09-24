@@ -440,6 +440,13 @@ class _ObreroHomeViewState extends State<ObreroHomeView> {
         onItemSelected: _cambiarVista,
       ),
       appBar: AppBar(
+        leading: _selectedIndex != 0
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                tooltip: 'Volver al Dashboard',
+                onPressed: () => _cambiarVista(0),
+              )
+            : null,
         title: Text(_menuItems[_selectedIndex]['title']),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.surface,

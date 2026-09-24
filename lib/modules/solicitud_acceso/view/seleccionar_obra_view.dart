@@ -227,8 +227,11 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
         await Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) =>
-                ObreroHomeView(idObra: idObra, idUsuario: idUsuario),
+            builder: (_) => ObreroHomeView(
+              idObra: idObra,
+              idUsuario: idUsuario,
+              nombreObra: _obraSeleccionada?.nombre,
+            ),
           ),
         );
         break;
@@ -241,8 +244,11 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
         await Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) =>
-                TecnicoHomeView(idObra: idObra, idUsuario: idUsuario),
+            builder: (_) => TecnicoHomeView(
+              idObra: idObra,
+              idUsuario: idUsuario,
+              nombreObra: _obraSeleccionada?.nombre,
+            ),
           ),
         );
         break;

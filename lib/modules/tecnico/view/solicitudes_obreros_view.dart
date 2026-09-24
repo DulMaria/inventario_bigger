@@ -7,11 +7,13 @@ import 'revisar_solicitud_obrero_view.dart';
 class SolicitudesObrerosView extends StatefulWidget {
   final int idObra;
   final int idTecnicoUsuario;
+  final bool isEmbedded;
 
   const SolicitudesObrerosView({
     super.key,
     required this.idObra,
     required this.idTecnicoUsuario,
+    this.isEmbedded = false,
   });
 
   @override
@@ -79,6 +81,126 @@ class _SolicitudesObrerosViewState extends State<SolicitudesObrerosView> {
 
   @override
   Widget build(BuildContext context) {
+    final bodyContent = _cargando
+        ? const Center(child: CircularProgressIndicator())
+        : _solicitudes.isEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.task_alt,
+                        size: 72,
+                        color: Color(0xFFB7C5CC),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'No hay solicitudes pendientes',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E2A32),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Todos los pedidos de los obreros han sido revisados y procesados.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Color(0xFF7C8A93)),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : RefreshIndicator(
+                onRefresh: _cargarSolicitudes,
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _solicitudes.length,
+                  itemBuilder: (context, index) {
+                    final sol = _solicitudes[index];
+
+                    final obrero = sol.usuario != null
+                        ? '${sol.usuario!.nombre} ${sol.usuario!.apellido}'
+                        : 'Obrero #${sol.idUsuario}';
+
+                    final piso = sol.piso?.etiquetaNivel ?? 'Piso';
+
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(16),
+                        leading: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: AppColors.backgroundLight,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.pending_actions,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        title: Text(
+                          obrero,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 4),
+                            Text(
+                              '$piso • ${sol.detalles.length} ítem(s)',
+                              style: const TextStyle(
+                                color: Color(0xFF1D7FAE),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Fecha: ${sol.fecha.day}/${sol.fecha.month}/${sol.fecha.year} ${sol.fecha.hour.toString().padLeft(2, '0')}:${sol.fecha.minute.toString().padLeft(2, '0')}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF7C8A93),
+                              ),
+                            ),
+                          ],
+                        ),
+                        trailing: ElevatedButton(
+                          onPressed: () => _revisar(sol),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: AppColors.surface,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text('Revisar'),
+                        ),
+                        onTap: () => _revisar(sol),
+                      ),
+                    );
+                  },
+                ),
+              );
+
+    if (widget.isEmbedded) {
+      return Container(
+        color: AppColors.backgroundLight,
+        child: bodyContent,
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
@@ -87,118 +209,7 @@ class _SolicitudesObrerosViewState extends State<SolicitudesObrerosView> {
         foregroundColor: AppColors.surface,
         centerTitle: true,
       ),
-      body: _cargando
-          ? const Center(child: CircularProgressIndicator())
-          : _solicitudes.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.task_alt,
-                          size: 72,
-                          color: Color(0xFFB7C5CC),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'No hay solicitudes pendientes',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E2A32),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Todos los pedidos de los obreros han sido revisados y procesados.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Color(0xFF7C8A93)),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _cargarSolicitudes,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _solicitudes.length,
-                    itemBuilder: (context, index) {
-                      final sol = _solicitudes[index];
-
-                      final obrero = sol.usuario != null
-                          ? '${sol.usuario!.nombre} ${sol.usuario!.apellido}'
-                          : 'Obrero #${sol.idUsuario}';
-
-                      final piso = sol.piso?.etiquetaNivel ?? 'Piso';
-
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(16),
-                          leading: Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: AppColors.backgroundLight,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.pending_actions,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                          title: Text(
-                            obrero,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 4),
-                              Text(
-                                '$piso • ${sol.detalles.length} ítem(s)',
-                                style: const TextStyle(
-                                  color: Color(0xFF1D7FAE),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Fecha: ${sol.fecha.day}/${sol.fecha.month}/${sol.fecha.year} ${sol.fecha.hour.toString().padLeft(2, '0')}:${sol.fecha.minute.toString().padLeft(2, '0')}',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF7C8A93),
-                                ),
-                              ),
-                            ],
-                          ),
-                          trailing: ElevatedButton(
-                            onPressed: () => _revisar(sol),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: AppColors.surface,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            child: const Text('Revisar'),
-                          ),
-                          onTap: () => _revisar(sol),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+      body: bodyContent,
     );
   }
 }

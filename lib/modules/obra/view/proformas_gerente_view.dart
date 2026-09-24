@@ -1,5 +1,6 @@
 // lib/modules/obra/view/proformas_gerente_view.dart
 import 'package:flutter/material.dart';
+import '../../../core/config/app_colors.dart';
 import '../../../models/solicitud_model.dart';
 import '../../compras/controller/compras_controller.dart';
 import 'revisar_proformas_view.dart';
@@ -125,30 +126,34 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: badgeBg,
-                        child: Icon(
-                          iconData,
-                          color: badgeFg,
+                  Expanded(
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: badgeBg,
+                          child: Icon(
+                            iconData,
+                            color: badgeFg,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Solicitud #${s.idSolicitud}',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Solicitud #${s.idSolicitud}',
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                'Piso: $pisoNombre',
+                                style: const TextStyle(fontSize: 13, color: Color(0xFF7C8A93)),
+                              ),
+                            ],
                           ),
-                          Text(
-                            'Piso: $pisoNombre',
-                            style: const TextStyle(fontSize: 13, color: Color(0xFF7C8A93)),
-                          ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -201,12 +206,12 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF4FAFE),
+        backgroundColor: const Color(0xFFF4F6F9),
         appBar: widget.isEmbedded 
             ? PreferredSize(
                 preferredSize: const Size.fromHeight(kTextTabBarHeight),
                 child: AppBar(
-                  backgroundColor: const Color(0xFF2FA9E0),
+                  backgroundColor: const Color(0xFF1B2A47),
                   foregroundColor: Colors.white,
                   automaticallyImplyLeading: false,
                   elevation: 0,
@@ -233,7 +238,7 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
               )
             : AppBar(
                 title: Text(widget.nombreObra != null ? 'Proformas - ${widget.nombreObra}' : 'Proformas de Materiales'),
-                backgroundColor: const Color(0xFF2FA9E0),
+                backgroundColor: const Color(0xFF1B2A47),
                 foregroundColor: Colors.white,
                 centerTitle: true,
                 elevation: 0,

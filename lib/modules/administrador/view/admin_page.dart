@@ -13,16 +13,9 @@ import '../../auth/view/login_view.dart';
 import 'admin_proformas_view.dart';
 import 'admin_almacen_view.dart';
 import 'perfil_usuario_view.dart';
+import '../../../core/config/app_colors.dart';
 
-class _ByggerColors {
-  static const Color azulClaro = Color(0xFF6FC6EE);
-  static const Color azulMedio = Color(0xFF2FA9E0);
-  static const Color azulOscuro = Color(0xFF1D7FAE);
-  static const Color textoOscuro = Color(0xFF1E2A32);
-  static const Color textoGris = Color(0xFF7C8A93);
-  static const Color fondoClaro = Color(0xFFF4FAFE);
-  static const Color celesteBebe = Color(0xFFE1F5FE);
-}
+
 
 class AdminPage extends StatelessWidget {
   const AdminPage({super.key});
@@ -37,7 +30,7 @@ class AdminPage extends StatelessWidget {
 
         if (isWebLayout) {
           return Scaffold(
-            backgroundColor: _ByggerColors.fondoClaro,
+            backgroundColor: AppColors.background,
             body: Row(
               children: [
                 // PERSISTENT SIDEBAR FOR WEB/DESKTOP
@@ -49,7 +42,7 @@ class AdminPage extends StatelessWidget {
                 // MAIN CONTENT AREA FOR WEB
                 Expanded(
                   child: Scaffold(
-                    backgroundColor: _ByggerColors.fondoClaro,
+                    backgroundColor: AppColors.background,
                     appBar: AppBar(
                       title: Obx(() {
                         final titles = [
@@ -68,7 +61,7 @@ class AdminPage extends StatelessWidget {
                               : 'Administrador',
                         );
                       }),
-                      backgroundColor: _ByggerColors.azulMedio,
+                      backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       actions: [
@@ -107,9 +100,9 @@ class AdminPage extends StatelessWidget {
 
         // MOBILE LAYOUT
         return Scaffold(
-          backgroundColor: _ByggerColors.fondoClaro,
+          backgroundColor: AppColors.background,
           drawer: Drawer(
-            backgroundColor: _ByggerColors.celesteBebe,
+            backgroundColor: Colors.white,
             child: _buildDrawerContent(context, controller, isWeb: false),
           ),
           appBar: AppBar(
@@ -130,7 +123,7 @@ class AdminPage extends StatelessWidget {
                     : 'Administrador',
               );
             }),
-            backgroundColor: _ByggerColors.azulMedio,
+            backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
             elevation: 0,
             actions: [
@@ -208,7 +201,7 @@ class AdminPage extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [_ByggerColors.azulMedio, _ByggerColors.azulMedio],
+                colors: [AppColors.primary, AppColors.primary],
               ),
             ),
             child: Column(
@@ -219,7 +212,7 @@ class AdminPage extends StatelessWidget {
                   child: Icon(
                     Icons.admin_panel_settings,
                     size: 36,
-                    color: _ByggerColors.azulMedio,
+                    color: AppColors.primary,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -368,14 +361,14 @@ class AdminPage extends StatelessWidget {
         icon,
         color:
             color ??
-            (isSelected ? _ByggerColors.azulMedio : _ByggerColors.textoOscuro.withValues(alpha: 0.7)),
+            (isSelected ? AppColors.primary : AppColors.textPrimary.withValues(alpha: 0.7)),
       ),
       title: Text(
         title,
         style: TextStyle(
           color:
               color ??
-              (isSelected ? _ByggerColors.azulMedio : _ByggerColors.textoOscuro.withValues(alpha: 0.7)),
+              (isSelected ? AppColors.primary : AppColors.textPrimary.withValues(alpha: 0.7)),
           fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
         ),
       ),
@@ -384,7 +377,7 @@ class AdminPage extends StatelessWidget {
               width: 4,
               height: 24,
               decoration: BoxDecoration(
-                color: _ByggerColors.azulMedio,
+                color: AppColors.primary,
                 borderRadius: BorderRadius.circular(2),
               ),
             )
@@ -546,7 +539,7 @@ class AdminPage extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  _ByggerColors.azulOscuro,
+                  AppColors.primaryDark,
                   Colors.indigo.shade900,
                 ],
                 begin: Alignment.topLeft,
@@ -555,7 +548,7 @@ class AdminPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: _ByggerColors.textoOscuro.withValues(
+                  color: AppColors.textPrimary.withValues(
                     alpha: 0.3,
                   ),
                   blurRadius: 10,
@@ -625,7 +618,7 @@ class AdminPage extends StatelessWidget {
                 _buildQuickActionTile(
                   icon: Icons.construction,
                   label: 'Obras y Pisos',
-                  color: _ByggerColors.azulMedio,
+                  color: AppColors.primary,
                   onTap: () => controller.cambiarVista(1),
                 ),
                 const SizedBox(width: 10),
@@ -681,7 +674,7 @@ class AdminPage extends StatelessWidget {
                     title: 'Obras Registradas',
                     value: controller.totalObras.value.toString(),
                     icon: Icons.construction,
-                    color: _ByggerColors.azulMedio,
+                    color: AppColors.primary,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -721,7 +714,7 @@ class AdminPage extends StatelessWidget {
                     title: 'Obras Registradas',
                     value: controller.totalObras.value.toString(),
                     icon: Icons.construction,
-                    color: _ByggerColors.azulMedio,
+                    color: AppColors.primary,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -894,15 +887,15 @@ class AdminPage extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: _ByggerColors.azulMedio.withValues(alpha: 0.05),
+                    color: AppColors.primary.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: _ByggerColors.azulClaro),
+                    border: Border.all(color: AppColors.primaryLight),
                   ),
                   child: Text(
                     'Total: ${controller.usuarios.length} usuarios',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: _ByggerColors.azulOscuro,
+                      color: AppColors.primaryDark,
                       fontSize: 13,
                     ),
                   ),
@@ -948,15 +941,30 @@ class AdminPage extends StatelessWidget {
 
                   // Obra Filter Dropdown
                   Obx(() {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade400),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: DropdownButton<int?>(
+                    return SizedBox(
+                      width: isWebLayout ? 200 : double.infinity,
+                      child: DropdownButtonFormField<int?>(
+                          dropdownColor: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          filled: true,
+                          fillColor: AppColors.backgroundLight,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
                         value: controller.obraFiltro.value,
-                        underline: const SizedBox(),
                         hint: const Text(
                           'Todas las Obras',
                           style: TextStyle(fontSize: 13),
@@ -986,15 +994,30 @@ class AdminPage extends StatelessWidget {
 
                   // Estado Filter Dropdown
                   Obx(() {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade400),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: DropdownButton<String>(
+                    return SizedBox(
+                      width: isWebLayout ? 200 : double.infinity,
+                      child: DropdownButtonFormField<String>(
+                          dropdownColor: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          filled: true,
+                          fillColor: AppColors.backgroundLight,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
                         value: controller.estadoFiltro.value,
-                        underline: const SizedBox(),
                         items: const [
                           DropdownMenuItem(
                             value: 'TODOS',
@@ -1128,7 +1151,7 @@ class AdminPage extends StatelessWidget {
                                     ? Colors.red.shade400
                                     : (esAdmin
                                           ? Colors.green.shade600
-                                          : _ByggerColors.azulMedio),
+                                          : AppColors.primary),
                                 child: Text(
                                   (u['nombre']?[0] ?? 'U').toUpperCase(),
                                   style: const TextStyle(
@@ -1191,7 +1214,7 @@ class AdminPage extends StatelessWidget {
                                           ? '🟢 HABILITADO'
                                           : '🔴 INHABILITADO',
                                       style: TextStyle(
-                                        fontSize: 11,
+                                        fontSize: 9,
                                         fontWeight: FontWeight.bold,
                                         color: esActivoGlobal
                                             ? Colors.green.shade800
@@ -1209,19 +1232,28 @@ class AdminPage extends StatelessWidget {
                                         nombreUsuario: nombreCompleto,
                                         estadoActual: esActivoGlobal,
                                       ),
-                                      child: Text(
-                                        esActivoGlobal
-                                            ? 'Inhabilitar Global'
-                                            : 'Reactivar Global',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: esActivoGlobal
-                                              ? Colors.red.shade700
-                                              : Colors.green.shade700,
-                                          fontWeight: FontWeight.bold,
-                                          decoration: TextDecoration.underline,
+                                      child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: esActivoGlobal ? Colors.red.shade50 : Colors.green.shade50,
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(
+                                              color: esActivoGlobal ? Colors.red.shade200 : Colors.green.shade200,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            esActivoGlobal
+                                                ? 'Inhabilitar Global'
+                                                : 'Reactivar Global',
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              color: esActivoGlobal
+                                                  ? Colors.red.shade700
+                                                  : Colors.green.shade700,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         ),
-                                      ),
                                     ),
                                   ],
                                 ],
@@ -1277,12 +1309,12 @@ class AdminPage extends StatelessWidget {
                                   ),
                                   decoration: BoxDecoration(
                                     color: esActivoObra
-                                        ? _ByggerColors.azulMedio.withValues(alpha: 0.05)
+                                        ? AppColors.primary.withValues(alpha: 0.05)
                                         : Colors.orange.shade50,
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
                                       color: esActivoObra
-                                          ? _ByggerColors.azulClaro
+                                          ? AppColors.primaryLight
                                           : Colors.orange.shade300,
                                     ),
                                   ),
@@ -1295,7 +1327,7 @@ class AdminPage extends StatelessWidget {
                                             : Icons.block,
                                         size: 16,
                                         color: esActivoObra
-                                            ? _ByggerColors.azulOscuro
+                                            ? AppColors.primaryDark
                                             : Colors.orange.shade900,
                                       ),
                                       const SizedBox(width: 6),
@@ -1305,7 +1337,7 @@ class AdminPage extends StatelessWidget {
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
                                           color: esActivoObra
-                                              ? _ByggerColors.textoOscuro
+                                              ? AppColors.textPrimary
                                               : Colors.orange.shade900,
                                         ),
                                       ),
@@ -1333,18 +1365,28 @@ class AdminPage extends StatelessWidget {
                                               6,
                                             ),
                                           ),
-                                          child: Text(
-                                            esActivoObra
-                                                ? 'Inhabilitar'
-                                                : 'Habilitar',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                              color: esActivoObra
-                                                  ? Colors.red.shade900
-                                                  : Colors.green.shade900,
+                                          child: Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: esActivoObra ? Colors.red.shade50 : Colors.green.shade50,
+                                                borderRadius: BorderRadius.circular(6),
+                                                border: Border.all(
+                                                  color: esActivoObra ? Colors.red.shade200 : Colors.green.shade200,
+                                                ),
+                                              ),
+                                              child: Text(
+                                                esActivoObra
+                                                    ? 'Inhabilitar'
+                                                    : 'Habilitar',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: esActivoObra
+                                                      ? Colors.red.shade900
+                                                      : Colors.green.shade900,
+                                                ),
+                                              ),
                                             ),
-                                          ),
                                         ),
                                       ),
                                     ],

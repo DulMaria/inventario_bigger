@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../core/widgets/custom_drawer.dart';
 import '../../administrador/view/perfil_usuario_view.dart';
-
 import 'package:inventario_bigger/modules/piso/view/piso_obrero_view.dart'
     show PisosObraView;
 import 'Obrero/historial_solicitudes_obrero_view.dart';
 import '../../solicitud_acceso/view/seleccionar_obra_view.dart';
-import '../../auth/controller/auth_controller.dart';
-import '../../auth/view/login_view.dart';
 
 class ObreroHomeView extends StatefulWidget {
   final int idObra;
   final int idUsuario;
+  final String? nombreObra;
 
   const ObreroHomeView({
     super.key,
     required this.idObra,
     required this.idUsuario,
+    this.nombreObra,
   });
 
   @override
@@ -25,215 +25,439 @@ class ObreroHomeView extends StatefulWidget {
 }
 
 class _ObreroHomeViewState extends State<ObreroHomeView> {
-  String nombreObra = 'Cargando...';
+  int _selectedIndex = 0;
+  String _nombreObrero = '';
+  String _nombreObra = '';
+
+  late final List<Map<String, dynamic>> _menuItems;
 
   @override
   void initState() {
     super.initState();
-    _cargarObra();
+    _nombreObra = widget.nombreObra ?? 'Cargando obra...';
+    _menuItems = [
+      {'icon': Icons.dashboard, 'title': 'Dashboard'},
+      {'icon': Icons.layers_outlined, 'title': 'Pisos de la Obra'},
+      {'icon': Icons.history, 'title': 'Historial de Solicitudes'},
+      {'icon': Icons.person, 'title': 'Mi Perfil'},
+    ];
+    _cargarDatos();
   }
 
-  Future<void> _cargarObra() async {
-    // Aquí consultaremos la obra usando widget.idObra
+  void _cambiarVista(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
-  Future<void> _cerrarSesion() async {
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.logout, color: Colors.red),
-            SizedBox(width: 8),
-            Text('Cerrar sesión'),
-          ],
-        ),
-        content: const Text('¿Estás seguro de que deseas cerrar tu sesión?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: AppColors.surface,
+  Future<void> _cargarDatos() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        // Cargar nombre del usuario
+        final usuarioData = await Supabase.instance.client
+            .from('usuarios')
+            .select('nombre, apellido')
+            .eq('id_auth', user.id)
+            .maybeSingle();
+
+        if (usuarioData != null) {
+          final nombre = usuarioData['nombre'] ?? '';
+          final apellido = usuarioData['apellido'] ?? '';
+          if (mounted) {
+            setState(() {
+              _nombreObrero = '$nombre $apellido'.trim();
+            });
+          }
+        }
+      }
+
+      // Cargar nombre de la obra si no venía o para confirmar
+      if (widget.idObra > 0) {
+        final obraData = await Supabase.instance.client
+            .from('obras')
+            .select('nombre')
+            .eq('id_obra', widget.idObra)
+            .maybeSingle();
+
+        if (obraData != null && obraData['nombre'] != null) {
+          if (mounted) {
+            setState(() {
+              _nombreObra = obraData['nombre'];
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error al cargar datos del obrero: $e');
+    }
+  }
+
+  Widget _getVista(int index) {
+    switch (index) {
+      case 0:
+        return _buildDashboardView();
+      case 1:
+        return PisosObraView(
+          idObra: widget.idObra,
+          idUsuario: widget.idUsuario,
+          isEmbedded: true,
+        );
+      case 2:
+        return HistorialSolicitudesObreroView(
+          idObra: widget.idObra,
+          idUsuario: widget.idUsuario,
+          isEmbedded: true,
+        );
+      case 3:
+        return const PerfilUsuarioView(isEmbedded: true);
+      default:
+        return _buildDashboardView();
+    }
+  }
+
+  Widget _buildDashboardView() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Banner de bienvenida similar al del Gerente
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  AppColors.primaryDark,
+                  AppColors.primary,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryDark.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 5),
+                ),
+              ],
             ),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Cerrar sesión'),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.engineering_outlined,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _nombreObrero.isNotEmpty
+                                ? '¡Hola, $_nombreObrero!'
+                                : '¡Bienvenido!',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            'Rol: Obrero de Obra',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.white70,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.location_city,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Obra: $_nombreObra',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 25),
+
+          const Text(
+            'Accesos Rápidos',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E2A32),
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // Tarjeta Pisos de la Obra
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => _cambiarVista(1),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.layers_outlined,
+                        color: AppColors.primary,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Pisos de la Obra',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E2A32),
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Explora los niveles de la obra y solicita materiales necesarios.',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF7C8A93),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Color(0xFF7C8A93),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // Tarjeta Historial de Solicitudes
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => _cambiarVista(2),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade50,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        Icons.history,
+                        color: Colors.amber.shade800,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Historial de Solicitudes',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E2A32),
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Consulta el estado de aprobación de los pedidos que has enviado.',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF7C8A93),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Color(0xFF7C8A93),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // Tarjeta Mi Perfil
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => _cambiarVista(3),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: Colors.blueGrey.shade50,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.person_outline,
+                        color: Color(0xFF5A7A8A),
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Mi Perfil',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E2A32),
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Consulta y edita tus datos de usuario y credenciales.',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF7C8A93),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Color(0xFF7C8A93),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
     );
-
-    if (confirmar == true) {
-      final authController = AuthController();
-      await authController.cerrarSesion();
-      if (!mounted) return;
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginView()),
-        (route) => false,
-      );
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    const String nombreObra = 'Obra asignada';
-
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
-      drawer: const CustomDrawer(),
-
+      drawer: CustomDrawer(
+        selectedIndex: _selectedIndex,
+        menuItems: _menuItems,
+        onItemSelected: _cambiarVista,
+      ),
       appBar: AppBar(
-        
-        title: const Text('Inicio'),
+        title: Text(_menuItems[_selectedIndex]['title']),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.surface,
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Cerrar sesión',
-            onPressed: _cerrarSesion,
+            icon: const Icon(Icons.domain),
+            tooltip: 'Cambiar Obra',
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const SeleccionarObraView()),
+              );
+            },
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 15),
-
-            const Text(
-              'Bienvenido a la obra',
-              style: TextStyle(fontSize: 17, color: Color(0xFF7C8A93)),
-            ),
-
-            const SizedBox(height: 5),
-
-            const Text(
-              nombreObra,
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1E2A32),
-              ),
-            ),
-
-            const SizedBox(height: 35),
-
-            _opcion(
-              icono: Icons.layers_outlined,
-              titulo: 'Pisos de la obra',
-              descripcion: 'Consulta los diferentes pisos de esta obra.',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PisosObraView(
-                      idObra: widget.idObra,
-                      idUsuario: widget.idUsuario,
-                    ),
-                  ),
-                );
-              },
-            ),
-
-            const SizedBox(height: 18),
-
-            _opcion(
-              icono: Icons.history,
-              titulo: 'Historial',
-              descripcion:
-                  'Consulta el historial de tus solicitudes y actividades.',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => HistorialSolicitudesObreroView(
-                      idObra: widget.idObra,
-                      idUsuario: widget.idUsuario,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _opcion({
-    required IconData icono,
-    required String titulo,
-    required String descripcion,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Container(
-                width: 58,
-                height: 58,
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  Icons.layers_outlined,
-                  color: AppColors.primary,
-                  size: 30,
-                ),
-              ),
-
-              const SizedBox(width: 16),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      titulo,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1E2A32),
-                      ),
-                    ),
-
-                    const SizedBox(height: 6),
-
-                    Text(
-                      descripcion,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF7C8A93),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const Icon(
-                Icons.arrow_forward_ios,
-                size: 17,
-                color: Color(0xFF7C8A93),
-              ),
-            ],
-          ),
-        ),
-      ),
+      body: _getVista(_selectedIndex),
     );
   }
 }

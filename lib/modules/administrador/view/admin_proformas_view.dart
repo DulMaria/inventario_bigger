@@ -1,5 +1,6 @@
 // lib/modules/administrador/view/admin_proformas_view.dart
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../models/obra_model.dart';
 import '../../../models/solicitud_model.dart';
 import '../../compras/controller/compras_controller.dart';
@@ -167,14 +168,14 @@ class _AdminProformasViewState extends State<AdminProformasView>
                   Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: const Color(0xFFE1F3FC),
+                        backgroundColor: AppColors.backgroundLight,
                         child: Icon(
                           tipoTab == 0
                               ? Icons.request_quote
                               : tipoTab == 1
                                   ? Icons.hourglass_top
                                   : Icons.verified,
-                          color: const Color(0xFF2FA9E0),
+                          color: AppColors.primary,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -282,14 +283,14 @@ class _AdminProformasViewState extends State<AdminProformasView>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      backgroundColor: AppColors.backgroundLight,
       body: Column(
         children: [
           // Selector de Obra
           if (_obras.isNotEmpty) ...[
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              color: Colors.white,
+              color: AppColors.surface,
               child: Row(
                 children: [
                   Icon(Icons.filter_alt_outlined, color: Colors.blue[700], size: 20),

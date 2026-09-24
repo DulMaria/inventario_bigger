@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 
 import '../../../models/obra_model.dart';
 import '../controller/solicitud_acceso_controller.dart';
@@ -95,7 +96,7 @@ class _SeleccionarRolViewState extends State<SeleccionarRolView> {
   void _mostrarMensaje(String mensaje) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(mensaje, style: const TextStyle(color: Colors.white)),
+        content: Text(mensaje, style: const TextStyle(color: AppColors.surface)),
         backgroundColor: const Color(0xFF1D7FAE),
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
@@ -132,11 +133,11 @@ class _SeleccionarRolViewState extends State<SeleccionarRolView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         title: const Text('Seleccionar rol'),
-        backgroundColor: const Color(0xFF2FA9E0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
       ),
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
@@ -164,7 +165,7 @@ class _SeleccionarRolViewState extends State<SeleccionarRolView> {
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF2FA9E0),
+                          color: AppColors.primary,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -208,7 +209,7 @@ class _SeleccionarRolViewState extends State<SeleccionarRolView> {
                           borderRadius: BorderRadius.circular(14),
                           side: BorderSide(
                             color: seleccionado
-                                ? const Color(0xFF2FA9E0)
+                                ? AppColors.primary
                                 : Colors.transparent,
                             width: 2,
                           ),
@@ -220,13 +221,13 @@ class _SeleccionarRolViewState extends State<SeleccionarRolView> {
                           ),
                           leading: CircleAvatar(
                             backgroundColor: seleccionado
-                                ? const Color(0xFF2FA9E0)
-                                : const Color(0xFFE1F3FC),
+                                ? AppColors.primary
+                                : AppColors.backgroundLight,
                             child: Icon(
                               _iconoRol(nombreRol),
                               color: seleccionado
-                                  ? Colors.white
-                                  : const Color(0xFF2FA9E0),
+                                  ? AppColors.surface
+                                  : AppColors.primary,
                             ),
                           ),
                           title: Text(
@@ -239,7 +240,7 @@ class _SeleccionarRolViewState extends State<SeleccionarRolView> {
                           trailing: Radio<int>(
                             value: idRol,
                             groupValue: _rolSeleccionado,
-                            activeColor: const Color(0xFF2FA9E0),
+                            activeColor: AppColors.primary,
                             onChanged: (valor) {
                               setState(() {
                                 _rolSeleccionado = valor;
@@ -259,15 +260,15 @@ class _SeleccionarRolViewState extends State<SeleccionarRolView> {
 
                 Container(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-                  color: Colors.white,
+                  color: AppColors.surface,
                   child: SizedBox(
                     width: double.infinity,
                     height: 52,
                     child: ElevatedButton(
                       onPressed: _enviando ? null : _enviarSolicitud,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2FA9E0),
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.surface,
                         disabledBackgroundColor: Colors.grey.shade300,
                         disabledForegroundColor: Colors.grey.shade600,
                         shape: RoundedRectangleBorder(
@@ -279,7 +280,7 @@ class _SeleccionarRolViewState extends State<SeleccionarRolView> {
                               width: 22,
                               height: 22,
                               child: CircularProgressIndicator(
-                                color: Colors.white,
+                                color: AppColors.surface,
                                 strokeWidth: 2.5,
                               ),
                             )
@@ -308,7 +309,7 @@ class _SeleccionarRolViewState extends State<SeleccionarRolView> {
             const Icon(
               Icons.groups_outlined,
               size: 70,
-              color: Color(0xFF2FA9E0),
+              color: AppColors.primary,
             ),
             const SizedBox(height: 20),
             const Text(

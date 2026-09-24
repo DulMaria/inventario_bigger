@@ -1,6 +1,7 @@
 // lib/modules/compras/view/detalle_cotizar_view.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../models/cotizacion_model.dart';
 import '../../../models/solicitud_model.dart';
@@ -103,7 +104,7 @@ class _DetalleCotizarViewState extends State<DetalleCotizarView> {
               ),
               const SizedBox(height: 16),
               ListTile(
-                leading: const Icon(Icons.camera_alt, color: Color(0xFF2FA9E0)),
+                leading: const Icon(Icons.camera_alt, color: AppColors.primary),
                 title: const Text('Tomar foto con la cámara'),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -111,7 +112,7 @@ class _DetalleCotizarViewState extends State<DetalleCotizarView> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library, color: Color(0xFF2FA9E0)),
+                leading: const Icon(Icons.photo_library, color: AppColors.primary),
                 title: const Text('Elegir de la galería'),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -274,11 +275,11 @@ class _DetalleCotizarViewState extends State<DetalleCotizarView> {
     final pisoNombre = widget.solicitud.piso?.nombre ?? (widget.solicitud.piso != null ? 'Piso #${widget.solicitud.piso!.idPiso}' : 'Piso');
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         title: Text('Cotizar Solicitud #${widget.solicitud.idSolicitud}'),
-        backgroundColor: const Color(0xFF2FA9E0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         centerTitle: true,
       ),
       body: _enviando
@@ -311,10 +312,10 @@ class _DetalleCotizarViewState extends State<DetalleCotizarView> {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFE1F3FC),
+                                  color: AppColors.backgroundLight,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.inventory_2, color: Color(0xFF2FA9E0)),
+                                child: const Icon(Icons.inventory_2, color: AppColors.primary),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -366,7 +367,7 @@ class _DetalleCotizarViewState extends State<DetalleCotizarView> {
                               padding: const EdgeInsets.symmetric(vertical: 4),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.circle, size: 8, color: Color(0xFF2FA9E0)),
+                                  const Icon(Icons.circle, size: 8, color: AppColors.primary),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
@@ -377,7 +378,7 @@ class _DetalleCotizarViewState extends State<DetalleCotizarView> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFE1F3FC),
+                                      color: AppColors.backgroundLight,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -405,9 +406,9 @@ class _DetalleCotizarViewState extends State<DetalleCotizarView> {
                                   ? const SizedBox(
                                       width: 18,
                                       height: 18,
-                                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.surface),
                                     )
-                                  : const Icon(Icons.file_download, color: Colors.white),
+                                  : const Icon(Icons.file_download, color: AppColors.surface),
                               label: Text(
                                 _descargandoExcel
                                     ? 'Generando archivo Excel...'
@@ -416,7 +417,7 @@ class _DetalleCotizarViewState extends State<DetalleCotizarView> {
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF107C41), // Color Verde Excel oficial
-                                foregroundColor: Colors.white,
+                                foregroundColor: AppColors.surface,
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 elevation: 2,
@@ -444,8 +445,8 @@ class _DetalleCotizarViewState extends State<DetalleCotizarView> {
                       ),
                       TextButton.icon(
                         onPressed: _agregarProforma,
-                        icon: const Icon(Icons.add_photo_alternate, size: 18, color: Color(0xFF2FA9E0)),
-                        label: const Text('+ Proforma', style: TextStyle(color: Color(0xFF2FA9E0))),
+                        icon: const Icon(Icons.add_photo_alternate, size: 18, color: AppColors.primary),
+                        label: const Text('+ Proforma', style: TextStyle(color: AppColors.primary)),
                       ),
                     ],
                   ),
@@ -477,13 +478,13 @@ class _DetalleCotizarViewState extends State<DetalleCotizarView> {
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF2FA9E0),
+                                        color: AppColors.primary,
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Text(
                                         'Proforma #${index + 1}',
                                         style: const TextStyle(
-                                          color: Colors.white,
+                                          color: AppColors.surface,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 12,
                                         ),
@@ -545,7 +546,7 @@ class _DetalleCotizarViewState extends State<DetalleCotizarView> {
                                       radius: 16,
                                       child: IconButton(
                                         padding: EdgeInsets.zero,
-                                        icon: const Icon(Icons.close, color: Colors.white, size: 18),
+                                        icon: const Icon(Icons.close, color: AppColors.surface, size: 18),
                                         onPressed: () {
                                           setState(() {
                                             item.imagenArchivo = null;
@@ -567,9 +568,9 @@ class _DetalleCotizarViewState extends State<DetalleCotizarView> {
                                 width: double.infinity,
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFE1F3FC),
+                                  color: AppColors.backgroundLight,
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFF2FA9E0), width: 1.2),
+                                  border: Border.all(color: AppColors.primary, width: 1.2),
                                 ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -602,14 +603,14 @@ class _DetalleCotizarViewState extends State<DetalleCotizarView> {
                   // BOTÓN PARA ENVIAR PROFORMAS AL GERENTE
                   ElevatedButton.icon(
                     onPressed: _enviarProformasAGerente,
-                    icon: const Icon(Icons.send_rounded, color: Colors.white),
+                    icon: const Icon(Icons.send_rounded, color: AppColors.surface),
                     label: const Text(
                       'Enviar Proformas al Gerente',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green.shade600,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppColors.surface,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 3,

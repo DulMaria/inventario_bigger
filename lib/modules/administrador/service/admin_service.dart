@@ -1,3 +1,4 @@
+import 'package:inventario_bigger/core/config/app_colors.dart';
 // lib/modules/administrador/service/admin_service.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../solicitud_acceso/service/solicitud_acceso_service.dart';

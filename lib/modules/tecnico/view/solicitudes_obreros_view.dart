@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../models/solicitud_obrero_model.dart';
 import '../../solicitud/controller/solicitud_obrero_controller.dart';
 import 'revisar_solicitud_obrero_view.dart';
@@ -79,11 +80,11 @@ class _SolicitudesObrerosViewState extends State<SolicitudesObrerosView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         title: const Text('Solicitudes de Obreros'),
-        backgroundColor: const Color(0xFF2FA9E0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         centerTitle: true,
       ),
       body: _cargando
@@ -145,12 +146,12 @@ class _SolicitudesObrerosViewState extends State<SolicitudesObrerosView> {
                             width: 50,
                             height: 50,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE1F3FC),
+                              color: AppColors.backgroundLight,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
                               Icons.pending_actions,
-                              color: Color(0xFF2FA9E0),
+                              color: AppColors.primary,
                             ),
                           ),
                           title: Text(
@@ -184,8 +185,8 @@ class _SolicitudesObrerosViewState extends State<SolicitudesObrerosView> {
                           trailing: ElevatedButton(
                             onPressed: () => _revisar(sol),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2FA9E0),
-                              foregroundColor: Colors.white,
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: AppColors.surface,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),

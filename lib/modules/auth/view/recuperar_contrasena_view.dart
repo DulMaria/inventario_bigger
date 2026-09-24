@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../controller/auth_controller.dart';
 
 class _ByggerColors {
-  static const Color azulMedio = Color(0xFF2FA9E0);
+  static const Color azulMedio = AppColors.primary;
   static const Color azulOscuro = Color(0xFF1D7FAE);
-  static const Color fondoClaro = Color(0xFFF4FAFE);
+  static const Color fondoClaro = AppColors.backgroundLight;
   static const Color textoOscuro = Color(0xFF1E2A32);
   static const Color textoGris = Color(0xFF7C8A93);
 }
@@ -48,7 +49,7 @@ class _RecuperarContrasenaViewState extends State<RecuperarContrasenaView> {
   void _mostrarMensaje(String texto, {bool exito = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(texto, style: const TextStyle(color: Colors.white)),
+        content: Text(texto, style: const TextStyle(color: AppColors.surface)),
         backgroundColor: exito ? Colors.green : Colors.redAccent,
         behavior: SnackBarBehavior.floating,
       ),
@@ -116,7 +117,7 @@ class _RecuperarContrasenaViewState extends State<RecuperarContrasenaView> {
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
-                  color: Colors.white,
+                  color: AppColors.surface,
                   strokeWidth: 2.5,
                 ),
               )
@@ -125,7 +126,7 @@ class _RecuperarContrasenaViewState extends State<RecuperarContrasenaView> {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.surface,
                 ),
               ),
       ),
@@ -143,7 +144,7 @@ class _RecuperarContrasenaViewState extends State<RecuperarContrasenaView> {
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.surface,
       ),
       body: Container(
         width: double.infinity,
@@ -153,9 +154,9 @@ class _RecuperarContrasenaViewState extends State<RecuperarContrasenaView> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF2FA9E0), // _ByggerColors.azulMedio
-              Color(0xFF6FC6EE), // _ByggerColors.azulClaro
-              Color(0xFFF4FAFE), // _ByggerColors.fondoClaro
+              AppColors.primary, // _ByggerColors.azulMedio
+              AppColors.primary, // _ByggerColors.azulClaro
+              AppColors.backgroundLight, // _ByggerColors.fondoClaro
             ],
             stops: [0.0, 0.35, 0.75],
           ),
@@ -169,7 +170,7 @@ class _RecuperarContrasenaViewState extends State<RecuperarContrasenaView> {
                 child: Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(

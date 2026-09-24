@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/supabase_config.dart';
+import 'core/config/app_colors.dart';
 import 'modules/auth/view/login_view.dart';
 
 Future<void> main() async {
@@ -24,15 +25,15 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Inventario',
       theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFF4FAFE),
+        scaffoldBackgroundColor: AppColors.backgroundLight,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF6FC6EE), // Celeste claro Bygger
+          backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           elevation: 0,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF6FC6EE),
+            backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -42,7 +43,7 @@ class MyApp extends StatelessWidget {
         ),
 
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: Color(0xFF6FC6EE), // Celeste claro Bygger
+          backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           elevation: 2,
         ),
@@ -51,7 +52,7 @@ class MyApp extends StatelessWidget {
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+            side: const BorderSide(color: AppColors.border, width: 1.5),
           ),
           color: Colors.white,
           margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),

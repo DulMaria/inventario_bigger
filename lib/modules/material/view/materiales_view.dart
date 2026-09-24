@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 
 import '../../../models/material_model.dart';
 import '../../../models/piso_model.dart';
@@ -296,7 +297,7 @@ class _MaterialesViewState extends State<MaterialesView>
         : _solicitudesPreviasTecnico.length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -307,14 +308,14 @@ class _MaterialesViewState extends State<MaterialesView>
               ? widget.piso!.etiquetaNivel
               : 'Materiales del Piso',
         ),
-        backgroundColor: const Color(0xFF2FA9E0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
+          indicatorColor: AppColors.surface,
           indicatorWeight: 3,
-          labelColor: Colors.white,
+          labelColor: AppColors.surface,
           unselectedLabelColor: Colors.white70,
           labelStyle: const TextStyle(fontWeight: FontWeight.bold),
           tabs: [
@@ -363,8 +364,8 @@ class _MaterialesViewState extends State<MaterialesView>
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Añadir'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2FA9E0),
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.surface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -427,12 +428,12 @@ class _MaterialesViewState extends State<MaterialesView>
                             width: 44,
                             height: 44,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE1F3FC),
+                              color: AppColors.backgroundLight,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(
                               Icons.construction,
-                              color: Color(0xFF2FA9E0),
+                              color: AppColors.primary,
                             ),
                           ),
                           title: Text(
@@ -451,7 +452,7 @@ class _MaterialesViewState extends State<MaterialesView>
                             children: [
                               IconButton(
                                 icon: const Icon(Icons.edit_outlined,
-                                    color: Color(0xFF2FA9E0)),
+                                    color: AppColors.primary),
                                 onPressed: () => _editarMaterial(index),
                               ),
                               IconButton(
@@ -479,7 +480,7 @@ class _MaterialesViewState extends State<MaterialesView>
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: AppColors.surface,
                         ),
                       )
                     : const Icon(Icons.send),
@@ -493,8 +494,8 @@ class _MaterialesViewState extends State<MaterialesView>
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2FA9E0),
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.surface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -579,7 +580,7 @@ class _MaterialesViewState extends State<MaterialesView>
                         const Icon(
                           Icons.check_circle_outline,
                           size: 16,
-                          color: Color(0xFF2FA9E0),
+                          color: AppColors.primary,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -607,7 +608,7 @@ class _MaterialesViewState extends State<MaterialesView>
                         const Icon(
                           Icons.check_circle_outline,
                           size: 16,
-                          color: Color(0xFF2FA9E0),
+                          color: AppColors.primary,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -684,7 +685,7 @@ class _MaterialesViewState extends State<MaterialesView>
                       decoration: BoxDecoration(
                         color: estado == 'RECHAZADA'
                             ? Colors.red.shade50
-                            : const Color(0xFFF4FAFE),
+                            : AppColors.backgroundLight,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -860,7 +861,7 @@ class _AgregarMaterialDialogState extends State<_AgregarMaterialDialog> {
                 Container(
                   constraints: const BoxConstraints(maxHeight: 160),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     border: Border.all(color: Colors.grey.shade300),
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
@@ -880,7 +881,7 @@ class _AgregarMaterialDialogState extends State<_AgregarMaterialDialog> {
                       return ListTile(
                         dense: true,
                         leading: const Icon(Icons.inventory_2_outlined,
-                            size: 18, color: Color(0xFF2FA9E0)),
+                            size: 18, color: AppColors.primary),
                         title: Text(
                           item.nombre,
                           style: const TextStyle(fontWeight: FontWeight.w600),
@@ -919,8 +920,8 @@ class _AgregarMaterialDialogState extends State<_AgregarMaterialDialog> {
         ElevatedButton(
           onPressed: _guardando ? null : _guardar,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF2FA9E0),
-            foregroundColor: Colors.white,
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.surface,
           ),
           child: _guardando
               ? const SizedBox(
@@ -928,7 +929,7 @@ class _AgregarMaterialDialogState extends State<_AgregarMaterialDialog> {
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Colors.white,
+                    color: AppColors.surface,
                   ),
                 )
               : const Text('Añadir'),
@@ -1053,8 +1054,8 @@ class _EditarMaterialDialogState extends State<_EditarMaterialDialog> {
         ElevatedButton(
           onPressed: _guardando ? null : _guardar,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF2FA9E0),
-            foregroundColor: Colors.white,
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.surface,
           ),
           child: _guardando
               ? const SizedBox(
@@ -1062,7 +1063,7 @@ class _EditarMaterialDialogState extends State<_EditarMaterialDialog> {
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Colors.white,
+                    color: AppColors.surface,
                   ),
                 )
               : const Text('Guardar'),

@@ -1,5 +1,6 @@
 // lib/modules/compras/view/pisos_comprar_view.dart
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../models/solicitud_model.dart';
 import '../controller/compras_controller.dart';
 import '../utils/excel_exporter.dart';
@@ -68,7 +69,7 @@ class _PisosComprarViewState extends State<PisosComprarView> {
     final mapaPisos = _agruparPorPiso(_solicitudesAprobadas);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,8 +85,8 @@ class _PisosComprarViewState extends State<PisosComprarView> {
               ),
           ],
         ),
-        backgroundColor: const Color(0xFF1B2A47),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -95,10 +96,10 @@ class _PisosComprarViewState extends State<PisosComprarView> {
         ],
       ),
       body: _cargando
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1B2A47)))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
           : RefreshIndicator(
               onRefresh: _cargarDatos,
-              color: const Color(0xFF1B2A47),
+              color: AppColors.primary,
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
@@ -109,7 +110,7 @@ class _PisosComprarViewState extends State<PisosComprarView> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF1B2A47), Color(0xFF10B981)],
+                        colors: [AppColors.primary, Color(0xFF10B981)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -127,10 +128,10 @@ class _PisosComprarViewState extends State<PisosComprarView> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
+                            color: AppColors.surface.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.verified, color: Colors.white, size: 28),
+                          child: const Icon(Icons.verified, color: AppColors.surface, size: 28),
                         ),
                         const SizedBox(width: 14),
                         const Expanded(
@@ -140,7 +141,7 @@ class _PisosComprarViewState extends State<PisosComprarView> {
                               Text(
                                 'Cotizaciones Autorizadas',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: AppColors.surface,
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -167,7 +168,7 @@ class _PisosComprarViewState extends State<PisosComprarView> {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1B2A47),
+                          color: AppColors.primary,
                         ),
                       ),
                       Text(
@@ -255,7 +256,7 @@ class _PisosComprarViewState extends State<PisosComprarView> {
                                               style: const TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
-                                                color: Color(0xFF1B2A47),
+                                                color: AppColors.primary,
                                               ),
                                             ),
                                             Text(

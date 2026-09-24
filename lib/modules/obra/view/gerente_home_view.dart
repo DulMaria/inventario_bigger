@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../core/config/app_colors.dart';
 import '../../../core/widgets/custom_drawer.dart';
 import '../../administrador/view/perfil_usuario_view.dart';
@@ -137,7 +138,7 @@ class _GerenteHomeViewState extends State<GerenteHomeView> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFF1B2A47),
+                    AppColors.primary,
                     Colors.indigo.shade900,
                   ],
                   begin: Alignment.topLeft,
@@ -162,7 +163,7 @@ class _GerenteHomeViewState extends State<GerenteHomeView> {
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.surface,
                       ),
                     ),
                   const SizedBox(height: 6),
@@ -186,10 +187,10 @@ class _GerenteHomeViewState extends State<GerenteHomeView> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE1F3FC),
+                  color: AppColors.backgroundLight,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.person_add_alt_1, color: const Color(0xFF1B2A47)),
+                child: const Icon(Icons.person_add_alt_1, color: AppColors.primary),
               ),
               title: const Text(
                 'Solicitudes de Acceso',
@@ -244,7 +245,7 @@ class _GerenteHomeViewState extends State<GerenteHomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: AppColors.backgroundLight,
       drawer: CustomDrawer(
         selectedIndex: _selectedIndex,
         menuItems: _menuItems,
@@ -252,8 +253,8 @@ class _GerenteHomeViewState extends State<GerenteHomeView> {
       ),
       appBar: AppBar(
         title: Text(_menuItems[_selectedIndex]['title']),
-        backgroundColor: const Color(0xFF1B2A47),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         centerTitle: true,
         actions: [
           IconButton(

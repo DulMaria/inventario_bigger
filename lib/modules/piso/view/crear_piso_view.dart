@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 
 import '../controller/piso_controller.dart';
 
@@ -201,7 +202,7 @@ class _CrearPisoViewState extends State<CrearPisoView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Crear piso'),
-        backgroundColor: const Color(0xFF2FA9E0),
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -260,7 +261,7 @@ class _CrearPisoViewState extends State<CrearPisoView> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFE1F3FC),
+                color: AppColors.backgroundLight,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
@@ -292,7 +293,7 @@ class _CrearPisoViewState extends State<CrearPisoView> {
               child: ElevatedButton(
                 onPressed: _cargando ? null : _crearPiso,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2FA9E0),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                 ),
                 child: _cargando

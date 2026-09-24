@@ -1,6 +1,7 @@
 // lib/modules/compras/view/detalle_piso_cotizar_view.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../models/cotizacion_model.dart';
 import '../../../models/solicitud_model.dart';
@@ -119,7 +120,7 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.camera_alt, color: Color(0xFF2FA9E0)),
+              leading: const Icon(Icons.camera_alt, color: AppColors.primary),
               title: const Text('Tomar foto con la cámara'),
               onTap: () {
                 Navigator.pop(sheetCtx);
@@ -127,7 +128,7 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Color(0xFF2FA9E0)),
+              leading: const Icon(Icons.photo_library, color: AppColors.primary),
               title: const Text('Elegir de la galería'),
               onTap: () {
                 Navigator.pop(sheetCtx);
@@ -219,7 +220,7 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
     final totalMaterialesSumados = materialesConsolidados.fold<int>(0, (sum, m) => sum + m.cantidadTotal);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,15 +236,15 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
               ),
           ],
         ),
-        backgroundColor: const Color(0xFF1B2A47),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         actions: [
           IconButton(
             icon: _descargandoExcel
                 ? const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.surface),
                   )
                 : const Icon(Icons.file_download_outlined),
             tooltip: 'Descargar Excel del Piso',
@@ -263,14 +264,14 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF1B2A47), Color(0xFF2FA9E0)],
+                  colors: [AppColors.primary, AppColors.primary],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF2FA9E0).withValues(alpha: 0.25),
+                    color: AppColors.primary.withValues(alpha: 0.25),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -281,10 +282,10 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
+                      color: AppColors.surface.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.layers, color: Colors.white, size: 28),
+                    child: const Icon(Icons.layers, color: AppColors.surface, size: 28),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -294,7 +295,7 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
                         Text(
                           '${widget.nombrePiso} - Consolidado',
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: AppColors.surface,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -312,8 +313,8 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
                     icon: const Icon(Icons.table_chart, size: 16),
                     label: const Text('Excel', style: TextStyle(fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF1B2A47),
+                      backgroundColor: AppColors.surface,
+                      foregroundColor: AppColors.primary,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
@@ -332,11 +333,11 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.inventory_2_outlined, color: Color(0xFF1B2A47), size: 20),
+                    Icon(Icons.inventory_2_outlined, color: AppColors.primary, size: 20),
                     SizedBox(width: 8),
                     Text(
                       'Materiales Solicitados',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1B2A47)),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
                     ),
                   ],
                 ),
@@ -372,11 +373,11 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
                       children: [
                         CircleAvatar(
                           radius: 16,
-                          backgroundColor: const Color(0xFF2FA9E0).withValues(alpha: 0.15),
+                          backgroundColor: AppColors.primary.withValues(alpha: 0.15),
                           child: Text(
                             '${index + 1}',
                             style: const TextStyle(
-                              color: Color(0xFF1B2A47),
+                              color: AppColors.primary,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
@@ -402,13 +403,13 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1B2A47),
+                            color: AppColors.primary,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             '${mat.cantidadTotal} unid.',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: AppColors.surface,
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
                             ),
@@ -431,11 +432,11 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.photo_camera_outlined, color: Color(0xFF1B2A47), size: 20),
+                    Icon(Icons.photo_camera_outlined, color: AppColors.primary, size: 20),
                     SizedBox(width: 8),
                     Text(
                       'Fotos de Cotizaciones / Proformas',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1B2A47)),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
                     ),
                   ],
                 ),
@@ -489,10 +490,10 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFF2FA9E0),
+                          color: AppColors.primary,
                           style: BorderStyle.solid,
                           width: 1.5,
                         ),
@@ -500,12 +501,12 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
                       child: const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.add_photo_alternate, color: Color(0xFF2FA9E0), size: 30),
+                          Icon(Icons.add_photo_alternate, color: AppColors.primary, size: 30),
                           SizedBox(height: 6),
                           Text(
                             '+ Proforma',
                             style: TextStyle(
-                              color: Color(0xFF2FA9E0),
+                              color: AppColors.primary,
                               fontWeight: FontWeight.bold,
                               fontSize: 11,
                             ),
@@ -526,7 +527,7 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: AppColors.surface,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: tieneFoto ? Colors.green.shade400 : Colors.grey.shade300,
@@ -596,7 +597,7 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
                               color: Colors.red,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.close, color: Colors.white, size: 14),
+                            child: const Icon(Icons.close, color: AppColors.surface, size: 14),
                           ),
                         ),
                       ),
@@ -619,7 +620,7 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.surface),
                       )
                     : const Icon(Icons.send_rounded),
                 label: Text(
@@ -629,8 +630,8 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1B2A47),
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.surface,
                   disabledBackgroundColor: Colors.grey.shade400,
                   elevation: 3,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

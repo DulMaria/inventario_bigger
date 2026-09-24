@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -513,7 +514,7 @@ class _SeleccionarUbicacionViewState extends State<SeleccionarUbicacionView> {
 
                   filled: true,
 
-                  fillColor: Colors.white,
+                  fillColor: AppColors.surface,
 
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),

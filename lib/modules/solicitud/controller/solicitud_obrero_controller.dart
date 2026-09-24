@@ -1,3 +1,4 @@
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../service/solicitud_obrero_service.dart';
 import '../../../models/solicitud_obrero_model.dart';
 

@@ -1,5 +1,6 @@
 // lib/modules/administrador/controller/admin_controller.dart
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import 'package:get/get.dart';
 import '../service/admin_service.dart';
 
@@ -202,7 +203,7 @@ class AdminController extends GetxController {
         'Solicitud aprobada correctamente',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green,
-        colorText: Colors.white,
+        colorText: AppColors.surface,
       );
     } catch (e) {
       Get.snackbar(
@@ -210,7 +211,7 @@ class AdminController extends GetxController {
         'No se pudo aprobar la solicitud: $e',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
-        colorText: Colors.white,
+        colorText: AppColors.surface,
       );
     } finally {
       isLoading.value = false;
@@ -236,7 +237,7 @@ class AdminController extends GetxController {
         'Solicitud rechazada correctamente',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.orange,
-        colorText: Colors.white,
+        colorText: AppColors.surface,
       );
     } catch (e) {
       Get.snackbar(
@@ -244,7 +245,7 @@ class AdminController extends GetxController {
         'No se pudo rechazar la solicitud: $e',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
-        colorText: Colors.white,
+        colorText: AppColors.surface,
       );
     } finally {
       isLoading.value = false;
@@ -275,7 +276,7 @@ class AdminController extends GetxController {
         'Solicitud aprobada con el rol seleccionado',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green,
-        colorText: Colors.white,
+        colorText: AppColors.surface,
       );
     } catch (e) {
       Get.snackbar(
@@ -283,7 +284,7 @@ class AdminController extends GetxController {
         'No se pudo aprobar la solicitud: $e',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
-        colorText: Colors.white,
+        colorText: AppColors.surface,
       );
     } finally {
       isLoading.value = false;
@@ -314,7 +315,7 @@ class AdminController extends GetxController {
             : '🔴 Usuario inhabilitado en $nombreObra',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: estado ? Colors.green.shade700 : Colors.orange.shade800,
-        colorText: Colors.white,
+        colorText: AppColors.surface,
       );
     } catch (e) {
       Get.snackbar(
@@ -322,7 +323,7 @@ class AdminController extends GetxController {
         'No se pudo cambiar el estado en la obra: $e',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
-        colorText: Colors.white,
+        colorText: AppColors.surface,
       );
     } finally {
       isLoading.value = false;
@@ -351,7 +352,7 @@ class AdminController extends GetxController {
             : '🔴 Usuario $nombreUsuario inhabilitado globalmente',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: estado ? Colors.green.shade700 : Colors.red.shade700,
-        colorText: Colors.white,
+        colorText: AppColors.surface,
       );
     } catch (e) {
       Get.snackbar(
@@ -359,7 +360,7 @@ class AdminController extends GetxController {
         'No se pudo cambiar el estado del usuario: $e',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
-        colorText: Colors.white,
+        colorText: AppColors.surface,
       );
     } finally {
       isLoading.value = false;

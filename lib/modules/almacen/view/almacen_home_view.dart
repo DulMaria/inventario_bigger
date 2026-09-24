@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../core/widgets/custom_drawer.dart';
 import '../../administrador/view/perfil_usuario_view.dart';
 import '../../../models/solicitud_model.dart';
@@ -152,7 +153,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
         imageWidget = Image.memory(bytes, fit: BoxFit.contain);
       } else {
         imageWidget = const Center(
-          child: Text('Imagen no disponible', style: TextStyle(color: Colors.white)),
+          child: Text('Imagen no disponible', style: TextStyle(color: AppColors.surface)),
         );
       }
     } else {
@@ -161,7 +162,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
         fit: BoxFit.contain,
         loadingBuilder: (context, child, progress) {
           if (progress == null) return child;
-          return const Center(child: CircularProgressIndicator(color: Colors.white));
+          return const Center(child: CircularProgressIndicator(color: AppColors.surface));
         },
         errorBuilder: (context, error, stackTrace) => const Center(
           child: Icon(Icons.broken_image, color: Colors.white70, size: 64),
@@ -193,7 +194,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                 ),
                 child: Text(
                   titulo,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(color: AppColors.surface, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               ),
             ),
@@ -201,7 +202,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
               top: 10,
               right: 10,
               child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                icon: const Icon(Icons.close, color: AppColors.surface, size: 28),
                 onPressed: () => Navigator.pop(ctx),
               ),
             ),
@@ -271,7 +272,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                 const SizedBox(height: 14),
                 Text(
                   'Solicitante: ${sol.usuario?.nombreCompleto ?? "Obrero"}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1B2A47)),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary),
                 ),
                 Text(
                   'Piso: ${sol.piso?.nombre ?? "Piso General"}',
@@ -280,7 +281,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                 const SizedBox(height: 10),
                 const Text(
                   'Materiales a Entregar:',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1B2A47)),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary),
                 ),
                 const SizedBox(height: 6),
                 Container(
@@ -356,7 +357,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
               onPressed: aceptoEntrega ? () => Navigator.pop(ctx, true) : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue.shade700,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.surface,
                 disabledBackgroundColor: Colors.grey.shade300,
               ),
               icon: const Icon(Icons.check_circle, size: 18),
@@ -423,7 +424,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: AppColors.surface),
             child: const Text('Cerrar Sesión'),
           ),
         ],
@@ -444,7 +445,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: AppColors.backgroundLight,
       drawer: const CustomDrawer(),
 
       appBar: AppBar(
@@ -461,8 +462,8 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
             ),
           ],
         ),
-        backgroundColor: const Color(0xFF1B2A47),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -484,7 +485,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
           controller: _tabController,
           indicatorColor: const Color(0xFF10B981),
           indicatorWeight: 3,
-          labelColor: Colors.white,
+          labelColor: AppColors.surface,
           unselectedLabelColor: Colors.white60,
           labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
           tabs: [
@@ -508,7 +509,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
         ),
       ),
       body: _cargando
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1B2A47)))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
           : TabBarView(
               controller: _tabController,
               children: [
@@ -535,7 +536,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
             const Text(
               'No hay materiales pendientes de entrega en Almacén',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1B2A47)),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
             ),
             const SizedBox(height: 8),
             Text(
@@ -594,7 +595,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                             children: [
                               Text(
                                 'Solicitud #${sol.idSolicitud}',
-                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1B2A47)),
+                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.primary),
                               ),
                               Text(
                                 '$pisoNombre • $fecha',
@@ -650,7 +651,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                   const SizedBox(height: 12),
                   const Text(
                     'Materiales a Entregar:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1B2A47)),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary),
                   ),
                   const SizedBox(height: 6),
 
@@ -658,7 +659,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                     width: double.infinity,
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
+                      color: AppColors.backgroundLight,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.grey.shade200),
                     ),
@@ -720,7 +721,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                       onPressed: _procesando ? null : () => _confirmarDespacho(sol),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue.shade700,
-                        foregroundColor: Colors.white,
+                        foregroundColor: AppColors.surface,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         elevation: 2,
                       ),

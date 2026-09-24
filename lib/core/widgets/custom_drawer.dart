@@ -170,7 +170,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundLight,
       elevation: 16,
       child: Column(
         children: [
@@ -179,7 +179,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 30, bottom: 30, left: 24, right: 24),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [const Color(0xFF1B2A47), const Color(0xFF1B2A47)],
+                colors: [AppColors.primaryDark, AppColors.primary],
               ),
             ),
             child: Column(
@@ -190,7 +190,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   child: Icon(
                     Icons.person,
                     size: 36,
-                    color: const Color(0xFF1B2A47),
+                    color: AppColors.primaryDark,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -242,19 +242,19 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
                             decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFF1B2A47).withOpacity(0.1) : Colors.transparent,
+                              color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: ListTile(
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                               leading: Icon(
                                 item['icon'],
-                                color: isSelected ? const Color(0xFF1B2A47) : const Color(0xFF64748B),
+                                color: isSelected ? AppColors.primary : const Color(0xFF64748B),
                               ),
                               title: Text(
                                 item['title'],
                                 style: TextStyle(
-                                  color: isSelected ? const Color(0xFF1B2A47) : const Color(0xFF1E293B),
+                                  color: isSelected ? AppColors.primary : const Color(0xFF1E293B),
                                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                                 ),
                               ),
@@ -278,7 +278,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     ),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                    child: Divider(color: const Color(0xFFF4F6F9)),
+                    child: Divider(color: AppColors.backgroundLight),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),

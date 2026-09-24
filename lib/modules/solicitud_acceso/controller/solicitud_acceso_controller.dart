@@ -1,3 +1,4 @@
+import 'package:inventario_bigger/core/config/app_colors.dart';
 // lib/modules/solicitud_acceso/controller/solicitud_acceso_controller.dart
 import '../../../models/obra_model.dart';
 import '../../../models/solicitud_acceso_model.dart';

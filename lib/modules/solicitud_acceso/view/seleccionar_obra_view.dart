@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../core/widgets/custom_drawer.dart';
 import '../../administrador/view/perfil_usuario_view.dart';
 
@@ -329,7 +330,7 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
   void _mostrarMensaje(String mensaje) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(mensaje, style: const TextStyle(color: Colors.white)),
+        content: Text(mensaje, style: const TextStyle(color: AppColors.surface)),
         backgroundColor: const Color(0xFF1D7FAE),
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
@@ -367,7 +368,7 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
       return Colors.orange;
     }
 
-    return const Color(0xFF2FA9E0);
+    return AppColors.primary;
   }
 
   // ============================================================
@@ -406,7 +407,7 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.surface,
             ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Cerrar sesión'),
@@ -434,14 +435,14 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      backgroundColor: AppColors.backgroundLight,
       drawer: const CustomDrawer(),
 
 
       appBar: AppBar(
         title: const Text('Seleccionar obra'),
-        backgroundColor: const Color(0xFF2FA9E0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -510,7 +511,7 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
 
                             side: BorderSide(
                               color: seleccionada
-                                  ? const Color(0xFF2FA9E0)
+                                  ? AppColors.primary
                                   : Colors.transparent,
                               width: 2,
                             ),
@@ -527,7 +528,7 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
                                   ? Colors.green.shade100
                                   : pendiente
                                   ? Colors.orange.shade100
-                                  : const Color(0xFFE1F3FC),
+                                  : AppColors.backgroundLight,
 
                               child: Icon(
                                 Icons.business,
@@ -536,7 +537,7 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
                                     ? Colors.green
                                     : pendiente
                                     ? Colors.orange
-                                    : const Color(0xFF2FA9E0),
+                                    : AppColors.primary,
                               ),
                             ),
 
@@ -590,7 +591,7 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
 
                               groupValue: _obraSeleccionada?.idObra,
 
-                              activeColor: const Color(0xFF2FA9E0),
+                              activeColor: AppColors.primary,
 
                               onChanged: _entrando
                                   ? null
@@ -618,7 +619,7 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
                 Container(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
 
-                  color: Colors.white,
+                  color: AppColors.surface,
 
                   child: SizedBox(
                     width: double.infinity,
@@ -631,9 +632,9 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
                           : _continuar,
 
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2FA9E0),
+                        backgroundColor: AppColors.primary,
 
-                        foregroundColor: Colors.white,
+                        foregroundColor: AppColors.surface,
 
                         disabledBackgroundColor: Colors.grey.shade300,
 
@@ -650,7 +651,7 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
                               width: 22,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: AppColors.surface,
                               ),
                             )
                           : const Text(
@@ -685,7 +686,7 @@ class _SeleccionarObraViewState extends State<SeleccionarObraView> {
             const Icon(
               Icons.business_outlined,
               size: 70,
-              color: Color(0xFF2FA9E0),
+              color: AppColors.primary,
             ),
 
             const SizedBox(height: 20),

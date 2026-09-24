@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../models/cotizacion_model.dart';
 import '../../../models/solicitud_model.dart';
 import '../controller/compras_controller.dart';
@@ -134,7 +135,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
         imageWidget = Image.memory(bytes, fit: BoxFit.contain);
       } else {
         imageWidget = const Center(
-          child: Text('Imagen no disponible', style: TextStyle(color: Colors.white)),
+          child: Text('Imagen no disponible', style: TextStyle(color: AppColors.surface)),
         );
       }
     } else {
@@ -143,10 +144,10 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
         fit: BoxFit.contain,
         loadingBuilder: (context, child, progress) {
           if (progress == null) return child;
-          return const Center(child: CircularProgressIndicator(color: Colors.white));
+          return const Center(child: CircularProgressIndicator(color: AppColors.surface));
         },
         errorBuilder: (context, error, stackTrace) => const Center(
-          child: Text('Error al cargar la imagen', style: TextStyle(color: Colors.white)),
+          child: Text('Error al cargar la imagen', style: TextStyle(color: AppColors.surface)),
         ),
       );
     }
@@ -177,7 +178,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
                 ),
                 child: Text(
                   titulo,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(color: AppColors.surface, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               ),
             ),
@@ -185,7 +186,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
               top: 10,
               right: 10,
               child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                icon: const Icon(Icons.close, color: AppColors.surface, size: 28),
                 onPressed: () => Navigator.pop(ctx),
               ),
             ),
@@ -255,7 +256,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
                 const SizedBox(height: 14),
                 const Text(
                   'Materiales incluidos en esta compra:',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1B2A47)),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary),
                 ),
                 const SizedBox(height: 6),
                 Container(
@@ -332,7 +333,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
               onPressed: aceptoVerificacion ? () => Navigator.pop(ctx, true) : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green.shade700,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.surface,
                 disabledBackgroundColor: Colors.grey.shade300,
               ),
               icon: const Icon(Icons.check_circle, size: 18),
@@ -401,7 +402,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
     final totalMaterialesSumados = materialesConsolidados.fold<int>(0, (sum, m) => sum + m.cantidadTotal);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -417,8 +418,8 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
               ),
           ],
         ),
-        backgroundColor: const Color(0xFF1B2A47),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -432,7 +433,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF1B2A47), Color(0xFF10B981)],
+                  colors: [AppColors.primary, Color(0xFF10B981)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -450,10 +451,10 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
+                      color: AppColors.surface.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.shopping_cart_checkout, color: Colors.white, size: 28),
+                    child: const Icon(Icons.shopping_cart_checkout, color: AppColors.surface, size: 28),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -463,7 +464,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
                         const Text(
                           'Compras Autorizadas por Gerente',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.surface,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -490,11 +491,11 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.inventory, color: Color(0xFF1B2A47), size: 20),
+                    Icon(Icons.inventory, color: AppColors.primary, size: 20),
                     SizedBox(width: 8),
                     Text(
                       'Materiales a Adquirir',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1B2A47)),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
                     ),
                   ],
                 ),
@@ -559,7 +560,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
                           child: Text(
                             '${mat.cantidadTotal} unid.',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: AppColors.surface,
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
                             ),
@@ -579,11 +580,11 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
             // ============================================================
             const Row(
               children: [
-                Icon(Icons.photo_library_outlined, color: Color(0xFF1B2A47), size: 20),
+                Icon(Icons.photo_library_outlined, color: AppColors.primary, size: 20),
                 SizedBox(width: 8),
                 Text(
                   'Proformas / Cotizaciones Ganadoras',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1B2A47)),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
                 ),
               ],
             ),
@@ -598,7 +599,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(20),
-                  child: CircularProgressIndicator(color: Color(0xFF1B2A47)),
+                  child: CircularProgressIndicator(color: AppColors.primary),
                 ),
               )
             else if (_solicitudesLocales.isEmpty)
@@ -614,7 +615,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
                       const Text(
                         '¡Todas las compras de este piso fueron completadas!',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1B2A47)),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
                       ),
                       const SizedBox(height: 6),
                       Text(
@@ -666,7 +667,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
                                 style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1B2A47),
+                                  color: AppColors.primary,
                                 ),
                               ),
                               Container(
@@ -739,7 +740,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
                                               'Proforma #${cIdx + 1}',
                                               textAlign: TextAlign.center,
                                               style: const TextStyle(
-                                                color: Colors.white,
+                                                color: AppColors.surface,
                                                 fontSize: 10,
                                                 fontWeight: FontWeight.bold,
                                               ),
@@ -818,7 +819,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
                               onPressed: _procesando ? null : () => _confirmarYMarcarComoComprado(sol),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green.shade700,
-                                foregroundColor: Colors.white,
+                                foregroundColor: AppColors.surface,
                                 elevation: 2,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),

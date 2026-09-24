@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 
 import '../../../models/solicitud_model.dart';
 import '../../../models/solicitud_obrero_model.dart';
@@ -116,21 +117,21 @@ class _HistorialTecnicoViewState extends State<HistorialTecnicoView>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('Historial de la Obra'),
-        backgroundColor: const Color(0xFF2FA9E0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
+          indicatorColor: AppColors.surface,
           indicatorWeight: 3,
-          labelColor: Colors.white,
+          labelColor: AppColors.surface,
           unselectedLabelColor: Colors.white70,
           labelStyle: const TextStyle(fontWeight: FontWeight.bold),
           tabs: [
@@ -238,7 +239,7 @@ class _HistorialTecnicoViewState extends State<HistorialTecnicoView>
                               const Icon(
                                 Icons.check_circle_outline,
                                 size: 16,
-                                color: Color(0xFF2FA9E0),
+                                color: AppColors.primary,
                               ),
                               const SizedBox(width: 8),
                               Expanded(
@@ -352,7 +353,7 @@ class _HistorialTecnicoViewState extends State<HistorialTecnicoView>
                               const Icon(
                                 Icons.check_circle_outline,
                                 size: 16,
-                                color: Color(0xFF2FA9E0),
+                                color: AppColors.primary,
                               ),
                               const SizedBox(width: 8),
                               Expanded(

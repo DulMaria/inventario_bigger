@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../core/widgets/custom_drawer.dart';
 import '../../administrador/view/perfil_usuario_view.dart';
 
@@ -56,7 +57,7 @@ class _ObreroHomeViewState extends State<ObreroHomeView> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.surface,
             ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Cerrar sesión'),
@@ -82,14 +83,14 @@ class _ObreroHomeViewState extends State<ObreroHomeView> {
     const String nombreObra = 'Obra asignada';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      backgroundColor: AppColors.backgroundLight,
       drawer: const CustomDrawer(),
 
       appBar: AppBar(
         
         title: const Text('Inicio'),
-        backgroundColor: const Color(0xFF2FA9E0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         centerTitle: true,
         actions: [
           IconButton(
@@ -186,12 +187,12 @@ class _ObreroHomeViewState extends State<ObreroHomeView> {
                 width: 58,
                 height: 58,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE1F3FC),
+                  color: AppColors.backgroundLight,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
                   Icons.layers_outlined,
-                  color: Color(0xFF2FA9E0),
+                  color: AppColors.primary,
                   size: 30,
                 ),
               ),

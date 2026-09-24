@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 
 import '../../../models/piso_model.dart';
 import '../../piso/controller/piso_controller.dart';
@@ -58,7 +59,7 @@ class _PisosObraViewState extends State<PisosObraView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -69,8 +70,8 @@ class _PisosObraViewState extends State<PisosObraView> {
               ? 'Solicitud Directa de Material'
               : 'Pisos de la obra',
         ),
-        backgroundColor: const Color(0xFF2FA9E0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         centerTitle: true,
       ),
       body: _cargando
@@ -108,8 +109,8 @@ class _PisosObraViewState extends State<PisosObraView> {
                           icon: const Icon(Icons.arrow_back),
                           label: const Text('Volver al inicio'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2FA9E0),
-                            foregroundColor: Colors.white,
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: AppColors.surface,
                           ),
                         ),
                       ],
@@ -139,12 +140,12 @@ class _PisosObraViewState extends State<PisosObraView> {
                             width: 46,
                             height: 46,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE1F3FC),
+                              color: AppColors.backgroundLight,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
                               Icons.apartment,
-                              color: Color(0xFF2FA9E0),
+                              color: AppColors.primary,
                             ),
                           ),
                           title: Text(
@@ -167,7 +168,7 @@ class _PisosObraViewState extends State<PisosObraView> {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFE1F3FC),
+                                  color: AppColors.backgroundLight,
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(

@@ -1,3 +1,4 @@
+import 'package:inventario_bigger/core/config/app_colors.dart';
 // lib/modules/almacen/service/almacen_service.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../models/solicitud_model.dart';

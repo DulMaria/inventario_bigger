@@ -155,8 +155,8 @@ class _UsuariosPorObraViewState extends State<UsuariosPorObraView> {
                             child: Row(
                               children: [
                                 CircleAvatar(
-                                  backgroundColor: AppColors.primary.withValues(alpha: 0.2),
-                                  child: const Icon(Icons.person, color: AppColors.primary),
+                                  backgroundColor: const Color(0xFF1B2A47).withValues(alpha: 0.2),
+                                  child: const Icon(Icons.person, color: const Color(0xFF1B2A47)),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -164,7 +164,7 @@ class _UsuariosPorObraViewState extends State<UsuariosPorObraView> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(u['nombre_completo'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                                      Text(u['rol'], style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 13)),
+                                      Text(u['rol'], style: const TextStyle(color: const Color(0xFF1B2A47), fontWeight: FontWeight.w600, fontSize: 13)),
                                       Text(u['correo'], style: const TextStyle(fontSize: 12, color: Colors.grey)),
                                     ],
                                   ),
@@ -211,10 +211,10 @@ class _UsuariosPorObraViewState extends State<UsuariosPorObraView> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: const Color(0xFFF4F6F9),
       appBar: AppBar(
         title: Text('Usuarios - ${widget.obra.nombre}'),
-        backgroundColor: AppColors.primary,
+        backgroundColor: const Color(0xFF1B2A47),
         foregroundColor: Colors.white,
       ),
       body: body,

@@ -179,7 +179,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 30, bottom: 30, left: 24, right: 24),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppColors.primary, AppColors.primary],
+                colors: [const Color(0xFF1B2A47), const Color(0xFF1B2A47)],
               ),
             ),
             child: Column(
@@ -190,7 +190,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   child: Icon(
                     Icons.person,
                     size: 36,
-                    color: AppColors.primary,
+                    color: const Color(0xFF1B2A47),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -219,7 +219,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           Expanded(
             child: Container(
-              color: AppColors.surface,
+              color: Colors.white,
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 children: [
@@ -242,19 +242,19 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
                             decoration: BoxDecoration(
-                              color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+                              color: isSelected ? const Color(0xFF1B2A47).withOpacity(0.1) : Colors.transparent,
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: ListTile(
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                               leading: Icon(
                                 item['icon'],
-                                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                                color: isSelected ? const Color(0xFF1B2A47) : const Color(0xFF64748B),
                               ),
                               title: Text(
                                 item['title'],
                                 style: TextStyle(
-                                  color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                                  color: isSelected ? const Color(0xFF1B2A47) : const Color(0xFF1E293B),
                                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                                 ),
                               ),
@@ -268,8 +268,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       child: ListTile(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        leading: const Icon(Icons.person, color: AppColors.textSecondary),
-                        title: const Text('Mi Perfil', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
+                        leading: const Icon(Icons.person, color: const Color(0xFF64748B)),
+                        title: const Text('Mi Perfil', style: TextStyle(color: const Color(0xFF1E293B), fontWeight: FontWeight.w600)),
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const PerfilUsuarioView()));
@@ -278,7 +278,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     ),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                    child: Divider(color: AppColors.backgroundLight),
+                    child: Divider(color: const Color(0xFFF4F6F9)),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),

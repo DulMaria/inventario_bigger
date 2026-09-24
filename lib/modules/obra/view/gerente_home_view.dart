@@ -137,7 +137,7 @@ class _GerenteHomeViewState extends State<GerenteHomeView> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.primaryDark,
+                    const Color(0xFF1B2A47),
                     Colors.indigo.shade900,
                   ],
                   begin: Alignment.topLeft,
@@ -146,7 +146,7 @@ class _GerenteHomeViewState extends State<GerenteHomeView> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.textPrimary.withOpacity(0.3),
+                    color: const Color(0xFF1E293B).withOpacity(0.3),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -189,7 +189,7 @@ class _GerenteHomeViewState extends State<GerenteHomeView> {
                   color: const Color(0xFFE1F3FC),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.person_add_alt_1, color: AppColors.primary),
+                child: const Icon(Icons.person_add_alt_1, color: const Color(0xFF1B2A47)),
               ),
               title: const Text(
                 'Solicitudes de Acceso',
@@ -244,7 +244,7 @@ class _GerenteHomeViewState extends State<GerenteHomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: const Color(0xFFF4F6F9),
       drawer: CustomDrawer(
         selectedIndex: _selectedIndex,
         menuItems: _menuItems,
@@ -252,7 +252,7 @@ class _GerenteHomeViewState extends State<GerenteHomeView> {
       ),
       appBar: AppBar(
         title: Text(_menuItems[_selectedIndex]['title']),
-        backgroundColor: AppColors.primary,
+        backgroundColor: const Color(0xFF1B2A47),
         foregroundColor: Colors.white,
         centerTitle: true,
         actions: [

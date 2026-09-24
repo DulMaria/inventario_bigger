@@ -206,12 +206,12 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: AppColors.backgroundLight,
+        backgroundColor: const Color(0xFFF4F6F9),
         appBar: widget.isEmbedded 
             ? PreferredSize(
                 preferredSize: const Size.fromHeight(kTextTabBarHeight),
                 child: AppBar(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: const Color(0xFF1B2A47),
                   foregroundColor: Colors.white,
                   automaticallyImplyLeading: false,
                   elevation: 0,
@@ -238,7 +238,7 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
               )
             : AppBar(
                 title: Text(widget.nombreObra != null ? 'Proformas - ${widget.nombreObra}' : 'Proformas de Materiales'),
-                backgroundColor: AppColors.primary,
+                backgroundColor: const Color(0xFF1B2A47),
                 foregroundColor: Colors.white,
                 centerTitle: true,
                 elevation: 0,

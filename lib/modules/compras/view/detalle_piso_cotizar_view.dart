@@ -310,11 +310,11 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
                   ),
                   ElevatedButton.icon(
                     onPressed: _descargandoExcel ? null : _descargarExcelPiso,
-                    icon: const Icon(Icons.table_chart, size: 16),
-                    label: const Text('Excel', style: TextStyle(fontWeight: FontWeight.bold)),
+                    icon: const Icon(Icons.table_chart, size: 16, color: Colors.white),
+                    label: const Text('Excel', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.surface,
-                      foregroundColor: AppColors.primary,
+                      backgroundColor: AppColors.primaryDark,
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
@@ -430,16 +430,22 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Row(
-                  children: [
-                    Icon(Icons.photo_camera_outlined, color: AppColors.primary, size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'Fotos de Cotizaciones / Proformas',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
-                    ),
-                  ],
+                const Expanded(
+                  child: Row(
+                    children: [
+                      Icon(Icons.photo_camera_outlined, color: AppColors.primary, size: 20),
+                      SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          'Fotos de Proformas',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(

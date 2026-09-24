@@ -11,12 +11,14 @@ class PisosCotizarView extends StatefulWidget {
   final int idObra;
   final int idUsuario;
   final String? nombreObra;
+  final bool isEmbedded;
 
   const PisosCotizarView({
     super.key,
     required this.idObra,
     required this.idUsuario,
     this.nombreObra,
+    this.isEmbedded = false,
   });
 
   @override
@@ -101,41 +103,14 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
   Widget build(BuildContext context) {
     final mapaPisos = _agruparPorPiso(_solicitudesACotizar);
 
-    return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Materiales a Cotizar',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            if (widget.nombreObra != null)
-              Text(
-                widget.nombreObra!,
-                style: const TextStyle(fontSize: 12, color: Colors.white70),
-              ),
-          ],
-        ),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.surface,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _cargarDatos,
-            tooltip: 'Actualizar',
-          ),
-        ],
-      ),
-      body: _cargando
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-          : RefreshIndicator(
-              onRefresh: _cargarDatos,
-              color: AppColors.primary,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
+    final Widget bodyContent = _cargando
+        ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+        : RefreshIndicator(
+            onRefresh: _cargarDatos,
+            color: AppColors.primary,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
                   // ============================================================
                   // BANNER MULTI-HOJA EXCEL
                   // ============================================================
@@ -202,18 +177,18 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
                                 ? const SizedBox(
                                     width: 16,
                                     height: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                                   )
-                                : const Icon(Icons.file_download, size: 18),
+                                : const Icon(Icons.file_download, size: 18, color: Colors.white),
                             label: Text(
                               _descargandoExcelGlobal
                                   ? 'Generando Excel...'
                                   : 'Descargar Excel General (${mapaPisos.length} Pisos)',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.surface,
-                              foregroundColor: AppColors.primary,
+                              backgroundColor: AppColors.primaryDark,
+                              foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               padding: const EdgeInsets.symmetric(vertical: 10),
                             ),
@@ -228,17 +203,20 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Pisos con Solicitudes (${mapaPisos.length})',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                      Expanded(
+                        child: Text(
+                          'Pisos con Solicitudes (${mapaPisos.length})',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
-                      Text(
-                        'Selecciona un piso para ver detalle',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Selecciona un piso',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF7C8A93)),
                       ),
                     ],
                   ),
@@ -342,24 +320,22 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Row(
-                                        children: [
-                                          Icon(Icons.inventory_2_outlined, size: 16, color: Colors.grey.shade700),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            'Total consolidado: ',
-                                            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
-                                          ),
-                                          Text(
-                                            '$totalUnidades unid.',
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.primary,
+                                      Expanded(
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.inventory_2_outlined, size: 16, color: Colors.grey.shade700),
+                                            const SizedBox(width: 6),
+                                            Flexible(
+                                              child: Text(
+                                                'Total: $totalUnidades unid.',
+                                                style: TextStyle(fontSize: 12, color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
+                                      const SizedBox(width: 8),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                         decoration: BoxDecoration(
@@ -387,7 +363,43 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
                     ),
                 ],
               ),
+            );
+
+    if (widget.isEmbedded) {
+      return Container(
+        color: AppColors.backgroundLight,
+        child: bodyContent,
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.backgroundLight,
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Materiales a Cotizar',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
+            if (widget.nombreObra != null)
+              Text(
+                widget.nombreObra!,
+                style: const TextStyle(fontSize: 12, color: Colors.white70),
+              ),
+          ],
+        ),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _cargarDatos,
+            tooltip: 'Actualizar',
+          ),
+        ],
+      ),
+      body: bodyContent,
     );
   }
 }

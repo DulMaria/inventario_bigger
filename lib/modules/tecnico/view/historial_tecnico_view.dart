@@ -8,8 +8,13 @@ import '../../solicitud/controller/solicitud_obrero_controller.dart';
 
 class HistorialTecnicoView extends StatefulWidget {
   final int idObra;
+  final bool isEmbedded;
 
-  const HistorialTecnicoView({super.key, required this.idObra});
+  const HistorialTecnicoView({
+    super.key,
+    required this.idObra,
+    this.isEmbedded = false,
+  });
 
   @override
   State<HistorialTecnicoView> createState() => _HistorialTecnicoViewState();
@@ -116,6 +121,45 @@ class _HistorialTecnicoViewState extends State<HistorialTecnicoView>
 
   @override
   Widget build(BuildContext context) {
+    Widget tabView = _cargando
+        ? const Center(child: CircularProgressIndicator())
+        : TabBarView(
+            controller: _tabController,
+            children: [
+              _buildListaObreros(),
+              _buildListaCompras(),
+            ],
+          );
+
+    if (widget.isEmbedded) {
+      return Column(
+        children: [
+          Container(
+            color: AppColors.primary,
+            child: TabBar(
+              controller: _tabController,
+              indicatorColor: AppColors.surface,
+              indicatorWeight: 3,
+              labelColor: AppColors.surface,
+              unselectedLabelColor: Colors.white70,
+              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              tabs: [
+                Tab(
+                  icon: const Icon(Icons.engineering, size: 20),
+                  text: 'De Obreros (${_solicitudesObreros.length})',
+                ),
+                Tab(
+                  icon: const Icon(Icons.shopping_bag_outlined, size: 20),
+                  text: 'A Compras (${_pedidosCompras.length})',
+                ),
+              ],
+            ),
+          ),
+          Expanded(child: tabView),
+        ],
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
@@ -146,15 +190,7 @@ class _HistorialTecnicoViewState extends State<HistorialTecnicoView>
           ],
         ),
       ),
-      body: _cargando
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildListaObreros(),
-                _buildListaCompras(),
-              ],
-            ),
+      body: tabView,
     );
   }
 

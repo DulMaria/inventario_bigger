@@ -1,11 +1,11 @@
 // lib/modules/compras/view/compras_home_view.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../core/widgets/custom_drawer.dart';
 import '../../administrador/view/perfil_usuario_view.dart';
 import '../../../models/solicitud_model.dart';
-import '../../auth/view/login_view.dart';
 import '../../solicitud_acceso/view/seleccionar_obra_view.dart';
 import '../controller/compras_controller.dart';
 import '../utils/excel_exporter.dart';
@@ -31,21 +31,77 @@ class ComprasHomeView extends StatefulWidget {
 class _ComprasHomeViewState extends State<ComprasHomeView> {
   final ComprasController _comprasController = ComprasController();
 
+  int _selectedIndex = 0;
+  String _nombreUsuario = '';
+  String _nombreObra = '';
+
   bool _cargando = true;
   bool _descargandoExcel = false;
   List<SolicitudModel> _solicitudesACotizar = [];
   List<SolicitudModel> _solicitudesAprobadas = [];
   List<SolicitudModel> _solicitudesCompradas = [];
 
+  late final List<Map<String, dynamic>> _menuItems;
+
   @override
   void initState() {
     super.initState();
+    _nombreObra = widget.nombreObra ?? 'Cargando obra...';
+    _menuItems = [
+      {'icon': Icons.dashboard, 'title': 'Dashboard'},
+      {'icon': Icons.request_quote_outlined, 'title': 'Materiales a Cotizar'},
+      {'icon': Icons.shopping_cart_checkout, 'title': 'Materiales a Comprar'},
+      {'icon': Icons.history_edu_outlined, 'title': 'Historial de Compras'},
+      {'icon': Icons.table_chart_outlined, 'title': 'Plantilla de Excel'},
+      {'icon': Icons.person, 'title': 'Mi Perfil'},
+    ];
     _cargarDatos();
+  }
+
+  void _cambiarVista(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   Future<void> _cargarDatos() async {
     setState(() => _cargando = true);
     try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        final usuarioData = await Supabase.instance.client
+            .from('usuarios')
+            .select('nombre, apellido')
+            .eq('id_auth', user.id)
+            .maybeSingle();
+
+        if (usuarioData != null) {
+          final nombre = usuarioData['nombre'] ?? '';
+          final apellido = usuarioData['apellido'] ?? '';
+          if (mounted) {
+            setState(() {
+              _nombreUsuario = '$nombre $apellido'.trim();
+            });
+          }
+        }
+      }
+
+      if (widget.idObra > 0) {
+        final obraData = await Supabase.instance.client
+            .from('obras')
+            .select('nombre')
+            .eq('id_obra', widget.idObra)
+            .maybeSingle();
+
+        if (obraData != null && obraData['nombre'] != null) {
+          if (mounted) {
+            setState(() {
+              _nombreObra = obraData['nombre'];
+            });
+          }
+        }
+      }
+
       final aCotizar = await _comprasController.obtenerSolicitudesACotizar(widget.idObra);
       final aprobadas = await _comprasController.obtenerSolicitudesAprobadas(widget.idObra);
       final compradas = await _comprasController.obtenerSolicitudesCompradas(widget.idObra);
@@ -96,7 +152,7 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
     try {
       final path = await ExcelExporter.exportarMultiplesPisosExcel(
         solicitudesPorPiso: mapaPisos,
-        nombreObra: widget.nombreObra,
+        nombreObra: _nombreObra,
       );
 
       if (!mounted) return;
@@ -118,354 +174,444 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
     }
   }
 
-  // Cerrar Sesión
-  void _cerrarSesion() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Cerrar Sesión'),
-        content: const Text('¿Estás seguro de que deseas salir del sistema?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: AppColors.surface),
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginView()),
-                (route) => false,
-              );
-            },
-            child: const Text('Cerrar Sesión'),
-          ),
-        ],
-      ),
-    );
+  Widget _getVista(int index) {
+    switch (index) {
+      case 0:
+        return _buildDashboardView();
+      case 1:
+        return PisosCotizarView(
+          idObra: widget.idObra,
+          idUsuario: widget.idUsuario,
+          nombreObra: _nombreObra,
+          isEmbedded: true,
+        );
+      case 2:
+        return PisosComprarView(
+          idObra: widget.idObra,
+          idUsuario: widget.idUsuario,
+          nombreObra: _nombreObra,
+          esHistorial: false,
+          isEmbedded: true,
+        );
+      case 3:
+        return PisosComprarView(
+          idObra: widget.idObra,
+          idUsuario: widget.idUsuario,
+          nombreObra: _nombreObra,
+          esHistorial: true,
+          isEmbedded: true,
+        );
+      case 4:
+        return _buildPlantillaExcelView();
+      case 5:
+        return const PerfilUsuarioView(isEmbedded: true);
+      default:
+        return _buildDashboardView();
+    }
   }
 
-  // Cambiar Obra
-  void _cambiarObra() {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const SeleccionarObraView()),
-      (route) => false,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildDashboardView() {
     final mapaPisosACotizar = _agruparPorPiso(_solicitudesACotizar);
     final mapaPisosAComprar = _agruparPorPiso(_solicitudesAprobadas);
 
-    return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      drawer: const CustomDrawer(),
-
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.surface,
-        title: Text(widget.nombreObra ?? 'Panel'),
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.swap_horiz),
-            onPressed: () {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const SeleccionarObraView()),
-                (route) => false,
-              );
-            },
-            tooltip: 'Cambiar Obra',
-          ),
-        ],
-      ),
-      body: _cargando
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-          : RefreshIndicator(
-              onRefresh: _cargarDatos,
-              color: AppColors.primary,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ============================================================
-                    // HEADER PRINCIPAL CON INFORMACIÓN DE OBRA Y ACCIONES
-                    // ============================================================
-                    Container(
-                      width: double.infinity,
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [AppColors.primary, AppColors.primary],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+    return RefreshIndicator(
+      onRefresh: _cargarDatos,
+      color: AppColors.primary,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ============================================================
+            // BANNER DE BIENVENIDA COMPRAS
+            // ============================================================
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    AppColors.primaryDark,
+                    AppColors.primary,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryDark.withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+                        child: const Icon(
+                          Icons.shopping_cart,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
-                      child: SafeArea(
-                        bottom: false,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.surface.withValues(alpha: 0.15),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(Icons.shopping_cart, color: AppColors.surface, size: 24),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      const Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'BYGGER COMPRAS',
-                                            style: TextStyle(
-                                              color: AppColors.surface,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              letterSpacing: 1.1,
-                                            ),
-                                          ),
-                                          Text(
-                                            'Encargado de Compras',
-                                            style: TextStyle(color: Colors.white70, fontSize: 12),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.swap_horiz, color: AppColors.surface),
-                                        tooltip: 'Cambiar de Obra',
-                                        onPressed: _cambiarObra,
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.logout, color: AppColors.surface),
-                                        tooltip: 'Cerrar Sesión',
-                                        onPressed: _cerrarSesion,
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _nombreUsuario.isNotEmpty
+                                  ? '¡Hola, $_nombreUsuario!'
+                                  : '¡Bienvenido a Compras!',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
-                              const SizedBox(height: 20),
-                              Text(
-                                widget.nombreObra ?? 'Obra Seleccionada',
-                                style: const TextStyle(
-                                  color: AppColors.surface,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              'Encargado de Adquisiciones',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w500,
                               ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                'Panel de Gestión y Adquisiciones',
-                                style: TextStyle(color: Colors.white70, fontSize: 13),
-                              ),
-                            ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.location_city,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Obra: $_nombreObra',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                      ),
+                      ],
                     ),
+                  ),
+                ],
+              ),
+            ),
 
-                    const SizedBox(height: 24),
+            const SizedBox(height: 25),
 
-                    // ============================================================
-                    // MENÚ PRINCIPAL: 2 BOTONES DESTACADOS
-                    // ============================================================
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+            const Text(
+              'Módulos de Gestión',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E2A32),
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            // ========================================================
+            // BOTÓN 1: MATERIALES A COTIZAR
+            // ========================================================
+            _buildMenuCard(
+              titulo: 'Materiales a Cotizar',
+              subtitulo:
+                  'Visualiza los pisos solicitados, genera el Excel de cotización y sube las fotos de las proformas.',
+              badgeTexto: '${mapaPisosACotizar.length} Pisos',
+              badgeDetalle: '${_solicitudesACotizar.length} órdenes',
+              icono: Icons.request_quote_rounded,
+              colorPrimario: AppColors.primary,
+              colorGradiente: AppColors.primaryDark,
+              badgeColor: Colors.blue.shade50,
+              badgeTextColor: AppColors.primaryDark,
+              onTap: () => _cambiarVista(1),
+            ),
+
+            const SizedBox(height: 14),
+
+            // ========================================================
+            // BOTÓN 2: MATERIALES A COMPRAR
+            // ========================================================
+            _buildMenuCard(
+              titulo: 'Materiales a Comprar',
+              subtitulo:
+                  'Accede a los pisos con cotizaciones autorizadas por Gerencia para ver la proforma ganadora y comprar.',
+              badgeTexto: '${mapaPisosAComprar.length} Pisos',
+              badgeDetalle: '${_solicitudesAprobadas.length} autorizadas',
+              icono: Icons.shopping_cart_checkout_rounded,
+              colorPrimario: const Color(0xFF065F46),
+              colorGradiente: const Color(0xFF10B981),
+              badgeColor: Colors.green.shade50,
+              badgeTextColor: const Color(0xFF065F46),
+              onTap: () => _cambiarVista(2),
+            ),
+
+            const SizedBox(height: 14),
+
+            // ========================================================
+            // BOTÓN 3: HISTORIAL DE COMPRAS
+            // ========================================================
+            _buildMenuCard(
+              titulo: 'Historial de Compras',
+              subtitulo:
+                  'Consulta el historial de todas las órdenes de compras efectuadas y finalizadas por piso.',
+              badgeTexto: '${_solicitudesCompradas.length} Compradas',
+              badgeDetalle: 'Finalizadas',
+              icono: Icons.history_edu_rounded,
+              colorPrimario: const Color(0xFF4B5563),
+              colorGradiente: const Color(0xFF6B7280),
+              badgeColor: Colors.grey.shade100,
+              badgeTextColor: const Color(0xFF374151),
+              onTap: () => _cambiarVista(3),
+            ),
+
+            const SizedBox(height: 14),
+
+            // ========================================================
+            // ACCIÓN RÁPIDA: EXPORTAR EXCEL GLOBAL
+            // ========================================================
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.table_chart, color: Colors.green.shade700, size: 28),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Módulos de Gestión',
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
-                            ),
+                            'Planilla Excel Completa',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                           ),
-                          const SizedBox(height: 4),
                           Text(
-                            'Selecciona el flujo para ver los pisos y requerimientos.',
-                            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                            '${mapaPisosACotizar.length} pisos listos para cotizar.',
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                           ),
-                          const SizedBox(height: 18),
-
-                          // ========================================================
-                          // BOTÓN 1: MATERIALES A COTIZAR
-                          // ========================================================
-                          _buildMenuCard(
-                            titulo: 'Materiales a Cotizar',
-                            subtitulo:
-                                'Visualiza los pisos solicitados, genera el Excel de cotización y sube las fotos de las proformas.',
-                            badgeTexto: '${mapaPisosACotizar.length} Pisos',
-                            badgeDetalle: '${_solicitudesACotizar.length} órdenes',
-                            icono: Icons.request_quote_rounded,
-                            colorPrimario: AppColors.primary,
-                            colorGradiente: AppColors.primary,
-                            badgeColor: Colors.blue.shade50,
-                            badgeTextColor: AppColors.primary,
-                            onTap: () async {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => PisosCotizarView(
-                                    idObra: widget.idObra,
-                                    idUsuario: widget.idUsuario,
-                                    nombreObra: widget.nombreObra,
-                                  ),
-                                ),
-                              );
-                              _cargarDatos();
-                            },
-                          ),
-
-                          const SizedBox(height: 18),
-
-                          // ========================================================
-                          // BOTÓN 2: MATERIALES A COMPRAR
-                          // ========================================================
-                          _buildMenuCard(
-                            titulo: 'Materiales a Comprar',
-                            subtitulo:
-                                'Accede a los pisos con cotizaciones autorizadas por Gerencia para ver la proforma ganadora y comprar.',
-                            badgeTexto: '${mapaPisosAComprar.length} Pisos',
-                            badgeDetalle: '${_solicitudesAprobadas.length} autorizadas',
-                            icono: Icons.shopping_cart_checkout_rounded,
-                            colorPrimario: const Color(0xFF065F46),
-                            colorGradiente: const Color(0xFF10B981),
-                            badgeColor: Colors.green.shade50,
-                            badgeTextColor: const Color(0xFF065F46),
-                            onTap: () async {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => PisosComprarView(
-                                    idObra: widget.idObra,
-                                    idUsuario: widget.idUsuario,
-                                    nombreObra: widget.nombreObra,
-                                  ),
-                                ),
-                              );
-                              _cargarDatos();
-                            },
-                          ),
-
-                          const SizedBox(height: 18),
-
-                          // ========================================================
-                          // BOTÓN 3: HISTORIAL DE COMPRAS
-                          // ========================================================
-                          _buildMenuCard(
-                            titulo: 'Historial de Compras',
-                            subtitulo:
-                                'Consulta el historial de todas las órdenes de compras efectuadas y finalizadas.',
-                            badgeTexto: '${_solicitudesCompradas.length} Compradas',
-                            badgeDetalle: 'Finalizadas',
-                            icono: Icons.history_edu_rounded,
-                            colorPrimario: const Color(0xFF4B5563),
-                            colorGradiente: const Color(0xFF6B7280),
-                            badgeColor: Colors.grey.shade100,
-                            badgeTextColor: const Color(0xFF374151),
-                            onTap: () async {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => PisosComprarView(
-                                    idObra: widget.idObra,
-                                    idUsuario: widget.idUsuario,
-                                    nombreObra: widget.nombreObra,
-                                  ),
-                                ),
-                              );
-                              _cargarDatos();
-                            },
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          // ========================================================
-                          // ACCIÓN RÁPIDA: EXPORTAR EXCEL GLOBAL
-                          // ========================================================
-                          Card(
-                            elevation: 1,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.shade50,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Icon(Icons.table_chart, color: Colors.green.shade700, size: 28),
-                                  ),
-                                  const SizedBox(width: 14),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Planilla Excel Completa',
-                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                        ),
-                                        Text(
-                                          'Exporta todas las cotizaciones de la obra divididas en pestañas por piso.',
-                                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  ElevatedButton(
-                                    onPressed: _descargandoExcel ? null : _descargarExcelGlobal,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primary,
-                                      foregroundColor: AppColors.surface,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                    ),
-                                    child: _descargandoExcel
-                                        ? const SizedBox(
-                                            width: 16,
-                                            height: 16,
-                                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.surface),
-                                          )
-                                        : const Text('Exportar', style: TextStyle(fontWeight: FontWeight.bold)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 30),
                         ],
                       ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: _descargandoExcel ? null : _descargarExcelGlobal,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.surface,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      ),
+                      child: _descargandoExcel
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.surface),
+                            )
+                          : const Text(
+                              'Exportar',
+                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                            ),
                     ),
                   ],
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlantillaExcelView() {
+    final mapaPisos = _agruparPorPiso(_solicitudesACotizar);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF0F766E),
+                  Color(0xFF0D9488),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0F766E).withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.file_download_outlined,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Exportación de Planilla Excel',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Genera el archivo con pestañas por cada piso',
+                            style: TextStyle(color: Colors.white70, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Este formato consolida automáticamente todas las solicitudes de materiales agrupadas por cada piso para enviar a proveedores y cotizar.',
+                  style: TextStyle(color: Colors.white, fontSize: 13, height: 1.4),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 25),
+
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.info_outline, color: AppColors.primary, size: 22),
+                      SizedBox(width: 8),
+                      Text(
+                        'Estado de Cotizaciones',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E2A32)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Pisos con solicitudes activas:', style: TextStyle(color: Color(0xFF7C8A93))),
+                      Text('${mapaPisos.length} pisos', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Total de órdenes a cotizar:', style: TextStyle(color: Color(0xFF7C8A93))),
+                      Text('${_solicitudesACotizar.length} órdenes', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      onPressed: (_descargandoExcel || mapaPisos.isEmpty)
+                          ? null
+                          : _descargarExcelGlobal,
+                      icon: _descargandoExcel
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.file_download, color: Colors.white),
+                      label: Text(
+                        _descargandoExcel ? 'Generando Excel...' : 'Descargar Planilla Excel Completa',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -481,111 +627,127 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
     required Color badgeTextColor,
     required VoidCallback onTap,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(18),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(18),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [colorPrimario, colorGradiente],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(icono, color: AppColors.surface, size: 28),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: badgeColor,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        children: [
-                          Text(
-                            badgeTexto,
-                            style: TextStyle(
-                              color: badgeTextColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '($badgeDetalle)',
-                            style: TextStyle(
-                              color: badgeTextColor.withValues(alpha: 0.7),
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  titulo,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: colorPrimario,
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [colorPrimario, colorGradiente],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  subtitulo,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade700,
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Row(
+                child: Icon(icono, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Ingresar al módulo',
-                      style: TextStyle(
-                        fontSize: 13,
+                      titulo,
+                      style: const TextStyle(
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: colorGradiente,
+                        color: Color(0xFF1E2A32),
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    Icon(Icons.arrow_forward_rounded, size: 16, color: colorGradiente),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitulo,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF7C8A93),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(
+                  color: badgeColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: badgeTextColor.withValues(alpha: 0.2)),
+                ),
+                child: Text(
+                  badgeTexto,
+                  style: TextStyle(
+                    color: badgeTextColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Icon(
+                Icons.arrow_forward_ios,
+                size: 14,
+                color: Color(0xFF7C8A93),
+              ),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.backgroundLight,
+      drawer: CustomDrawer(
+        selectedIndex: _selectedIndex,
+        menuItems: _menuItems,
+        onItemSelected: _cambiarVista,
+      ),
+      appBar: AppBar(
+        leading: _selectedIndex != 0
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                tooltip: 'Volver al Dashboard',
+                onPressed: () => _cambiarVista(0),
+              )
+            : null,
+        title: Text(_menuItems[_selectedIndex]['title']),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Refrescar',
+            onPressed: _cargarDatos,
+          ),
+          IconButton(
+            icon: const Icon(Icons.domain),
+            tooltip: 'Cambiar Obra',
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const SeleccionarObraView()),
+              );
+            },
+          ),
+        ],
+      ),
+      body: _cargando
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          : _getVista(_selectedIndex),
     );
   }
 }

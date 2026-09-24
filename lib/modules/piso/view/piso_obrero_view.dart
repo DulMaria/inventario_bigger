@@ -9,12 +9,14 @@ class PisosObraView extends StatefulWidget {
   final int idObra;
   final int idUsuario;
   final int idRol;
+  final bool isEmbedded;
 
   const PisosObraView({
     super.key,
     required this.idObra,
     required this.idUsuario,
     this.idRol = 1,
+    this.isEmbedded = false,
   });
 
   @override
@@ -58,6 +60,149 @@ class _PisosObraViewState extends State<PisosObraView> {
 
   @override
   Widget build(BuildContext context) {
+    final Widget bodyContent = _cargando
+        ? const Center(child: CircularProgressIndicator())
+        : _pisos.isEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.apartment_outlined,
+                        size: 64,
+                        color: Color(0xFFB7C5CC),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'No hay pisos registrados en esta obra',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E2A32),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Aún no se han configurado niveles o pisos para esta obra.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Color(0xFF7C8A93)),
+                      ),
+                      if (!widget.isEmbedded) ...[
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.arrow_back),
+                          label: const Text('Volver al inicio'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: AppColors.surface,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              )
+            : RefreshIndicator(
+                onRefresh: _cargarPisos,
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _pisos.length,
+                  itemBuilder: (context, index) {
+                    final piso = _pisos[index];
+
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        leading: Container(
+                          width: 46,
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: AppColors.backgroundLight,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.apartment,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        title: Text(
+                          piso.etiquetaNivel,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Estado: ${piso.estadoObra}',
+                          style: const TextStyle(color: Color(0xFF7C8A93)),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.backgroundLight,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                piso.tipoPiso,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1D7FAE),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.arrow_forward_ios,
+                              size: 16,
+                              color: Color(0xFF7C8A93),
+                            ),
+                          ],
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MaterialesView(
+                                idObra: widget.idObra,
+                                idPiso: piso.idPiso,
+                                idUsuario: widget.idUsuario,
+                                idRol: widget.idRol,
+                                piso: piso,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              );
+
+    if (widget.isEmbedded) {
+      return Container(
+        color: AppColors.backgroundLight,
+        child: bodyContent,
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
@@ -74,139 +219,7 @@ class _PisosObraViewState extends State<PisosObraView> {
         foregroundColor: AppColors.surface,
         centerTitle: true,
       ),
-      body: _cargando
-          ? const Center(child: CircularProgressIndicator())
-          : _pisos.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.apartment_outlined,
-                          size: 64,
-                          color: Color(0xFFB7C5CC),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'No hay pisos registrados en esta obra',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E2A32),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Aún no se han configurado niveles o pisos para esta obra.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Color(0xFF7C8A93)),
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.arrow_back),
-                          label: const Text('Volver al inicio'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: AppColors.surface,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _cargarPisos,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _pisos.length,
-                    itemBuilder: (context, index) {
-                      final piso = _pisos[index];
-
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          leading: Container(
-                            width: 46,
-                            height: 46,
-                            decoration: BoxDecoration(
-                              color: AppColors.backgroundLight,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.apartment,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                          title: Text(
-                            piso.etiquetaNivel,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
-                          ),
-                          subtitle: Text(
-                            'Estado: ${piso.estadoObra}',
-                            style: const TextStyle(color: Color(0xFF7C8A93)),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.backgroundLight,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  piso.tipoPiso,
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF1D7FAE),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Icon(
-                                Icons.arrow_forward_ios,
-                                size: 16,
-                                color: Color(0xFF7C8A93),
-                              ),
-                            ],
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => MaterialesView(
-                                  idObra: widget.idObra,
-                                  idPiso: piso.idPiso,
-                                  idUsuario: widget.idUsuario,
-                                  idRol: widget.idRol,
-                                  piso: piso,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ),
+      body: bodyContent,
     );
   }
 }

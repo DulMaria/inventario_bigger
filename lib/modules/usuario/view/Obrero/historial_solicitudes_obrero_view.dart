@@ -6,11 +6,13 @@ import '../../../solicitud/controller/solicitud_obrero_controller.dart';
 class HistorialSolicitudesObreroView extends StatefulWidget {
   final int idObra;
   final int idUsuario;
+  final bool isEmbedded;
 
   const HistorialSolicitudesObreroView({
     super.key,
     required this.idObra,
     required this.idUsuario,
+    this.isEmbedded = false,
   });
 
   @override
@@ -105,17 +107,9 @@ class _HistorialSolicitudesObreroViewState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      appBar: AppBar(
-        title: const Text('Historial de Solicitudes'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.surface,
-        centerTitle: true,
-      ),
-      body: _cargando
-          ? const Center(child: CircularProgressIndicator())
-          : _solicitudes.isEmpty
+    final Widget bodyContent = _cargando
+        ? const Center(child: CircularProgressIndicator())
+        : _solicitudes.isEmpty
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(32),
@@ -290,7 +284,24 @@ class _HistorialSolicitudesObreroViewState
                       );
                     },
                   ),
-                ),
+                );
+
+    if (widget.isEmbedded) {
+      return Container(
+        color: AppColors.backgroundLight,
+        child: bodyContent,
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.backgroundLight,
+      appBar: AppBar(
+        title: const Text('Historial de Solicitudes'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
+        centerTitle: true,
+      ),
+      body: bodyContent,
     );
   }
 }

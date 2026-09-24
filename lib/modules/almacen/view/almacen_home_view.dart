@@ -2,12 +2,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../core/widgets/custom_drawer.dart';
 import '../../administrador/view/perfil_usuario_view.dart';
 import '../../../models/solicitud_model.dart';
-import '../../auth/controller/auth_controller.dart';
-import '../../auth/view/login_view.dart';
 import '../../solicitud_acceso/view/seleccionar_obra_view.dart';
 import '../controller/almacen_controller.dart';
 
@@ -27,35 +26,91 @@ class AlmacenHomeView extends StatefulWidget {
   State<AlmacenHomeView> createState() => _AlmacenHomeViewState();
 }
 
-class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProviderStateMixin {
+class _AlmacenHomeViewState extends State<AlmacenHomeView> {
   final AlmacenController _almacenController = AlmacenController();
-  final AuthController _authController = AuthController();
 
-  late TabController _tabController;
+  int _selectedIndex = 0;
   bool _cargando = true;
   bool _procesando = false;
+  String _nombreAlmacenero = '';
+  String _nombreObra = '';
 
   List<SolicitudModel> _solicitudesEnAlmacen = [];
   List<SolicitudModel> _solicitudesEntregadas = [];
 
+  late final List<Map<String, dynamic>> _menuItems;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _nombreObra = widget.nombreObra ?? 'Cargando obra...';
+    _menuItems = [
+      {'icon': Icons.dashboard, 'title': 'Dashboard'},
+      {'icon': Icons.inventory_2_outlined, 'title': 'Almacén e Inventario'},
+      {'icon': Icons.history_outlined, 'title': 'Historial de Entregas'},
+      {'icon': Icons.person, 'title': 'Mi Perfil'},
+    ];
+    _cargarDatosUsuario();
     _cargarDatos();
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  void _cambiarVista(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    if (index == 0 || index == 1 || index == 2) {
+      _cargarDatos();
+    }
+  }
+
+  Future<void> _cargarDatosUsuario() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        final usuarioData = await Supabase.instance.client
+            .from('usuarios')
+            .select('nombre, apellido')
+            .eq('id_auth', user.id)
+            .maybeSingle();
+
+        if (usuarioData != null) {
+          final nombre = usuarioData['nombre'] ?? '';
+          final apellido = usuarioData['apellido'] ?? '';
+          if (mounted) {
+            setState(() {
+              _nombreAlmacenero = '$nombre $apellido'.trim();
+            });
+          }
+        }
+      }
+
+      if (widget.idObra > 0) {
+        final obraData = await Supabase.instance.client
+            .from('obras')
+            .select('nombre')
+            .eq('id_obra', widget.idObra)
+            .maybeSingle();
+
+        if (obraData != null && obraData['nombre'] != null) {
+          if (mounted) {
+            setState(() {
+              _nombreObra = obraData['nombre'];
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error al cargar datos del almacenero: $e');
+    }
   }
 
   Future<void> _cargarDatos() async {
     setState(() => _cargando = true);
     try {
-      final enAlmacen = await _almacenController.obtenerMaterialesEnAlmacen(widget.idObra);
-      final entregadas = await _almacenController.obtenerMaterialesEntregados(widget.idObra);
+      final enAlmacen =
+          await _almacenController.obtenerMaterialesEnAlmacen(widget.idObra);
+      final entregadas =
+          await _almacenController.obtenerMaterialesEntregados(widget.idObra);
 
       if (!mounted) return;
       setState(() {
@@ -67,7 +122,10 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
       if (!mounted) return;
       setState(() => _cargando = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al cargar datos de Almacén: $e'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('Error al cargar datos de Almacén: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -97,7 +155,8 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
     }
   }
 
-  Widget _buildAdaptiveImage(String? url, {double? width, double? height, BoxFit fit = BoxFit.cover}) {
+  Widget _buildAdaptiveImage(String? url,
+      {double? width, double? height, BoxFit fit = BoxFit.cover}) {
     if (url == null || url.isEmpty) {
       return Container(
         width: width,
@@ -153,7 +212,8 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
         imageWidget = Image.memory(bytes, fit: BoxFit.contain);
       } else {
         imageWidget = const Center(
-          child: Text('Imagen no disponible', style: TextStyle(color: AppColors.surface)),
+          child: Text('Imagen no disponible',
+              style: TextStyle(color: AppColors.surface)),
         );
       }
     } else {
@@ -162,7 +222,8 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
         fit: BoxFit.contain,
         loadingBuilder: (context, child, progress) {
           if (progress == null) return child;
-          return const Center(child: CircularProgressIndicator(color: AppColors.surface));
+          return const Center(
+              child: CircularProgressIndicator(color: AppColors.surface));
         },
         errorBuilder: (context, error, stackTrace) => const Center(
           child: Icon(Icons.broken_image, color: Colors.white70, size: 64),
@@ -187,14 +248,18 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
               top: 10,
               left: 10,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.black54,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   titulo,
-                  style: const TextStyle(color: AppColors.surface, fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(
+                      color: AppColors.surface,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13),
                 ),
               ),
             ),
@@ -202,7 +267,8 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
               top: 10,
               right: 10,
               child: IconButton(
-                icon: const Icon(Icons.close, color: AppColors.surface, size: 28),
+                icon:
+                    const Icon(Icons.close, color: AppColors.surface, size: 28),
                 onPressed: () => Navigator.pop(ctx),
               ),
             ),
@@ -224,21 +290,23 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
       barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setModalState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade100,
+                  color: AppColors.primary.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.local_shipping, color: Colors.blue.shade800, size: 28),
+                child: const Icon(Icons.local_shipping,
+                    color: AppColors.primaryDark, size: 28),
               ),
               const SizedBox(width: 10),
               const Expanded(
                 child: Text(
-                  'Despachar Material a Obrero',
+                  'Despachar Material',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -252,18 +320,23 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
+                    color: AppColors.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.blue.shade300),
+                    border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline, color: Colors.blue.shade900, size: 22),
+                      const Icon(Icons.info_outline,
+                          color: AppColors.primaryDark, size: 22),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Confirmarás que la Solicitud #${sol.idSolicitud} fue entregada físicamente al personal en obra.',
-                          style: TextStyle(fontSize: 12, color: Colors.blue.shade900, height: 1.3),
+                          style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.primaryDark,
+                              height: 1.3),
                         ),
                       ),
                     ],
@@ -272,7 +345,10 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                 const SizedBox(height: 14),
                 Text(
                   'Solicitante: ${sol.usuario?.nombreCompleto ?? "Obrero"}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: AppColors.primaryDark),
                 ),
                 Text(
                   'Piso: ${sol.piso?.nombre ?? "Piso General"}',
@@ -281,7 +357,10 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                 const SizedBox(height: 10),
                 const Text(
                   'Materiales a Entregar:',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary),
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: AppColors.primaryDark),
                 ),
                 const SizedBox(height: 6),
                 Container(
@@ -295,13 +374,15 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: sol.detalles.map((d) {
-                      final matNombre = d.material?.nombre ?? 'Material #${d.idMaterial}';
+                      final matNombre =
+                          d.material?.nombre ?? 'Material #${d.idMaterial}';
                       final cant = d.cantidad;
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2),
                         child: Text(
                           '• $matNombre: $cant unid.',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w600),
                         ),
                       );
                     }).toList(),
@@ -334,12 +415,13 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                             aceptoEntrega = val ?? false;
                           });
                         },
-                        activeColor: Colors.blue.shade700,
+                        activeColor: AppColors.primaryDark,
                       ),
                       const Expanded(
                         child: Text(
                           'Confirmo la entrega física de los materiales en Almacén.',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                              fontSize: 11, fontWeight: FontWeight.w500),
                         ),
                       ),
                     ],
@@ -356,12 +438,14 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
             ElevatedButton.icon(
               onPressed: aceptoEntrega ? () => Navigator.pop(ctx, true) : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue.shade700,
-                foregroundColor: AppColors.surface,
+                backgroundColor: AppColors.primaryDark,
+                foregroundColor: Colors.white,
                 disabledBackgroundColor: Colors.grey.shade300,
               ),
               icon: const Icon(Icons.check_circle, size: 18),
-              label: const Text('Confirmar Despacho'),
+              label: const Text('Confirmar Despacho',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -380,7 +464,8 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
       await _almacenController.marcarComoEntregado(
         idSolicitud: sol.idSolicitud,
         idUsuarioAlmacen: widget.idUsuario,
-        observacion: notas.isNotEmpty ? notas : 'Material despachado por Almacén',
+        observacion:
+            notas.isNotEmpty ? notas : 'Material despachado por Almacén',
       );
 
       observacionController.dispose();
@@ -390,7 +475,8 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('✅ Solicitud #${sol.idSolicitud} marcada como ENTREGADA.'),
+          content:
+              Text('✅ Solicitud #${sol.idSolicitud} marcada como ENTREGADA.'),
           backgroundColor: Colors.green.shade800,
         ),
       );
@@ -399,124 +485,295 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
       if (!mounted) return;
       setState(() => _procesando = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al despachar material: $e'), backgroundColor: Colors.red),
+        SnackBar(
+            content: Text('Error al despachar material: $e'),
+            backgroundColor: Colors.red),
       );
     }
   }
 
-  // ============================================================
-  // NAVEGACIÓN Y CERRAR SESIÓN
-  // ============================================================
-  Future<void> _cambiarObra() async {
-    await Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const SeleccionarObraView()),
-    );
+  Widget _getVista(int index) {
+    switch (index) {
+      case 0:
+        return _buildDashboardView();
+      case 1:
+        return _cargando
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primary))
+            : _buildTabEnAlmacen();
+      case 2:
+        return _cargando
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primary))
+            : _buildTabHistorial();
+      case 3:
+        return const PerfilUsuarioView(isEmbedded: true);
+      default:
+        return _buildDashboardView();
+    }
   }
 
-  Future<void> _cerrarSesion() async {
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Cerrar Sesión'),
-        content: const Text('¿Estás seguro de que deseas salir del sistema?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: AppColors.surface),
-            child: const Text('Cerrar Sesión'),
+  Widget _buildMenuCard({
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBgColor,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    int? badge,
+  }) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: iconBgColor,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: iconColor, size: 26),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E2A32),
+                            ),
+                          ),
+                        ),
+                        if (badge != null && badge > 0) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade700,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              '$badge listo(s)',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF7C8A93),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.arrow_forward_ios,
+                size: 15,
+                color: Color(0xFF7C8A93),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
-
-    if (confirmar == true) {
-      await _authController.cerrarSesion();
-      if (!mounted) return;
-      await Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginView()),
-        (route) => false,
-      );
-    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      drawer: const CustomDrawer(),
-
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildDashboardView() {
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _cargarDatosUsuario();
+        await _cargarDatos();
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Banner de bienvenida Almacén
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    AppColors.primaryDark,
+                    AppColors.primary,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryDark.withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.warehouse_outlined,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _nombreAlmacenero.isNotEmpty
+                                  ? '¡Hola, $_nombreAlmacenero!'
+                                  : '¡Bienvenido!',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              'Rol: Almacén e Inventario',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.location_city,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Obra: $_nombreObra',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 25),
+
             const Text(
-              'Almacén e Inventario',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            Text(
-              widget.nombreObra ?? 'Obra',
-              style: const TextStyle(fontSize: 12, color: Colors.white70),
-            ),
-          ],
-        ),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.surface,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Sincronizar Datos',
-            onPressed: _cargarDatos,
-          ),
-          IconButton(
-            icon: const Icon(Icons.business),
-            tooltip: 'Cambiar de Obra',
-            onPressed: _cambiarObra,
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Cerrar Sesión',
-            onPressed: _cerrarSesion,
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: const Color(0xFF10B981),
-          indicatorWeight: 3,
-          labelColor: AppColors.surface,
-          unselectedLabelColor: Colors.white60,
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          tabs: [
-            Tab(
-              icon: Badge(
-                label: Text('${_solicitudesEnAlmacen.length}'),
-                backgroundColor: const Color(0xFF10B981),
-                child: const Icon(Icons.inventory_2_outlined),
+              'Módulos de Gestión',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E2A32),
               ),
-              text: 'En Almacén',
             ),
-            Tab(
-              icon: Badge(
-                label: Text('${_solicitudesEntregadas.length}'),
-                backgroundColor: Colors.grey.shade600,
-                child: const Icon(Icons.history_outlined),
-              ),
-              text: 'Historial de Entregas',
+
+            const SizedBox(height: 14),
+
+            // Tarjeta 1: Almacén e Inventario
+            _buildMenuCard(
+              icon: Icons.inventory_2_outlined,
+              iconColor: AppColors.primaryDark,
+              iconBgColor: AppColors.primary.withValues(alpha: 0.12),
+              title: 'Almacén e Inventario',
+              subtitle:
+                  'Gestiona y despacha los materiales comprados listos para entrega.',
+              badge: _solicitudesEnAlmacen.length,
+              onTap: () => _cambiarVista(1),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Tarjeta 2: Historial de Entregas
+            _buildMenuCard(
+              icon: Icons.history_outlined,
+              iconColor: Colors.indigo.shade600,
+              iconBgColor: Colors.indigo.shade50,
+              title: 'Historial de Entregas',
+              subtitle:
+                  'Consulta todas las entregas físicas y despachos efectuados en la obra.',
+              onTap: () => _cambiarVista(2),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Tarjeta 3: Mi Perfil
+            _buildMenuCard(
+              icon: Icons.person_outline,
+              iconColor: const Color(0xFF5A7A8A),
+              iconBgColor: Colors.blueGrey.shade50,
+              title: 'Mi Perfil',
+              subtitle:
+                  'Consulta y edita tus datos de usuario y credenciales.',
+              onTap: () => _cambiarVista(3),
             ),
           ],
         ),
       ),
-      body: _cargando
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildTabEnAlmacen(),
-                _buildTabHistorial(),
-              ],
-            ),
     );
   }
 
@@ -531,12 +788,16 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
           padding: const EdgeInsets.all(32),
           children: [
             const SizedBox(height: 40),
-            Icon(Icons.inventory_2_outlined, size: 72, color: Colors.grey.shade400),
+            Icon(Icons.inventory_2_outlined,
+                size: 72, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             const Text(
               'No hay materiales pendientes de entrega en Almacén',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryDark),
             ),
             const SizedBox(height: 8),
             Text(
@@ -556,8 +817,12 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
         itemCount: _solicitudesEnAlmacen.length,
         itemBuilder: (context, index) {
           final sol = _solicitudesEnAlmacen[index];
-          final pisoNombre = sol.piso?.nombre ?? (sol.piso != null ? 'Piso #${sol.piso!.idPiso}' : 'Piso General');
-          final fecha = '${sol.fecha.day}/${sol.fecha.month}/${sol.fecha.year}';
+          final pisoNombre = sol.piso?.nombre ??
+              (sol.piso != null
+                  ? 'Piso #${sol.piso!.idPiso}'
+                  : 'Piso General');
+          final fecha =
+              '${sol.fecha.day}/${sol.fecha.month}/${sol.fecha.year}';
           final obrero = sol.usuario?.nombreCompleto ?? 'Solicitante';
 
           // Buscar imágenes asociadas
@@ -570,7 +835,8 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
           return Card(
             elevation: 2,
             margin: const EdgeInsets.only(bottom: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -579,34 +845,47 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade50,
-                              borderRadius: BorderRadius.circular(8),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(Icons.warehouse_rounded,
+                                  color: Colors.green.shade700, size: 20),
                             ),
-                            child: Icon(Icons.warehouse_rounded, color: Colors.green.shade700, size: 20),
-                          ),
-                          const SizedBox(width: 10),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Solicitud #${sol.idSolicitud}',
-                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.primary),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Solicitud #${sol.idSolicitud}',
+                                    style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.primaryDark),
+                                  ),
+                                  Text(
+                                    '$pisoNombre • $fecha',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
-                              Text(
-                                '$pisoNombre • $fecha',
-                                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                              ),
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.green.shade50,
                           borderRadius: BorderRadius.circular(12),
@@ -614,25 +893,32 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                         ),
                         child: Text(
                           'EN ALMACÉN',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.green.shade800),
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green.shade800),
                         ),
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Icon(Icons.person_outline, size: 16, color: Colors.grey),
+                      const Icon(Icons.person_outline,
+                          size: 16, color: Colors.grey),
                       const SizedBox(width: 6),
-                      Text(
-                        'Solicitado por: $obrero',
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                      Expanded(
+                        child: Text(
+                          'Solicitado por: $obrero',
+                          style: const TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
-
-                  if (sol.observacion != null && sol.observacion!.isNotEmpty) ...[
+                  if (sol.observacion != null &&
+                      sol.observacion!.isNotEmpty) ...[
                     const SizedBox(height: 6),
                     Container(
                       width: double.infinity,
@@ -643,18 +929,22 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                       ),
                       child: Text(
                         sol.observacion!,
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade800, fontStyle: FontStyle.italic),
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade800,
+                            fontStyle: FontStyle.italic),
                       ),
                     ),
                   ],
-
                   const SizedBox(height: 12),
                   const Text(
                     'Materiales a Entregar:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: AppColors.primaryDark),
                   ),
                   const SizedBox(height: 6),
-
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(10),
@@ -665,23 +955,35 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                     ),
                     child: Column(
                       children: sol.detalles.map((d) {
-                        final matNombre = d.material?.nombre ?? 'Material #${d.idMaterial}';
+                        final matNombre =
+                            d.material?.nombre ?? 'Material #${d.idMaterial}';
                         final cant = d.cantidad;
                         return Padding(
                           padding: const EdgeInsets.symmetric(vertical: 3),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(matNombre, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                              Expanded(
+                                child: Text(matNombre,
+                                    style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600),
+                                    overflow: TextOverflow.ellipsis),
+                              ),
+                              const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: Colors.blue.shade50,
+                                  color: AppColors.primary.withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
                                   '$cant unid.',
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blue.shade800),
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primaryDark),
                                 ),
                               ),
                             ],
@@ -690,7 +992,6 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                       }).toList(),
                     ),
                   ),
-
                   if (fotosDetalles.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     SizedBox(
@@ -702,33 +1003,41 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
                         itemBuilder: (context, fIdx) {
                           final url = fotosDetalles[fIdx];
                           return GestureDetector(
-                            onTap: () => _verImagenCompleta(url, 'Comprobante Solicitud #${sol.idSolicitud}'),
+                            onTap: () => _verImagenCompleta(url,
+                                'Comprobante Solicitud #${sol.idSolicitud}'),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: _buildAdaptiveImage(url, width: 90, height: 100),
+                              child: _buildAdaptiveImage(url,
+                                  width: 90, height: 100),
                             ),
                           );
                         },
                       ),
                     ),
                   ],
-
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
                     height: 46,
                     child: ElevatedButton.icon(
-                      onPressed: _procesando ? null : () => _confirmarDespacho(sol),
+                      onPressed: _procesando
+                          ? null
+                          : () => _confirmarDespacho(sol),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade700,
-                        foregroundColor: AppColors.surface,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        backgroundColor: AppColors.primaryDark,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                         elevation: 2,
                       ),
-                      icon: const Icon(Icons.local_shipping_outlined, size: 20),
+                      icon: const Icon(Icons.local_shipping_outlined,
+                          size: 20, color: Colors.white),
                       label: const Text(
                         'Despachar / Entregar a Obrero',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
                       ),
                     ),
                   ),
@@ -746,41 +1055,106 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> with SingleTickerProv
   // ============================================================
   Widget _buildTabHistorial() {
     if (_solicitudesEntregadas.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32),
-          child: Text(
-            'Aún no hay despachos registrados en el historial.',
-            style: TextStyle(color: Colors.grey),
-          ),
+      return RefreshIndicator(
+        onRefresh: _cargarDatos,
+        child: ListView(
+          padding: const EdgeInsets.all(32),
+          children: const [
+            SizedBox(height: 40),
+            Icon(Icons.history_outlined, size: 72, color: Colors.grey),
+            SizedBox(height: 16),
+            Text(
+              'Aún no hay despachos registrados en el historial.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+          ],
         ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _solicitudesEntregadas.length,
-      itemBuilder: (context, index) {
-        final sol = _solicitudesEntregadas[index];
-        final pisoNombre = sol.piso?.nombre ?? (sol.piso != null ? 'Piso #${sol.piso!.idPiso}' : 'Piso General');
-        final fecha = '${sol.fecha.day}/${sol.fecha.month}/${sol.fecha.year}';
-        final obrero = sol.usuario?.nombreCompleto ?? 'Obrero';
+    return RefreshIndicator(
+      onRefresh: _cargarDatos,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _solicitudesEntregadas.length,
+        itemBuilder: (context, index) {
+          final sol = _solicitudesEntregadas[index];
+          final pisoNombre = sol.piso?.nombre ??
+              (sol.piso != null
+                  ? 'Piso #${sol.piso!.idPiso}'
+                  : 'Piso General');
+          final fecha =
+              '${sol.fecha.day}/${sol.fecha.month}/${sol.fecha.year}';
+          final obrero = sol.usuario?.nombreCompleto ?? 'Obrero';
 
-        return Card(
-          elevation: 1,
-          margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: Colors.blue.shade100,
-              child: Icon(Icons.check_circle, color: Colors.blue.shade800, size: 22),
+          return Card(
+            elevation: 1,
+            margin: const EdgeInsets.only(bottom: 12),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+                child: const Icon(Icons.check_circle,
+                    color: AppColors.primaryDark, size: 22),
+              ),
+              title: Text('Solicitud #${sol.idSolicitud} • $pisoNombre',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 14)),
+              subtitle: Text(
+                  'Entregado a: $obrero • $fecha\n${sol.observacion ?? ""}'),
+              isThreeLine: true,
             ),
-            title: Text('Solicitud #${sol.idSolicitud} • $pisoNombre', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-            subtitle: Text('Entregado a: $obrero • $fecha\n${sol.observacion ?? ""}'),
-            isThreeLine: true,
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.backgroundLight,
+      drawer: CustomDrawer(
+        selectedIndex: _selectedIndex,
+        menuItems: _menuItems,
+        onItemSelected: _cambiarVista,
+      ),
+      appBar: AppBar(
+        leading: _selectedIndex != 0
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                tooltip: 'Volver al Dashboard',
+                onPressed: () => _cambiarVista(0),
+              )
+            : null,
+        title: Text(_menuItems[_selectedIndex]['title']),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Sincronizar Datos',
+            onPressed: () async {
+              await _cargarDatosUsuario();
+              await _cargarDatos();
+            },
           ),
-        );
-      },
+          IconButton(
+            icon: const Icon(Icons.domain),
+            tooltip: 'Cambiar de Obra',
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const SeleccionarObraView()),
+              );
+            },
+          ),
+        ],
+      ),
+      body: _getVista(_selectedIndex),
     );
   }
 }

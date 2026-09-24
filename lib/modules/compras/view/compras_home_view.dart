@@ -1,6 +1,7 @@
 // lib/modules/compras/view/compras_home_view.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../core/widgets/custom_drawer.dart';
 import '../../administrador/view/perfil_usuario_view.dart';
 import '../../../models/solicitud_model.dart';
@@ -130,7 +131,7 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: AppColors.surface),
             onPressed: () {
               Navigator.pop(ctx);
               Navigator.pushAndRemoveUntil(
@@ -161,12 +162,12 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
     final mapaPisosAComprar = _agruparPorPiso(_solicitudesAprobadas);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: AppColors.backgroundLight,
       drawer: const CustomDrawer(),
 
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2FA9E0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         title: Text(widget.nombreObra ?? 'Panel'),
         elevation: 0,
         actions: [
@@ -184,10 +185,10 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
         ],
       ),
       body: _cargando
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1B2A47)))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
           : RefreshIndicator(
               onRefresh: _cargarDatos,
-              color: const Color(0xFF1B2A47),
+              color: AppColors.primary,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
@@ -200,7 +201,7 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
                       width: double.infinity,
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Color(0xFF1B2A47), Color(0xFF2FA9E0)],
+                          colors: [AppColors.primary, AppColors.primary],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -221,10 +222,10 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
                                       Container(
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.15),
+                                          color: AppColors.surface.withValues(alpha: 0.15),
                                           shape: BoxShape.circle,
                                         ),
-                                        child: const Icon(Icons.shopping_cart, color: Colors.white, size: 24),
+                                        child: const Icon(Icons.shopping_cart, color: AppColors.surface, size: 24),
                                       ),
                                       const SizedBox(width: 10),
                                       const Column(
@@ -233,7 +234,7 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
                                           Text(
                                             'BYGGER COMPRAS',
                                             style: TextStyle(
-                                              color: Colors.white,
+                                              color: AppColors.surface,
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
                                               letterSpacing: 1.1,
@@ -250,12 +251,12 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
                                   Row(
                                     children: [
                                       IconButton(
-                                        icon: const Icon(Icons.swap_horiz, color: Colors.white),
+                                        icon: const Icon(Icons.swap_horiz, color: AppColors.surface),
                                         tooltip: 'Cambiar de Obra',
                                         onPressed: _cambiarObra,
                                       ),
                                       IconButton(
-                                        icon: const Icon(Icons.logout, color: Colors.white),
+                                        icon: const Icon(Icons.logout, color: AppColors.surface),
                                         tooltip: 'Cerrar Sesión',
                                         onPressed: _cerrarSesion,
                                       ),
@@ -267,7 +268,7 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
                               Text(
                                 widget.nombreObra ?? 'Obra Seleccionada',
                                 style: const TextStyle(
-                                  color: Colors.white,
+                                  color: AppColors.surface,
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -298,7 +299,7 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF1B2A47),
+                              color: AppColors.primary,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -318,10 +319,10 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
                             badgeTexto: '${mapaPisosACotizar.length} Pisos',
                             badgeDetalle: '${_solicitudesACotizar.length} órdenes',
                             icono: Icons.request_quote_rounded,
-                            colorPrimario: const Color(0xFF1B2A47),
-                            colorGradiente: const Color(0xFF2FA9E0),
+                            colorPrimario: AppColors.primary,
+                            colorGradiente: AppColors.primary,
                             badgeColor: Colors.blue.shade50,
-                            badgeTextColor: const Color(0xFF1B2A47),
+                            badgeTextColor: AppColors.primary,
                             onTap: () async {
                               await Navigator.push(
                                 context,
@@ -439,8 +440,8 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
                                   ElevatedButton(
                                     onPressed: _descargandoExcel ? null : _descargarExcelGlobal,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF1B2A47),
-                                      foregroundColor: Colors.white,
+                                      backgroundColor: AppColors.primary,
+                                      foregroundColor: AppColors.surface,
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                     ),
@@ -448,7 +449,7 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
                                         ? const SizedBox(
                                             width: 16,
                                             height: 16,
-                                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.surface),
                                           )
                                         : const Text('Exportar', style: TextStyle(fontWeight: FontWeight.bold)),
                                   ),
@@ -482,7 +483,7 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
@@ -516,7 +517,7 @@ class _ComprasHomeViewState extends State<ComprasHomeView> {
                         ),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Icon(icono, color: Colors.white, size: 28),
+                      child: Icon(icono, color: AppColors.surface, size: 28),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

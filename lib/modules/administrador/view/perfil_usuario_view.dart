@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../auth/controller/auth_controller.dart';
 import '../../auth/view/login_view.dart';
@@ -101,7 +102,7 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
           ),
           title: const Row(
             children: [
-              Icon(Icons.lock_outline, color: Color(0xFF2FA9E0)),
+              Icon(Icons.lock_outline, color: AppColors.primary),
               SizedBox(width: 10),
               Text(
                 'Cambiar Contraseña',
@@ -192,8 +193,8 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2FA9E0),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.surface,
               ),
               child: const Text('Guardar'),
             ),
@@ -212,7 +213,7 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
-            Icon(Icons.phone_android, color: Color(0xFF2FA9E0)),
+            Icon(Icons.phone_android, color: AppColors.primary),
             SizedBox(width: 10),
             Text(
               'Editar Teléfono',
@@ -249,8 +250,8 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6FC6EE),
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.surface,
             ),
             child: const Text('Guardar'),
           ),
@@ -276,7 +277,7 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.surface,
             ),
             child: const Text('Sí, Salir'),
           ),
@@ -298,13 +299,13 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      backgroundColor: AppColors.backgroundLight,
       appBar: widget.isEmbedded 
           ? null 
           : AppBar(
               title: const Text('Mi Perfil'),
-              backgroundColor: const Color(0xFF2FA9E0),
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.surface,
               elevation: 0,
             ),
       body: _cargando
@@ -334,7 +335,7 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
                         children: [
                           CircleAvatar(
                             radius: 42,
-                            backgroundColor: Colors.white,
+                            backgroundColor: AppColors.surface,
                             child: Text(
                               _nombre.isNotEmpty
                                   ? _nombre[0].toUpperCase()
@@ -353,7 +354,7 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: AppColors.surface,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -369,7 +370,7 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
                             child: Text(
                               'ROL: $_rol',
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: AppColors.surface,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),

@@ -1,3 +1,4 @@
+import 'package:inventario_bigger/core/config/app_colors.dart';
 // lib/modules/almacen/controller/almacen_controller.dart
 import '../../../models/solicitud_model.dart';
 import '../service/almacen_service.dart';

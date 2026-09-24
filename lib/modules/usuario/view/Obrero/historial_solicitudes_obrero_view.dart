@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../../models/solicitud_obrero_model.dart';
 import '../../../solicitud/controller/solicitud_obrero_controller.dart';
 
@@ -105,11 +106,11 @@ class _HistorialSolicitudesObreroViewState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         title: const Text('Historial de Solicitudes'),
-        backgroundColor: const Color(0xFF2FA9E0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         centerTitle: true,
       ),
       body: _cargando
@@ -230,7 +231,7 @@ class _HistorialSolicitudesObreroViewState
                                       const Icon(
                                         Icons.check_circle_outline,
                                         size: 16,
-                                        color: Color(0xFF2FA9E0),
+                                        color: AppColors.primary,
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
@@ -262,12 +263,12 @@ class _HistorialSolicitudesObreroViewState
                                   decoration: BoxDecoration(
                                     color: sol.estado == 'RECHAZADA'
                                         ? Colors.red.shade50
-                                        : const Color(0xFFF4FAFE),
+                                        : AppColors.backgroundLight,
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                       color: sol.estado == 'RECHAZADA'
                                           ? Colors.red.shade200
-                                          : const Color(0xFF2FA9E0)
+                                          : AppColors.primary
                                               .withValues(alpha: 0.3),
                                     ),
                                   ),

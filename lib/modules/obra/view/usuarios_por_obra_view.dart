@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../models/obra_model.dart';
 import '../../../modules/administrador/service/admin_service.dart';
@@ -41,7 +42,7 @@ class _UsuariosPorObraViewState extends State<UsuariosPorObraView> {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: nuevoEstado ? Colors.green : Colors.red, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(backgroundColor: nuevoEstado ? Colors.green : Colors.red, foregroundColor: AppColors.surface),
             child: Text(nuevoEstado ? 'Sí, Habilitar' : 'Sí, Inhabilitar'),
           ),
         ],
@@ -130,7 +131,7 @@ class _UsuariosPorObraViewState extends State<UsuariosPorObraView> {
               hintText: 'Buscar usuario...',
               prefixIcon: const Icon(Icons.search),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: AppColors.surface,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
             ),
             onChanged: (val) => setState(() => _searchQuery = val),
@@ -155,8 +156,8 @@ class _UsuariosPorObraViewState extends State<UsuariosPorObraView> {
                             child: Row(
                               children: [
                                 CircleAvatar(
-                                  backgroundColor: const Color(0xFF1B2A47).withValues(alpha: 0.2),
-                                  child: const Icon(Icons.person, color: const Color(0xFF1B2A47)),
+                                  backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+                                  child: const Icon(Icons.person, color: AppColors.primary),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -164,7 +165,7 @@ class _UsuariosPorObraViewState extends State<UsuariosPorObraView> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(u['nombre_completo'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                                      Text(u['rol'], style: const TextStyle(color: const Color(0xFF1B2A47), fontWeight: FontWeight.w600, fontSize: 13)),
+                                      Text(u['rol'], style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 13)),
                                       Text(u['correo'], style: const TextStyle(fontSize: 12, color: Colors.grey)),
                                     ],
                                   ),
@@ -211,11 +212,11 @@ class _UsuariosPorObraViewState extends State<UsuariosPorObraView> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         title: Text('Usuarios - ${widget.obra.nombre}'),
-        backgroundColor: const Color(0xFF1B2A47),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
       ),
       body: body,
     );

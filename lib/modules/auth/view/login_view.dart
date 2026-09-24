@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import 'dart:math';
 
 import '../controller/auth_controller.dart';
@@ -12,10 +13,10 @@ import '../../../modules/administrador/view/admin_page.dart';
 // ============================================================
 
 class _ByggerColors {
-  static const Color azulClaro = Color(0xFF6FC6EE);
-  static const Color azulMedio = Color(0xFF2FA9E0);
+  static const Color azulClaro = AppColors.primary;
+  static const Color azulMedio = AppColors.primary;
   static const Color azulOscuro = Color(0xFF1D7FAE);
-  static const Color fondoClaro = Color(0xFFF4FAFE);
+  static const Color fondoClaro = AppColors.backgroundLight;
   static const Color textoOscuro = Color(0xFF1E2A32);
   static const Color textoGris = Color(0xFF7C8A93);
 }
@@ -174,7 +175,7 @@ class _LoginViewState extends State<LoginView>
   void _mostrarMensaje(String texto) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(texto, style: const TextStyle(color: Colors.white)),
+        content: Text(texto, style: const TextStyle(color: AppColors.surface)),
         backgroundColor: _isDarkMode
             ? Colors.grey[850]
             : _ByggerColors.azulOscuro,
@@ -258,7 +259,7 @@ class _LoginViewState extends State<LoginView>
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.surface,
             letterSpacing: 1.5,
           ),
         ),
@@ -285,7 +286,7 @@ class _LoginViewState extends State<LoginView>
       obscureText: obscureText,
       validator: validator,
       style: TextStyle(
-        color: _isDarkMode ? Colors.white : _ByggerColors.textoOscuro,
+        color: _isDarkMode ? AppColors.surface : _ByggerColors.textoOscuro,
         fontSize: 16,
       ),
       cursorColor: _ByggerColors.azulMedio,
@@ -302,7 +303,7 @@ class _LoginViewState extends State<LoginView>
         ),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: _isDarkMode ? Colors.grey[800] : _ByggerColors.fondoClaro,
+        fillColor: _isDarkMode ? Colors.grey[800] : Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Colors.transparent),
@@ -390,7 +391,7 @@ class _LoginViewState extends State<LoginView>
                 180,
                 _isDarkMode
                     ? Colors.blueGrey.withValues(alpha: 0.05)
-                    : Colors.white.withValues(alpha: 0.12),
+                    : AppColors.surface.withValues(alpha: 0.12),
               ),
             ),
 
@@ -401,7 +402,7 @@ class _LoginViewState extends State<LoginView>
                 140,
                 _isDarkMode
                     ? Colors.blueGrey.withValues(alpha: 0.04)
-                    : Colors.white.withValues(alpha: 0.10),
+                    : AppColors.surface.withValues(alpha: 0.10),
               ),
             ),
 
@@ -412,7 +413,7 @@ class _LoginViewState extends State<LoginView>
                 120,
                 _isDarkMode
                     ? Colors.blueGrey.withValues(alpha: 0.03)
-                    : Colors.white.withValues(alpha: 0.08),
+                    : AppColors.surface.withValues(alpha: 0.08),
               ),
             ),
 
@@ -448,7 +449,7 @@ class _LoginViewState extends State<LoginView>
                                 decoration: BoxDecoration(
                                   color: _isDarkMode
                                       ? Colors.grey[900]
-                                      : Colors.white,
+                                      : AppColors.surface,
                                   borderRadius: BorderRadius.circular(28),
                                   boxShadow: [
                                     BoxShadow(
@@ -483,7 +484,7 @@ class _LoginViewState extends State<LoginView>
                                   'Bienvenido de nuevo',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: AppColors.surface,
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                     shadows: const [
@@ -502,7 +503,7 @@ class _LoginViewState extends State<LoginView>
                                   style: TextStyle(
                                     color: _isDarkMode
                                         ? Colors.grey[300]
-                                        : Colors.white.withValues(alpha: 0.9),
+                                        : AppColors.surface.withValues(alpha: 0.9),
                                     fontSize: 14,
                                   ),
                                 ),
@@ -525,7 +526,7 @@ class _LoginViewState extends State<LoginView>
                               decoration: BoxDecoration(
                                 color: _isDarkMode
                                     ? Colors.grey[900]
-                                    : Colors.white,
+                                    : AppColors.surface,
                                 borderRadius: BorderRadius.circular(24),
                                 boxShadow: [
                                   BoxShadow(
@@ -719,7 +720,7 @@ class _ThemeToggleButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[850] : Colors.white,
+        color: isDarkMode ? Colors.grey[850] : AppColors.surface,
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
@@ -830,14 +831,14 @@ class _BotonAnimadoState extends State<_BotonAnimado> {
                   height: 22,
                   width: 22,
                   child: CircularProgressIndicator(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     strokeWidth: 2.5,
                   ),
                 )
               : const Text(
                   'Iniciar sesión',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.3,

@@ -1,3 +1,4 @@
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../models/obra_model.dart';

@@ -285,17 +285,16 @@ class _CrearObraViewState extends State<CrearObraView> {
             SizedBox(
               width: double.infinity,
 
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
                 onPressed: _cargando ? null : _crearObra,
-
-                child: _cargando
+                icon: _cargando
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
-                    : const Text('Crear obra'),
+                    : const Icon(Icons.add, color: Colors.white),
+                label: const Text('Crear obra', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ),
           ],

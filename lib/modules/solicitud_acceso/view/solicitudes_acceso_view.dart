@@ -1,5 +1,6 @@
 // lib/modules/solicitud_acceso/view/solicitudes_acceso_view.dart
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../controller/solicitud_acceso_controller.dart';
 import '../../../models/obra_model.dart';
 import '../../obra/controller/obra_controller.dart';
@@ -193,7 +194,7 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.surface,
               ),
               child: const Text('Rechazar'),
             ),
@@ -299,8 +300,8 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
                       ? null
                       : () => Navigator.pop(context, true),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2FA9E0),
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.surface,
                   ),
                   child: const Text('Aprobar con este rol'),
                 ),
@@ -400,8 +401,8 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
-                  backgroundColor: const Color(0xFFE1F3FC),
-                  child: const Icon(Icons.person, color: Color(0xFF2FA9E0)),
+                  backgroundColor: AppColors.backgroundLight,
+                  child: const Icon(Icons.person, color: AppColors.primary),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -513,7 +514,7 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
                         label: const Text('Aceptar solicitud'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green.shade600,
-                          foregroundColor: Colors.white,
+                          foregroundColor: AppColors.surface,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -545,10 +546,10 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: _cargando ? null : () => _editarRol(solicitud),
-                        icon: const Icon(Icons.edit, size: 18, color: Color(0xFF2FA9E0)),
-                        label: const Text('Cambiar rol', style: TextStyle(color: Color(0xFF2FA9E0))),
+                        icon: const Icon(Icons.edit, size: 18, color: AppColors.primary),
+                        label: const Text('Cambiar rol', style: TextStyle(color: AppColors.primary)),
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFF2FA9E0)),
+                          side: const BorderSide(color: AppColors.primary),
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -567,7 +568,7 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
                     label: const Text('Aceptar solicitud'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green.shade600,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppColors.surface,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -592,13 +593,13 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
     final listaFiltrada = _solicitudesFiltradas;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      backgroundColor: AppColors.backgroundLight,
       appBar: widget.isEmbedded 
           ? null 
           : AppBar(
               title: Text(titulo),
-              backgroundColor: const Color(0xFF2FA9E0),
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.surface,
               elevation: 0,
             ),
       body: Column(
@@ -607,10 +608,10 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
           if (!_esGerenteObra && _obrasDisponibles.isNotEmpty) ...[
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              color: Colors.white,
+              color: AppColors.surface,
               child: Row(
                 children: [
-                  const Icon(Icons.filter_alt_outlined, color: Color(0xFF2FA9E0), size: 20),
+                  const Icon(Icons.filter_alt_outlined, color: AppColors.primary, size: 20),
                   const SizedBox(width: 8),
                   const Text(
                     'Obra:',
@@ -652,7 +653,7 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
           // Filtros de Estado (Chips)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: Colors.white,
+            color: AppColors.surface,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -746,9 +747,9 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
           });
         }
       },
-      selectedColor: const Color(0xFF2FA9E0),
+      selectedColor: AppColors.primary,
       labelStyle: TextStyle(
-        color: seleccionado ? Colors.white : const Color(0xFF5F6B73),
+        color: seleccionado ? AppColors.surface : const Color(0xFF5F6B73),
         fontWeight: seleccionado ? FontWeight.bold : FontWeight.normal,
         fontSize: 12,
       ),
@@ -775,7 +776,7 @@ class _DatoSolicitud extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icono, size: 18, color: const Color(0xFF2FA9E0)),
+        Icon(icono, size: 18, color: AppColors.primary),
         const SizedBox(width: 8),
         Text('$titulo: ', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
         Expanded(

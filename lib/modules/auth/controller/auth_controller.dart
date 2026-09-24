@@ -1,3 +1,4 @@
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../models/usuario_model.dart';
 // lib/modules/auth/controller/auth_controller.dart
 import 'package:supabase_flutter/supabase_flutter.dart';

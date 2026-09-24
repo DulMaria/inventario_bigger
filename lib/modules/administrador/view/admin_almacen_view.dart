@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../models/obra_model.dart';
 import '../../../models/solicitud_model.dart';
 import '../../almacen/controller/almacen_controller.dart';
@@ -102,7 +103,7 @@ class _AdminAlmacenViewState extends State<AdminAlmacenView>
         imageWidget = Image.memory(bytes, fit: BoxFit.contain);
       } else {
         imageWidget = const Center(
-          child: Text('Imagen no disponible', style: TextStyle(color: Colors.white)),
+          child: Text('Imagen no disponible', style: TextStyle(color: AppColors.surface)),
         );
       }
     } else {
@@ -111,7 +112,7 @@ class _AdminAlmacenViewState extends State<AdminAlmacenView>
         fit: BoxFit.contain,
         loadingBuilder: (context, child, progress) {
           if (progress == null) return child;
-          return const Center(child: CircularProgressIndicator(color: Colors.white));
+          return const Center(child: CircularProgressIndicator(color: AppColors.surface));
         },
         errorBuilder: (context, error, stackTrace) => const Center(
           child: Icon(Icons.broken_image, color: Colors.white70, size: 64),
@@ -143,7 +144,7 @@ class _AdminAlmacenViewState extends State<AdminAlmacenView>
                 ),
                 child: Text(
                   titulo,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(color: AppColors.surface, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               ),
             ),
@@ -151,7 +152,7 @@ class _AdminAlmacenViewState extends State<AdminAlmacenView>
               top: 10,
               right: 10,
               child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                icon: const Icon(Icons.close, color: AppColors.surface, size: 28),
                 onPressed: () => Navigator.pop(ctx),
               ),
             ),
@@ -235,7 +236,7 @@ class _AdminAlmacenViewState extends State<AdminAlmacenView>
             const SizedBox(height: 8),
             Container(
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
+                color: AppColors.backgroundLight,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.grey.shade200),
               ),
@@ -285,14 +286,14 @@ class _AdminAlmacenViewState extends State<AdminAlmacenView>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      backgroundColor: AppColors.backgroundLight,
       body: Column(
         children: [
           // Selector de Obra
           if (_obras.isNotEmpty) ...[
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              color: Colors.white,
+              color: AppColors.surface,
               child: Row(
                 children: [
                   Icon(Icons.filter_alt_outlined, color: Colors.blue[700], size: 20),

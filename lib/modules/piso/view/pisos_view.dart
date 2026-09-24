@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../obra/view/usuarios_por_obra_view.dart';
 
 
@@ -174,10 +175,10 @@ class _PisosViewState extends State<PisosView> {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: const Color(0xFFE1F3FC),
+            color: AppColors.backgroundLight,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(_iconoTipo(piso.tipoPiso), color: const Color(0xFF2FA9E0)),
+          child: Icon(_iconoTipo(piso.tipoPiso), color: AppColors.primary),
         ),
         title: Text(
           piso.etiquetaNivel,
@@ -213,7 +214,7 @@ class _PisosViewState extends State<PisosView> {
           ],
         ),
         trailing: IconButton(
-          icon: const Icon(Icons.edit_outlined, color: Color(0xFF2FA9E0)),
+          icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
           tooltip: 'Editar piso',
           onPressed: () => _irAEditarPiso(piso),
         ),
@@ -229,11 +230,11 @@ class _PisosViewState extends State<PisosView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         title: Text('Pisos - '),
-        backgroundColor: const Color(0xFF2FA9E0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         centerTitle: true,
         actions: [
           IconButton(
@@ -252,8 +253,8 @@ class _PisosViewState extends State<PisosView> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _cargando ? null : _irACrearPiso,
-        backgroundColor: const Color(0xFF2FA9E0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         icon: const Icon(Icons.add),
         label: const Text('Agregar Piso'),
       ),
@@ -292,8 +293,8 @@ class _PisosViewState extends State<PisosView> {
                           icon: const Icon(Icons.add),
                           label: const Text('Crear primer piso'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2FA9E0),
-                            foregroundColor: Colors.white,
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: AppColors.surface,
                           ),
                         ),
                       ],

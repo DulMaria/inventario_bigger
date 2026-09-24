@@ -1,5 +1,6 @@
 // lib/modules/obra/view/proformas_gerente_view.dart
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../core/config/app_colors.dart';
 import '../../../models/solicitud_model.dart';
 import '../../compras/controller/compras_controller.dart';
@@ -206,18 +207,18 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF4F6F9),
+        backgroundColor: AppColors.backgroundLight,
         appBar: widget.isEmbedded 
             ? PreferredSize(
                 preferredSize: const Size.fromHeight(kTextTabBarHeight),
                 child: AppBar(
-                  backgroundColor: const Color(0xFF1B2A47),
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.surface,
                   automaticallyImplyLeading: false,
                   elevation: 0,
                   bottom: TabBar(
-                    indicatorColor: Colors.white,
-                    labelColor: Colors.white,
+                    indicatorColor: AppColors.surface,
+                    labelColor: AppColors.surface,
                     unselectedLabelColor: Colors.white70,
                     tabs: [
                       Tab(
@@ -238,8 +239,8 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
               )
             : AppBar(
                 title: Text(widget.nombreObra != null ? 'Proformas - ${widget.nombreObra}' : 'Proformas de Materiales'),
-                backgroundColor: const Color(0xFF1B2A47),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.surface,
                 centerTitle: true,
                 elevation: 0,
                 actions: [
@@ -250,8 +251,8 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
                   ),
                 ],
                 bottom: TabBar(
-                  indicatorColor: Colors.white,
-                  labelColor: Colors.white,
+                  indicatorColor: AppColors.surface,
+                  labelColor: AppColors.surface,
                   unselectedLabelColor: Colors.white70,
                   tabs: [
                     Tab(

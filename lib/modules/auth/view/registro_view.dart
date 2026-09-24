@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../controller/auth_controller.dart';
 
 class RegistroView extends StatefulWidget {
@@ -111,7 +112,7 @@ class _RegistroViewState extends State<RegistroView> {
   void _mostrarMensaje(String texto) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(texto, style: const TextStyle(color: Colors.white)),
+        content: Text(texto, style: const TextStyle(color: AppColors.surface)),
         backgroundColor: const Color(0xFF1D7FAE),
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
@@ -131,7 +132,7 @@ class _RegistroViewState extends State<RegistroView> {
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.surface,
       ),
       body: Container(
         width: double.infinity,
@@ -140,7 +141,7 @@ class _RegistroViewState extends State<RegistroView> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF2FA9E0), Color(0xFF6FC6EE), Color(0xFFF4FAFE)],
+            colors: [AppColors.primary, AppColors.primary, AppColors.backgroundLight],
             stops: [0.0, 0.35, 0.75],
           ),
         ),
@@ -153,7 +154,7 @@ class _RegistroViewState extends State<RegistroView> {
                 child: Container(
                   padding: const EdgeInsets.all(26),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
@@ -343,9 +344,9 @@ class _RegistroViewState extends State<RegistroView> {
                           isExpanded: true,
                           icon: const Icon(
                             Icons.keyboard_arrow_down_rounded,
-                            color: Color(0xFF2FA9E0),
+                            color: AppColors.primary,
                           ),
-                          dropdownColor: Colors.white,
+                          dropdownColor: AppColors.surface,
                           borderRadius: BorderRadius.circular(16),
                           elevation: 4,
                           hint: const Text(
@@ -359,17 +360,17 @@ class _RegistroViewState extends State<RegistroView> {
                             prefixIcon: Container(
                               margin: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF4FAFE),
+                                color: AppColors.backgroundLight,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Icon(
                                 Icons.security_rounded,
-                                color: Color(0xFF2FA9E0),
+                                color: AppColors.primary,
                                 size: 20,
                               ),
                             ),
                             filled: true,
-                            fillColor: Colors.white,
+                            fillColor: AppColors.surface,
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 12,
@@ -381,13 +382,13 @@ class _RegistroViewState extends State<RegistroView> {
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(
-                                color: Color(0xFF6FC6EE),
+                                color: AppColors.primary,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(
-                                color: Color(0xFF2FA9E0),
+                                color: AppColors.primary,
                                 width: 1.8,
                               ),
                             ),
@@ -405,8 +406,8 @@ class _RegistroViewState extends State<RegistroView> {
                                         : Icons.help_outline_rounded,
                                     size: 20,
                                     color: esPersonalizada
-                                        ? const Color(0xFF2FA9E0)
-                                        : const Color(0xFF7C8A93),
+                                        ? AppColors.primary
+                                        : AppColors.textSecondary,
                                   ),
                                   const SizedBox(width: 10),
                                   Expanded(
@@ -416,8 +417,8 @@ class _RegistroViewState extends State<RegistroView> {
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: esPersonalizada
-                                            ? const Color(0xFF2FA9E0)
-                                            : const Color(0xFF1E2A32),
+                                            ? AppColors.primary
+                                            : AppColors.textPrimary,
                                         fontWeight: esPersonalizada
                                             ? FontWeight.bold
                                             : FontWeight.w500,
@@ -473,8 +474,8 @@ class _RegistroViewState extends State<RegistroView> {
                           child: ElevatedButton(
                             onPressed: _cargando ? null : _registrar,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2FA9E0),
-                              foregroundColor: Colors.white,
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: AppColors.surface,
                               disabledBackgroundColor: Colors.grey,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
@@ -485,7 +486,7 @@ class _RegistroViewState extends State<RegistroView> {
                                     width: 22,
                                     height: 22,
                                     child: CircularProgressIndicator(
-                                      color: Colors.white,
+                                      color: AppColors.surface,
                                       strokeWidth: 2.5,
                                     ),
                                   )
@@ -509,7 +510,7 @@ class _RegistroViewState extends State<RegistroView> {
                                 },
                           child: const Text(
                             '¿Ya tienes una cuenta? Inicia sesión',
-                            style: TextStyle(color: Color(0xFF2FA9E0)),
+                            style: TextStyle(color: AppColors.primary),
                           ),
                         ),
                       ],
@@ -540,21 +541,21 @@ class _RegistroViewState extends State<RegistroView> {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: const Color(0xFF2FA9E0)),
+        prefixIcon: Icon(icon, color: AppColors.primary),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF6FC6EE)),
+          borderSide: const BorderSide(color: AppColors.primary),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF2FA9E0), width: 1.8),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.8),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),

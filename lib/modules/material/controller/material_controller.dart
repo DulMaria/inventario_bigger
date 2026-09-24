@@ -1,3 +1,4 @@
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../models/material_model.dart';
 import '../service/material_service.dart';
 

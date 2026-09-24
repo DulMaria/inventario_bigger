@@ -1,6 +1,7 @@
 // lib/modules/compras/view/pisos_cotizar_view.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../models/solicitud_model.dart';
 import '../controller/compras_controller.dart';
 import '../utils/excel_exporter.dart';
@@ -101,7 +102,7 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
     final mapaPisos = _agruparPorPiso(_solicitudesACotizar);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,8 +118,8 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
               ),
           ],
         ),
-        backgroundColor: const Color(0xFF1B2A47),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -128,10 +129,10 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
         ],
       ),
       body: _cargando
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1B2A47)))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
           : RefreshIndicator(
               onRefresh: _cargarDatos,
-              color: const Color(0xFF1B2A47),
+              color: AppColors.primary,
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
@@ -142,14 +143,14 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF1B2A47), Color(0xFF2FA9E0)],
+                        colors: [AppColors.primary, AppColors.primary],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF2FA9E0).withValues(alpha: 0.25),
+                          color: AppColors.primary.withValues(alpha: 0.25),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -163,10 +164,10 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.15),
+                                color: AppColors.surface.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Icon(Icons.description, color: Colors.white, size: 24),
+                              child: const Icon(Icons.description, color: AppColors.surface, size: 24),
                             ),
                             const SizedBox(width: 12),
                             const Expanded(
@@ -176,7 +177,7 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
                                   Text(
                                     'Planilla de Cotización Excel',
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: AppColors.surface,
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -201,7 +202,7 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
                                 ? const SizedBox(
                                     width: 16,
                                     height: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF1B2A47)),
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
                                   )
                                 : const Icon(Icons.file_download, size: 18),
                             label: Text(
@@ -211,8 +212,8 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: const Color(0xFF1B2A47),
+                              backgroundColor: AppColors.surface,
+                              foregroundColor: AppColors.primary,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               padding: const EdgeInsets.symmetric(vertical: 10),
                             ),
@@ -232,7 +233,7 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1B2A47),
+                          color: AppColors.primary,
                         ),
                       ),
                       Text(
@@ -307,10 +308,10 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
                                       Container(
                                         padding: const EdgeInsets.all(10),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFF2FA9E0).withValues(alpha: 0.12),
+                                          color: AppColors.primary.withValues(alpha: 0.12),
                                           borderRadius: BorderRadius.circular(10),
                                         ),
-                                        child: const Icon(Icons.layers, color: Color(0xFF2FA9E0), size: 24),
+                                        child: const Icon(Icons.layers, color: AppColors.primary, size: 24),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
@@ -322,7 +323,7 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
                                               style: const TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
-                                                color: Color(0xFF1B2A47),
+                                                color: AppColors.primary,
                                               ),
                                             ),
                                             Text(
@@ -332,7 +333,7 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
                                           ],
                                         ),
                                       ),
-                                      const Icon(Icons.chevron_right, color: Color(0xFF2FA9E0)),
+                                      const Icon(Icons.chevron_right, color: AppColors.primary),
                                     ],
                                   ),
                                   const SizedBox(height: 12),
@@ -354,7 +355,7 @@ class _PisosCotizarViewState extends State<PisosCotizarView> {
                                             style: const TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.bold,
-                                              color: Color(0xFF1B2A47),
+                                              color: AppColors.primary,
                                             ),
                                           ),
                                         ],

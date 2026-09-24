@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import 'usuarios_por_obra_view.dart';
 
 
@@ -152,7 +153,7 @@ class _ObrasViewState extends State<ObrasView> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.people, color: Color(0xFF2FA9E0)),
+                                icon: const Icon(Icons.people, color: AppColors.primary),
                                 tooltip: 'Ver Usuarios',
                                 onPressed: () {
                                   Navigator.push(

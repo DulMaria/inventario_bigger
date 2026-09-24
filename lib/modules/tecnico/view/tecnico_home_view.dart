@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../core/widgets/custom_drawer.dart';
 import '../../administrador/view/perfil_usuario_view.dart';
 import '../../solicitud/controller/solicitud_obrero_controller.dart';
@@ -68,12 +69,12 @@ class _TecnicoHomeViewState extends State<TecnicoHomeView> {
                 width: 58,
                 height: 58,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE1F3FC),
+                  color: AppColors.backgroundLight,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
                   icono,
-                  color: const Color(0xFF2FA9E0),
+                  color: AppColors.primary,
                   size: 30,
                 ),
               ),
@@ -106,7 +107,7 @@ class _TecnicoHomeViewState extends State<TecnicoHomeView> {
                             child: Text(
                               '$badge pendiente(s)',
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: AppColors.surface,
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -158,7 +159,7 @@ class _TecnicoHomeViewState extends State<TecnicoHomeView> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.surface,
             ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Cerrar sesión'),
@@ -182,14 +183,14 @@ class _TecnicoHomeViewState extends State<TecnicoHomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      backgroundColor: AppColors.backgroundLight,
       drawer: const CustomDrawer(),
 
       appBar: AppBar(
         
         title: const Text('Panel del Técnico'),
-        backgroundColor: const Color(0xFF2FA9E0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         centerTitle: true,
         actions: [
           IconButton(

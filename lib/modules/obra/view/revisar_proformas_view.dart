@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../models/cotizacion_model.dart';
 import '../../../models/solicitud_model.dart';
 import '../../compras/controller/compras_controller.dart';
@@ -218,7 +219,7 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
         fit: BoxFit.contain,
         loadingBuilder: (_, child, progress) {
           if (progress == null) return child;
-          return const Center(child: CircularProgressIndicator(color: Colors.white));
+          return const Center(child: CircularProgressIndicator(color: AppColors.surface));
         },
         errorBuilder: (context, error, stackTrace) => const Center(
           child: Column(
@@ -258,7 +259,7 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
                 ),
                 child: Text(
                   titulo,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: AppColors.surface, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -268,7 +269,7 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
               child: CircleAvatar(
                 backgroundColor: Colors.white24,
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
+                  icon: const Icon(Icons.close, color: AppColors.surface),
                   onPressed: () => Navigator.pop(ctx),
                 ),
               ),
@@ -321,7 +322,7 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green.shade600,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.surface,
             ),
             child: const Text('Confirmar y Autorizar'),
           ),
@@ -451,11 +452,11 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
     final fecha = '${widget.solicitud.fecha.day}/${widget.solicitud.fecha.month}/${widget.solicitud.fecha.year}';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFE),
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         title: Text('Revisar Proformas #${widget.solicitud.idSolicitud}'),
-        backgroundColor: const Color(0xFF2FA9E0),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.surface,
         centerTitle: true,
       ),
       body: _procesando
@@ -488,10 +489,10 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFE1F3FC),
+                                  color: AppColors.backgroundLight,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.receipt_long, color: Color(0xFF2FA9E0)),
+                                child: const Icon(Icons.receipt_long, color: AppColors.primary),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -518,7 +519,7 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
                                 padding: const EdgeInsets.symmetric(vertical: 2),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.check, size: 14, color: Color(0xFF2FA9E0)),
+                                    const Icon(Icons.check, size: 14, color: AppColors.primary),
                                     const SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
@@ -543,7 +544,7 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
                   // 2. FOTOS DE PROFORMAS RECIBIDAS
                   Row(
                     children: [
-                      const Icon(Icons.photo_library_outlined, color: Color(0xFF2FA9E0)),
+                      const Icon(Icons.photo_library_outlined, color: AppColors.primary),
                       const SizedBox(width: 8),
                       Text(
                         'Fotos de Proformas Recibidas (${_cotizaciones.length})',
@@ -606,10 +607,10 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
                                   Row(
                                     children: [
                                       CircleAvatar(
-                                        backgroundColor: esGanadora ? Colors.green.shade100 : const Color(0xFFE1F3FC),
+                                        backgroundColor: esGanadora ? Colors.green.shade100 : AppColors.backgroundLight,
                                         child: Icon(
                                           esGanadora ? Icons.stars : Icons.image,
-                                          color: esGanadora ? Colors.green.shade700 : const Color(0xFF2FA9E0),
+                                          color: esGanadora ? Colors.green.shade700 : AppColors.primary,
                                         ),
                                       ),
                                       const SizedBox(width: 10),
@@ -628,7 +629,7 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
                                       ),
                                       child: const Text(
                                         'AUTORIZADA',
-                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                                        style: TextStyle(color: AppColors.surface, fontWeight: FontWeight.bold, fontSize: 11),
                                       ),
                                     ),
                                 ],
@@ -656,9 +657,9 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
                                             ),
                                             child: const Row(
                                               children: [
-                                                Icon(Icons.zoom_in, color: Colors.white, size: 16),
+                                                Icon(Icons.zoom_in, color: AppColors.surface, size: 16),
                                                 SizedBox(width: 4),
-                                                Text('Ver completa', style: TextStyle(color: Colors.white, fontSize: 11)),
+                                                Text('Ver completa', style: TextStyle(color: AppColors.surface, fontSize: 11)),
                                               ],
                                             ),
                                           ),
@@ -676,14 +677,14 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
                                   width: double.infinity,
                                   child: ElevatedButton.icon(
                                     onPressed: () => _autorizarCotizacion(cot, index),
-                                    icon: const Icon(Icons.check_circle_outline, color: Colors.white),
+                                    icon: const Icon(Icons.check_circle_outline, color: AppColors.surface),
                                     label: Text(
                                       'Autorizar $titulo para Compra',
                                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                                     ),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.green.shade600,
-                                      foregroundColor: Colors.white,
+                                      foregroundColor: AppColors.surface,
                                       padding: const EdgeInsets.symmetric(vertical: 12),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                     ),

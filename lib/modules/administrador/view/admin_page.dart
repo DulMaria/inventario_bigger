@@ -231,27 +231,50 @@ class AdminPage extends StatelessWidget {
                   ),
                 ),
                 Obx(
-                  () => Text(
-                    controller.adminRol.value.isNotEmpty
-                        ? controller.adminRol.value
-                        : 'Administrador',
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  () => Container(
+                    margin: const EdgeInsets.only(top: 8, bottom: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      controller.adminRol.value.isNotEmpty
+                          ? controller.adminRol.value.toUpperCase()
+                          : 'ADMINISTRADOR',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
-                    vertical: 4,
+                    vertical: 3,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.green[400]!.withValues(alpha: 0.3),
+                    color: Colors.green[600]!.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green[400]!),
+                    border: Border.all(color: Colors.greenAccent, width: 1),
                   ),
                   child: const Text(
-                    '🟢 Acceso Total (Global)',
-                    style: TextStyle(color: AppColors.surface, fontSize: 11),
+                    '🟢 Activo · Acceso Total',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -260,90 +283,98 @@ class AdminPage extends StatelessWidget {
         ),
         // Menú
         Expanded(
-          child: ListView(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            children: [
-              _buildDrawerItem(
-                icon: Icons.dashboard,
-                title: 'Dashboard',
-                isSelected: controller.selectedIndex.value == 0,
-                onTap: () {
-                  controller.cambiarVista(0);
-                  if (!isWeb) Navigator.pop(context);
-                },
+          child: Container(
+            color: Colors.white,
+            child: Obx(
+              () => ListView(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                children: [
+                  _buildDrawerItem(
+                    icon: Icons.dashboard,
+                    title: 'Dashboard',
+                    isSelected: controller.selectedIndex.value == 0,
+                    onTap: () {
+                      controller.cambiarVista(0);
+                      if (!isWeb) Navigator.pop(context);
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.construction,
+                    title: 'Obras',
+                    isSelected: controller.selectedIndex.value == 1,
+                    onTap: () {
+                      controller.cambiarVista(1);
+                      if (!isWeb) Navigator.pop(context);
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.layers,
+                    title: 'Pisos',
+                    isSelected: controller.selectedIndex.value == 2,
+                    onTap: () {
+                      controller.cambiarVista(2);
+                      if (!isWeb) Navigator.pop(context);
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.people,
+                    title: 'Usuarios y Accesos',
+                    isSelected: controller.selectedIndex.value == 3,
+                    onTap: () {
+                      controller.cambiarVista(3);
+                      if (!isWeb) Navigator.pop(context);
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.person_add_alt_1,
+                    title: 'Solicitudes de Acceso',
+                    isSelected: controller.selectedIndex.value == 4,
+                    onTap: () {
+                      controller.cambiarVista(4);
+                      if (!isWeb) Navigator.pop(context);
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.receipt_long,
+                    title: 'Proformas / Cotizaciones',
+                    isSelected: controller.selectedIndex.value == 5,
+                    onTap: () {
+                      controller.cambiarVista(5);
+                      if (!isWeb) Navigator.pop(context);
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.warehouse_rounded,
+                    title: 'Almacén (Global)',
+                    isSelected: controller.selectedIndex.value == 6,
+                    onTap: () {
+                      controller.cambiarVista(6);
+                      if (!isWeb) Navigator.pop(context);
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.person,
+                    title: 'Mi Perfil',
+                    isSelected: controller.selectedIndex.value == 7,
+                    onTap: () {
+                      controller.cambiarVista(7);
+                      if (!isWeb) Navigator.pop(context);
+                    },
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    child: Divider(color: AppColors.backgroundLight),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.logout,
+                    title: 'Cerrar Sesión',
+                    color: Colors.redAccent,
+                    isSelected: false,
+                    onTap: () => _cerrarSesion(context),
+                  ),
+                ],
               ),
-              _buildDrawerItem(
-                icon: Icons.construction,
-                title: 'Obras',
-                isSelected: controller.selectedIndex.value == 1,
-                onTap: () {
-                  controller.cambiarVista(1);
-                  if (!isWeb) Navigator.pop(context);
-                },
-              ),
-              _buildDrawerItem(
-                icon: Icons.layers,
-                title: 'Pisos',
-                isSelected: controller.selectedIndex.value == 2,
-                onTap: () {
-                  controller.cambiarVista(2);
-                  if (!isWeb) Navigator.pop(context);
-                },
-              ),
-              _buildDrawerItem(
-                icon: Icons.people_alt_outlined,
-                title: 'Usuarios y Accesos',
-                isSelected: controller.selectedIndex.value == 3,
-                onTap: () {
-                  controller.cambiarVista(3);
-                  if (!isWeb) Navigator.pop(context);
-                },
-              ),
-              _buildDrawerItem(
-                icon: Icons.assignment_turned_in,
-                title: 'Solicitudes de Acceso',
-                isSelected: controller.selectedIndex.value == 4,
-                onTap: () {
-                  controller.cambiarVista(4);
-                  if (!isWeb) Navigator.pop(context);
-                },
-              ),
-              _buildDrawerItem(
-                icon: Icons.receipt_long,
-                title: 'Proformas / Cotizaciones',
-                isSelected: controller.selectedIndex.value == 5,
-                onTap: () {
-                  controller.cambiarVista(5);
-                  if (!isWeb) Navigator.pop(context);
-                },
-              ),
-              _buildDrawerItem(
-                icon: Icons.warehouse_rounded,
-                title: 'Almacén (Global)',
-                isSelected: controller.selectedIndex.value == 6,
-                onTap: () {
-                  controller.cambiarVista(6);
-                  if (!isWeb) Navigator.pop(context);
-                },
-              ),
-              _buildDrawerItem(
-                icon: Icons.person_outline,
-                title: 'Mi Perfil',
-                isSelected: controller.selectedIndex.value == 7,
-                onTap: () {
-                  controller.cambiarVista(7);
-                  if (!isWeb) Navigator.pop(context);
-                },
-              ),
-              const Divider(),
-              _buildDrawerItem(
-                icon: Icons.logout,
-                title: 'Cerrar Sesión',
-                color: Colors.red,
-                isSelected: false,
-                onTap: () => _cerrarSesion(context),
-              ),
-            ],
+            ),
           ),
         ),
       ],
@@ -357,33 +388,39 @@ class AdminPage extends StatelessWidget {
     bool isSelected = false,
     Color? color,
   }) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color:
-            color ??
-            (isSelected ? AppColors.primary : const Color(0xFF1E293B).withValues(alpha: 0.7)),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color:
-              color ??
-              (isSelected ? AppColors.primary : const Color(0xFF1E293B).withValues(alpha: 0.7)),
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.primary.withOpacity(0.12)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: ListTile(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            leading: Icon(
+              icon,
+              color: color ??
+                  (isSelected ? AppColors.primary : const Color(0xFF64748B)),
+            ),
+            title: Text(
+              title,
+              style: TextStyle(
+                color: color ??
+                    (isSelected ? AppColors.primary : const Color(0xFF1E293B)),
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ),
         ),
       ),
-      trailing: isSelected
-          ? Container(
-              width: 4,
-              height: 24,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            )
-          : null,
-      onTap: onTap,
     );
   }
 

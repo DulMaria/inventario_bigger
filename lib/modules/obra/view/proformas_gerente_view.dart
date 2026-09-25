@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../core/config/app_colors.dart';
 import '../../../models/solicitud_model.dart';
+import '../../../core/utils/date_utils.dart';
 import '../../compras/controller/compras_controller.dart';
 import 'revisar_proformas_view.dart';
 
@@ -69,7 +70,7 @@ class _ProformasGerenteViewState extends State<ProformasGerenteView> {
 
   Widget _buildCard(SolicitudModel s, int estadoTipo) {
     final pisoNombre = s.piso?.nombre ?? (s.piso != null ? 'Piso #${s.piso!.idPiso}' : 'Piso');
-    final fecha = '${s.fecha.day}/${s.fecha.month}/${s.fecha.year}';
+    final fecha = DateUtilsBolivia.formatBolivia(s.fecha);
     final totalItems = s.detalles.length;
 
     Color badgeBg;

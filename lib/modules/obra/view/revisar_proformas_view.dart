@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../models/cotizacion_model.dart';
 import '../../../models/solicitud_model.dart';
+import '../../../core/utils/date_utils.dart';
 import '../../compras/controller/compras_controller.dart';
 
 class RevisarProformasView extends StatefulWidget {
@@ -449,7 +450,6 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
   Widget build(BuildContext context) {
     final detalles = widget.solicitud.detalles;
     final pisoNombre = widget.solicitud.piso?.nombre ?? (widget.solicitud.piso != null ? "Piso #${widget.solicitud.piso!.idPiso}" : "Piso");
-    final fecha = '${widget.solicitud.fecha.day}/${widget.solicitud.fecha.month}/${widget.solicitud.fecha.year}';
 
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
@@ -503,7 +503,7 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
                                       'Obra: ${widget.nombreObra ?? "Obra"} - $pisoNombre',
                                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                                     ),
-                                    Text('Fecha: $fecha', style: const TextStyle(fontSize: 12, color: Color(0xFF7C8A93))),
+                                    Text('Fecha: ${DateUtilsBolivia.formatBolivia(widget.solicitud.fecha)}', style: const TextStyle(fontSize: 12, color: Color(0xFF7C8A93))),
                                   ],
                                 ),
                               ),
@@ -528,7 +528,7 @@ class _RevisarProformasViewState extends State<RevisarProformasView> {
                                       ),
                                     ),
                                     Text(
-                                      '${d.cantidad} unid.',
+                                      '${d.cantidad} ${d.unidadMedida}',
                                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                                     ),
                                   ],

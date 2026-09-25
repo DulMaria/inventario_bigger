@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../controller/solicitud_acceso_controller.dart';
 import '../../../models/obra_model.dart';
+import '../../../core/utils/date_utils.dart';
 import '../../obra/controller/obra_controller.dart';
 
 class SolicitudesAccesoView extends StatefulWidget {
@@ -425,7 +426,7 @@ class _SolicitudesAccesoViewState extends State<SolicitudesAccesoView> {
                       if (fecha != null) ...[
                         const SizedBox(height: 2),
                         Text(
-                          'Fecha: ${fecha.day}/${fecha.month}/${fecha.year} ${fecha.hour.toString().padLeft(2, '0')}:${fecha.minute.toString().padLeft(2, '0')}',
+                          'Fecha: ${DateUtilsBolivia.formatBolivia(fecha)}',
                           style: const TextStyle(fontSize: 11, color: Color(0xFF9EACB4)),
                         ),
                       ],

@@ -407,7 +407,7 @@ class _DetallePisoCotizarViewState extends State<DetallePisoCotizarView> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            '${mat.cantidadTotal} unid.',
+                            '${mat.cantidadTotal} ${mat.unidadMedida}',
                             style: const TextStyle(
                               color: AppColors.surface,
                               fontWeight: FontWeight.bold,

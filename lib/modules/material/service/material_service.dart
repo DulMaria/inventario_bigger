@@ -73,8 +73,12 @@ class MaterialService {
   // CREAR MATERIAL (Evita duplicados por acentos)
   // ============================================================
 
-  Future<MaterialModel> crearMaterial({required String nombre}) async {
+  Future<MaterialModel> crearMaterial({
+    required String nombre,
+    String unidadMedida = 'unid.',
+  }) async {
     final nombreLimpio = nombre.trim();
+    final unidadLimpia = unidadMedida.trim().isEmpty ? 'unid.' : unidadMedida.trim();
 
     // 1. Verificamos si ya existe con o sin acento (ej. Hormigón == Hormigon)
     final existente = await buscarMaterial(nombreLimpio);
@@ -106,7 +110,11 @@ class MaterialService {
     try {
       final respuesta = await _supabase
           .from('materiales')
-          .insert({'codigo': codigo, 'nombre': nombreLimpio})
+          .insert({
+            'codigo': codigo,
+            'nombre': nombreLimpio,
+            'unidad_medida': unidadLimpia,
+          })
           .select()
           .single();
 

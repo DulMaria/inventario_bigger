@@ -111,6 +111,7 @@ class _MaterialesViewState extends State<MaterialesView>
 
     final MaterialModel material = resultado['material'];
     final int cantidad = resultado['cantidad'];
+    final String unidadMedida = resultado['unidad_medida'] ?? material.unidadMedida;
 
     final yaAgregado = _solicitud.any(
       (item) => item['id_material'] == material.idMaterial,
@@ -130,6 +131,7 @@ class _MaterialesViewState extends State<MaterialesView>
         'material': material.nombre,
         'codigo': material.codigo,
         'cantidad': cantidad,
+        'unidad_medida': unidadMedida,
       });
     });
 
@@ -149,6 +151,7 @@ class _MaterialesViewState extends State<MaterialesView>
           controller: _controller,
           materialActual: item['material'].toString(),
           cantidadActual: item['cantidad'] as int,
+          unidadActual: (item['unidad_medida'] ?? 'unid.').toString(),
         );
       },
     );
@@ -157,6 +160,7 @@ class _MaterialesViewState extends State<MaterialesView>
 
     final MaterialModel material = resultado['material'];
     final int cantidad = resultado['cantidad'];
+    final String unidadMedida = resultado['unidad_medida'] ?? material.unidadMedida;
 
     final yaExiste = _solicitud.asMap().entries.any((entry) {
       return entry.key != index &&
@@ -176,6 +180,7 @@ class _MaterialesViewState extends State<MaterialesView>
         'material': material.nombre,
         'codigo': material.codigo,
         'cantidad': cantidad,
+        'unidad_medida': unidadMedida,
       };
     });
   }
@@ -444,7 +449,7 @@ class _MaterialesViewState extends State<MaterialesView>
                             ),
                           ),
                           subtitle: Text(
-                            '${item['codigo']} • Cantidad: ${item['cantidad']}',
+                            '${item['codigo']} • Cantidad: ${item['cantidad']} ${item['unidad_medida'] ?? "unid."}',
                             style: const TextStyle(color: Color(0xFF7C8A93)),
                           ),
                           trailing: Row(
@@ -590,7 +595,7 @@ class _MaterialesViewState extends State<MaterialesView>
                           ),
                         ),
                         Text(
-                          'Cant: ${d.cantidad}',
+                          'Cant: ${d.cantidad} ${d.unidadMedida}',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1D7FAE),
@@ -618,7 +623,7 @@ class _MaterialesViewState extends State<MaterialesView>
                           ),
                         ),
                         Text(
-                          'Cant: ${d.cantidad}',
+                          'Cant: ${d.cantidad} ${d.unidadMedida}',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1D7FAE),
@@ -726,6 +731,7 @@ class _AgregarMaterialDialog extends StatefulWidget {
 class _AgregarMaterialDialogState extends State<_AgregarMaterialDialog> {
   final TextEditingController _nombreController = TextEditingController();
   final TextEditingController _cantidadController = TextEditingController();
+  final TextEditingController _unidadController = TextEditingController(text: 'unid.');
 
   List<MaterialModel> _sugerencias = [];
   MaterialModel? _materialSeleccionado;
@@ -736,6 +742,7 @@ class _AgregarMaterialDialogState extends State<_AgregarMaterialDialog> {
   void dispose() {
     _nombreController.dispose();
     _cantidadController.dispose();
+    _unidadController.dispose();
     super.dispose();
   }
 
@@ -768,6 +775,7 @@ class _AgregarMaterialDialogState extends State<_AgregarMaterialDialog> {
     setState(() {
       _materialSeleccionado = mat;
       _nombreController.text = mat.nombre;
+      _unidadController.text = mat.unidadMedida.isNotEmpty ? mat.unidadMedida : 'unid.';
       _sugerencias = [];
     });
   }
@@ -775,6 +783,7 @@ class _AgregarMaterialDialogState extends State<_AgregarMaterialDialog> {
   Future<void> _guardar() async {
     final nombre = _nombreController.text.trim();
     final cantidadTexto = _cantidadController.text.trim();
+    final unidad = _unidadController.text.trim().isEmpty ? 'unid.' : _unidadController.text.trim();
 
     if (nombre.isEmpty) {
       _mostrarError('Ingresa o selecciona un material.');
@@ -801,11 +810,15 @@ class _AgregarMaterialDialogState extends State<_AgregarMaterialDialog> {
 
       if (material == null) {
         material = await widget.controller.buscarMaterial(nombre);
-        material ??= await widget.controller.crearMaterial(nombre);
+        material ??= await widget.controller.crearMaterial(nombre, unidadMedida: unidad);
       }
 
       if (!mounted) return;
-      Navigator.of(context).pop({'material': material, 'cantidad': cantidad});
+      Navigator.of(context).pop({
+        'material': material,
+        'cantidad': cantidad,
+        'unidad_medida': unidad,
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -886,14 +899,29 @@ class _AgregarMaterialDialogState extends State<_AgregarMaterialDialog> {
                           item.nombre,
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
-                        subtitle: Text(item.codigo ?? '',
-                            style: const TextStyle(fontSize: 11)),
+                        subtitle: Text(
+                          '${item.codigo ?? ''} • ${item.unidadMedida}',
+                          style: const TextStyle(fontSize: 11),
+                        ),
                         onTap: () => _seleccionarMaterial(item),
                       );
                     },
                   ),
                 ),
               ],
+
+              const SizedBox(height: 16),
+
+              TextField(
+                controller: _unidadController,
+                enabled: !_guardando,
+                decoration: const InputDecoration(
+                  labelText: 'Unidad de medida',
+                  hintText: 'Ej. kg, m3, lt, bolsas, pzas...',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.straighten),
+                ),
+              ),
 
               const SizedBox(height: 16),
 
@@ -947,11 +975,13 @@ class _EditarMaterialDialog extends StatefulWidget {
   final MaterialController controller;
   final String materialActual;
   final int cantidadActual;
+  final String unidadActual;
 
   const _EditarMaterialDialog({
     required this.controller,
     required this.materialActual,
     required this.cantidadActual,
+    this.unidadActual = 'unid.',
   });
 
   @override
@@ -960,6 +990,7 @@ class _EditarMaterialDialog extends StatefulWidget {
 
 class _EditarMaterialDialogState extends State<_EditarMaterialDialog> {
   late final TextEditingController _nombreController;
+  late final TextEditingController _unidadController;
   late final TextEditingController _cantidadController;
   bool _guardando = false;
 
@@ -967,6 +998,7 @@ class _EditarMaterialDialogState extends State<_EditarMaterialDialog> {
   void initState() {
     super.initState();
     _nombreController = TextEditingController(text: widget.materialActual);
+    _unidadController = TextEditingController(text: widget.unidadActual);
     _cantidadController =
         TextEditingController(text: widget.cantidadActual.toString());
   }
@@ -974,6 +1006,7 @@ class _EditarMaterialDialogState extends State<_EditarMaterialDialog> {
   @override
   void dispose() {
     _nombreController.dispose();
+    _unidadController.dispose();
     _cantidadController.dispose();
     super.dispose();
   }
@@ -981,6 +1014,7 @@ class _EditarMaterialDialogState extends State<_EditarMaterialDialog> {
   Future<void> _guardar() async {
     final nombre = _nombreController.text.trim();
     final cantidadTexto = _cantidadController.text.trim();
+    final unidad = _unidadController.text.trim().isEmpty ? 'unid.' : _unidadController.text.trim();
 
     if (nombre.isEmpty) {
       _mostrarError('Ingresa el nombre del material.');
@@ -999,10 +1033,14 @@ class _EditarMaterialDialogState extends State<_EditarMaterialDialog> {
 
     try {
       MaterialModel? material = await widget.controller.buscarMaterial(nombre);
-      material ??= await widget.controller.crearMaterial(nombre);
+      material ??= await widget.controller.crearMaterial(nombre, unidadMedida: unidad);
 
       if (!mounted) return;
-      Navigator.of(context).pop({'material': material, 'cantidad': cantidad});
+      Navigator.of(context).pop({
+        'material': material,
+        'cantidad': cantidad,
+        'unidad_medida': unidad,
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -1035,12 +1073,24 @@ class _EditarMaterialDialogState extends State<_EditarMaterialDialog> {
             ),
             const SizedBox(height: 15),
             TextField(
+              controller: _unidadController,
+              enabled: !_guardando,
+              decoration: const InputDecoration(
+                labelText: 'Unidad de medida',
+                hintText: 'Ej. kg, m3, lt, bolsas, pzas...',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.straighten),
+              ),
+            ),
+            const SizedBox(height: 15),
+            TextField(
               controller: _cantidadController,
               enabled: !_guardando,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                labelText: 'Cantidad',
+                labelText: 'Cantidad a solicitar',
                 border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.numbers),
               ),
             ),
           ],

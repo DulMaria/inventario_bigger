@@ -6,6 +6,7 @@ class DetalleSolicitudModel {
   final SolicitudModel? solicitud;
   MaterialModel? material;
   final int cantidad;
+  final String unidadMedida;
   final String? rutaImagen;
   final int? idMaterial;
 
@@ -14,6 +15,7 @@ class DetalleSolicitudModel {
     this.solicitud,
     this.material,
     required this.cantidad,
+    this.unidadMedida = 'unid.',
     this.rutaImagen,
     this.idMaterial,
   });
@@ -29,6 +31,8 @@ class DetalleSolicitudModel {
         ? (map['id_material'] as num).toInt()
         : parsedMaterial?.idMaterial;
 
+    final unit = map['unidad_medida'] as String? ?? parsedMaterial?.unidadMedida ?? 'unid.';
+
     return DetalleSolicitudModel(
       idDetalle: map['id_detalle'] as int,
       solicitud: map['solicitudes'] != null
@@ -36,6 +40,7 @@ class DetalleSolicitudModel {
           : null,
       material: parsedMaterial,
       cantidad: (map['cantidad'] as num).toInt(),
+      unidadMedida: unit,
       rutaImagen: map['ruta_imagen'] as String?,
       idMaterial: rawIdMat,
     );
@@ -47,6 +52,7 @@ class DetalleSolicitudModel {
       'id_solicitud': solicitud?.idSolicitud,
       'id_material': idMaterial ?? material?.idMaterial,
       'cantidad': cantidad,
+      'unidad_medida': unidadMedida,
       'ruta_imagen': rutaImagen,
     };
   }

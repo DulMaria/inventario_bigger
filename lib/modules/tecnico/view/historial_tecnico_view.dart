@@ -3,6 +3,7 @@ import 'package:inventario_bigger/core/config/app_colors.dart';
 
 import '../../../models/solicitud_model.dart';
 import '../../../models/solicitud_obrero_model.dart';
+import '../../../core/utils/date_utils.dart';
 import '../../solicitud/controller/solicitud_controller.dart';
 import '../../solicitud/controller/solicitud_obrero_controller.dart';
 
@@ -248,7 +249,7 @@ class _HistorialTecnicoViewState extends State<HistorialTecnicoView>
                 ),
               ),
               subtitle: Text(
-                'Estado: ${_textoEstado(sol.estado)} • ${sol.fecha.day}/${sol.fecha.month}/${sol.fecha.year} ${sol.fecha.hour.toString().padLeft(2, '0')}:${sol.fecha.minute.toString().padLeft(2, '0')}',
+                'Estado: ${_textoEstado(sol.estado)} • ${DateUtilsBolivia.formatBolivia(sol.fecha)}',
                 style: TextStyle(
                   color: _colorEstado(sol.estado),
                   fontWeight: FontWeight.w500,
@@ -282,7 +283,7 @@ class _HistorialTecnicoViewState extends State<HistorialTecnicoView>
                                 child: Text(d.material?.nombre ?? 'Material'),
                               ),
                               Text(
-                                'Cant: ${d.cantidad}',
+                                '${d.cantidad} ${d.unidadMedida}',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF1D7FAE),
@@ -362,7 +363,7 @@ class _HistorialTecnicoViewState extends State<HistorialTecnicoView>
                 ),
               ),
               subtitle: Text(
-                'Estado: ${_textoEstado(sol.estado)} • ${sol.fecha.day}/${sol.fecha.month}/${sol.fecha.year} ${sol.fecha.hour.toString().padLeft(2, '0')}:${sol.fecha.minute.toString().padLeft(2, '0')}',
+                'Estado: ${_textoEstado(sol.estado)} • ${DateUtilsBolivia.formatBolivia(sol.fecha)}',
                 style: TextStyle(
                   color: _colorEstado(sol.estado),
                   fontWeight: FontWeight.w500,
@@ -396,7 +397,7 @@ class _HistorialTecnicoViewState extends State<HistorialTecnicoView>
                                 child: Text(d.material?.nombre ?? 'Material'),
                               ),
                               Text(
-                                'Cant: ${d.cantidad}',
+                                '${d.cantidad} ${d.unidadMedida}',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF1D7FAE),

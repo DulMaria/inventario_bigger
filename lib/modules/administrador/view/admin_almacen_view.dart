@@ -260,7 +260,7 @@ class _AdminAlmacenViewState extends State<AdminAlmacenView>
                           ),
                         ),
                         Text(
-                          'Cant: ${det.cantidad}',
+                          'Cant: ${det.cantidad} ${det.unidadMedida}',
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.blueGrey),
                         ),
                       ],

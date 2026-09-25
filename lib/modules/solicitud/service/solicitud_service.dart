@@ -33,6 +33,7 @@ class SolicitudService {
         'id_solicitud': idSolicitud,
         'id_material': material['id_material'],
         'cantidad': material['cantidad'],
+        'unidad_medida': material['unidad_medida'] ?? 'unid.',
       };
     }).toList();
 

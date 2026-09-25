@@ -127,118 +127,204 @@ class _GerenteHomeViewState extends State<GerenteHomeView> {
   }
 
   Widget _buildDashboardView() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primary,
-                    Colors.indigo.shade900,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF1E293B).withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isSmallScreen = constraints.maxWidth < 360;
+        final paddingHorizontal = isSmallScreen ? 12.0 : 16.0;
+
+        return SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Banner de Bienvenida Adaptable
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(isSmallScreen ? 14 : 18),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary,
+                      Colors.indigo.shade900,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF1E293B).withValues(alpha: 0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
                       _nombreGerente.isNotEmpty 
-                        ? '👋 ¡Bienvenido $_nombreGerente, Gerente de la obra "${widget.nombreObra ?? ''}"!'
-                        : '👋 ¡Bienvenido, Gerente de la obra "${widget.nombreObra ?? ''}"!',
-                      style: const TextStyle(
-                        fontSize: 22,
+                        ? '👋 ¡Bienvenido $_nombreGerente!'
+                        : '👋 ¡Bienvenido, Gerente!',
+                      style: TextStyle(
+                        fontSize: isSmallScreen ? 18 : 20,
                         fontWeight: FontWeight.bold,
                         color: AppColors.surface,
                       ),
                     ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Desde aquí puedes gestionar los accesos, revisar proformas llegadas y más.',
-                    style: TextStyle(fontSize: 15, color: Colors.white70),
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.nombreObra != null 
+                        ? 'Gerente asignado a la obra: "${widget.nombreObra}"'
+                        : 'Gestión y control general de la obra',
+                      style: TextStyle(
+                        fontSize: isSmallScreen ? 13 : 14,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+
+              // Tarjeta 1: Solicitudes de Acceso (Redirige a SolicitudesAccesoView - Index 2)
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: isSmallScreen ? 12 : 16,
+                    vertical: isSmallScreen ? 6 : 10,
                   ),
-                ],
-              ),
-            ),
-          const SizedBox(height: 25),
-
-          Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              leading: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
-                  borderRadius: BorderRadius.circular(12),
+                  leading: Container(
+                    width: isSmallScreen ? 40 : 48,
+                    height: isSmallScreen ? 40 : 48,
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundLight,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.person_add_alt_1,
+                      color: AppColors.primary,
+                      size: isSmallScreen ? 22 : 24,
+                    ),
+                  ),
+                  title: Text(
+                    'Solicitudes de Acceso',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: isSmallScreen ? 14 : 16,
+                    ),
+                  ),
+                  subtitle: Text(
+                    widget.nombreObra != null
+                        ? 'Revisar y autorizar accesos para ${widget.nombreObra}'
+                        : 'Revisar y autorizar solicitudes de acceso a la obra',
+                    style: TextStyle(
+                      color: const Color(0xFF7C8A93),
+                      fontSize: isSmallScreen ? 12 : 13,
+                    ),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                  onTap: () => _cambiarVista(2),
                 ),
-                child: const Icon(Icons.person_add_alt_1, color: AppColors.primary),
               ),
-              title: const Text(
-                'Solicitudes de Acceso',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              subtitle: Text(
-                widget.nombreObra != null
-                    ? 'Revisar y autorizar solicitudes para ${widget.nombreObra}'
-                    : 'Revisar y autorizar solicitudes de acceso a la obra',
-                style: const TextStyle(color: Color(0xFF7C8A93)),
-              ),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () => _cambiarVista(1),
-            ),
-          ),
 
-          const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
-          Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              leading: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.amber.shade50,
-                  borderRadius: BorderRadius.circular(12),
+              // Tarjeta 2: Proformas Llegadas (Redirige a ProformasGerenteView - Index 3)
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(Icons.receipt_long, color: Colors.amber.shade800),
+                child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: isSmallScreen ? 12 : 16,
+                    vertical: isSmallScreen ? 6 : 10,
+                  ),
+                  leading: Container(
+                    width: isSmallScreen ? 40 : 48,
+                    height: isSmallScreen ? 40 : 48,
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.receipt_long,
+                      color: Colors.amber.shade800,
+                      size: isSmallScreen ? 22 : 24,
+                    ),
+                  ),
+                  title: Text(
+                    'Proformas Llegadas',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: isSmallScreen ? 14 : 16,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Revisión y autorización de cotizaciones y proformas enviadas por compras.',
+                    style: TextStyle(
+                      color: const Color(0xFF7C8A93),
+                      fontSize: isSmallScreen ? 12 : 13,
+                    ),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                  onTap: () => _cambiarVista(3),
+                ),
               ),
-              title: const Text(
-                'Proformas Llegadas',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+
+              const SizedBox(height: 12),
+
+              // Tarjeta 3: Usuarios de Obra (Redirige a UsuariosPorObraView - Index 1)
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: isSmallScreen ? 12 : 16,
+                    vertical: isSmallScreen ? 6 : 10,
+                  ),
+                  leading: Container(
+                    width: isSmallScreen ? 40 : 48,
+                    height: isSmallScreen ? 40 : 48,
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.people,
+                      color: Colors.blue.shade700,
+                      size: isSmallScreen ? 22 : 24,
+                    ),
+                  ),
+                  title: Text(
+                    'Usuarios de Obra',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: isSmallScreen ? 14 : 16,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Ver lista de obreros, técnicos y personal asignado a la obra.',
+                    style: TextStyle(
+                      color: const Color(0xFF7C8A93),
+                      fontSize: isSmallScreen ? 12 : 13,
+                    ),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                  onTap: () => _cambiarVista(1),
+                ),
               ),
-              subtitle: const Text(
-                'Revisión y autorización de cotizaciones y proformas enviadas por compras.',
-                style: TextStyle(color: Color(0xFF7C8A93)),
-              ),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () => _cambiarVista(2),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

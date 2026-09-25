@@ -979,7 +979,7 @@ class _AlmacenHomeViewState extends State<AlmacenHomeView> {
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  '$cant unid.',
+                                  '$cant ${d.unidadMedida}',
                                   style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,

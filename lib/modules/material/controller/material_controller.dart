@@ -33,13 +33,16 @@ class MaterialController {
     }
   }
 
-  Future<MaterialModel> crearMaterial(String nombre) async {
+  Future<MaterialModel> crearMaterial(String nombre, {String unidadMedida = 'unid.'}) async {
     if (nombre.trim().isEmpty) {
       throw Exception('Ingresa el nombre del material');
     }
 
     try {
-      return await _service.crearMaterial(nombre: nombre.trim());
+      return await _service.crearMaterial(
+        nombre: nombre.trim(),
+        unidadMedida: unidadMedida,
+      );
     } catch (e) {
       throw Exception(e.toString().replaceFirst('Exception: ', ''));
     }

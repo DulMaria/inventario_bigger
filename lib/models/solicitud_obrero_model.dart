@@ -71,6 +71,7 @@ class DetalleSolicitudObreroModel {
   final int idSolicitudObrero;
   final int idMaterial;
   final int cantidad;
+  final String unidadMedida;
   final String? rutaImagen;
   final MaterialModel? material;
 
@@ -79,20 +80,26 @@ class DetalleSolicitudObreroModel {
     required this.idSolicitudObrero,
     required this.idMaterial,
     required this.cantidad,
+    this.unidadMedida = 'unid.',
     this.rutaImagen,
     this.material,
   });
 
   factory DetalleSolicitudObreroModel.fromMap(Map<String, dynamic> map) {
+    final parsedMaterial = map['materiales'] != null
+        ? MaterialModel.fromMap(Map<String, dynamic>.from(map['materiales']))
+        : null;
+
+    final unit = map['unidad_medida'] as String? ?? parsedMaterial?.unidadMedida ?? 'unid.';
+
     return DetalleSolicitudObreroModel(
       idDetalleObrero: map['id_detalle_obrero'] as int,
       idSolicitudObrero: map['id_solicitud_obrero'] as int,
       idMaterial: map['id_material'] as int,
       cantidad: map['cantidad'] as int,
+      unidadMedida: unit,
       rutaImagen: map['ruta_imagen'] as String?,
-      material: map['materiales'] != null
-          ? MaterialModel.fromMap(Map<String, dynamic>.from(map['materiales']))
-          : null,
+      material: parsedMaterial,
     );
   }
 
@@ -102,6 +109,7 @@ class DetalleSolicitudObreroModel {
       'id_solicitud_obrero': idSolicitudObrero,
       'id_material': idMaterial,
       'cantidad': cantidad,
+      'unidad_medida': unidadMedida,
       'ruta_imagen': rutaImagen,
     };
   }

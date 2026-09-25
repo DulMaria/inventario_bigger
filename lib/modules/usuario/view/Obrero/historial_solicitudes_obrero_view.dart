@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inventario_bigger/core/config/app_colors.dart';
 import '../../../../models/solicitud_obrero_model.dart';
+import '../../../../core/utils/date_utils.dart';
 import '../../../solicitud/controller/solicitud_obrero_controller.dart';
 
 class HistorialSolicitudesObreroView extends StatefulWidget {
@@ -200,7 +201,7 @@ class _HistorialSolicitudesObreroViewState
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'Fecha: ${sol.fecha.day}/${sol.fecha.month}/${sol.fecha.year} ${sol.fecha.hour.toString().padLeft(2, '0')}:${sol.fecha.minute.toString().padLeft(2, '0')}',
+                                'Fecha: ${DateUtilsBolivia.formatBolivia(sol.fecha)}',
                                 style: const TextStyle(
                                   fontSize: 13,
                                   color: Color(0xFF7C8A93),
@@ -238,7 +239,7 @@ class _HistorialSolicitudesObreroViewState
                                         ),
                                       ),
                                       Text(
-                                        'Cant: ${d.cantidad}',
+                                        '${d.cantidad} ${d.unidadMedida}',
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           color: Color(0xFF1D7FAE),

@@ -272,7 +272,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
                     children: sol.detalles.map((d) {
                       final matNombre = d.material?.nombre ?? 'Material #${d.idMaterial}';
                       final cant = d.cantidad;
-                      final unidad = 'unid.';
+                      final unidad = d.unidadMedida;
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2),
                         child: Text(
@@ -558,7 +558,7 @@ class _DetallePisoComprarViewState extends State<DetallePisoComprarView> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            '${mat.cantidadTotal} unid.',
+                            '${mat.cantidadTotal} ${mat.unidadMedida}',
                             style: const TextStyle(
                               color: AppColors.surface,
                               fontWeight: FontWeight.bold,

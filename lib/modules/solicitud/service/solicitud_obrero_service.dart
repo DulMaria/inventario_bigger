@@ -43,6 +43,7 @@ class SolicitudObreroService {
         'id_solicitud_obrero': idSolicitudObrero,
         'id_material': m['id_material'],
         'cantidad': m['cantidad'],
+        'unidad_medida': m['unidad_medida'] ?? 'unid.',
       };
     }).toList();
 
@@ -210,6 +211,7 @@ class SolicitudObreroService {
         'id_solicitud': idSolicitudOficial,
         'id_material': m['id_material'],
         'cantidad': m['cantidad'],
+        'unidad_medida': m['unidad_medida'] ?? 'unid.',
       };
     }).toList();
 
@@ -231,6 +233,7 @@ class SolicitudObreroService {
             'id_solicitud_obrero': idSolicitudObrero,
             'id_material': m['id_material'],
             'cantidad': m['cantidad'],
+            'unidad_medida': m['unidad_medida'] ?? 'unid.',
           };
         }).toList();
 
